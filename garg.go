@@ -6,8 +6,8 @@ package garg
 import (
 	"errors"
 	"fmt"
-	"github.com/mark-summerfield/gong"
 	"os"
+	"strings"
 )
 
 type Parser struct {
@@ -29,7 +29,7 @@ func (p *Parser) Parse() error {
 }
 
 func (p *Parser) ParseLine(line string) error {
-	return p.ParseArgs(gong.SplitWhitespace(line))
+	return p.ParseArgs(strings.Fields(line))
 }
 
 func (p *Parser) ParseArgs(args []string) error {

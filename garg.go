@@ -191,6 +191,7 @@ type Option struct {
 	Help            string
 	Required        bool
 	ValueCount      ValueCount
+	VarName         string // e.g., -o|--outfile FILENAME
 	HasDefaultValue bool
 	DefaultValue    any
 	Value           any

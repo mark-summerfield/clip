@@ -12,14 +12,8 @@ func Test1(t *testing.T) {
 	parser := NewParser("myapp", "1.0.0")
 	parser.QuitOnError = false // for testing
 	parser.PositionalCount = ZeroOrMore
-	parser.AddBoolOpt(Option{
-		LongName:  "sortbylines",
-		ShortName: "s",
-		Help:      "Sort by lines"})
-	parser.AddStrsOpt(Option{
-		LongName:   "language",
-		ShortName:  "l",
-		Help:       "language names TODO",
+	parser.AddBool(MinOption{Name: "sortbylines", Help: "Sort by lines"})
+	parser.AddStrs(MinOption{Name: "language", Help: "language names TODO",
 		ValueCount: ZeroOrMore})
 	// DEBUG
 	for _, opt := range parser.Options {

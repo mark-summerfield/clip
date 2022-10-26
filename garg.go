@@ -27,147 +27,162 @@ func NewParser(appname, version string) Parser {
 		QuitOnError: true, Options: make(map[string]Option)}
 }
 
-func (p *Parser) Parse() error {
-	return p.ParseArgs(os.Args[1:])
+func (me *Parser) Parse() error {
+	return me.ParseArgs(os.Args[1:])
 }
 
-func (p *Parser) ParseLine(line string) error {
-	return p.ParseArgs(strings.Fields(line))
+func (me *Parser) ParseLine(line string) error {
+	return me.ParseArgs(strings.Fields(line))
 }
 
-func (p *Parser) ParseArgs(args []string) error {
+func (me *Parser) ParseArgs(args []string) error {
 	var err error
 	// TODO
-	if err != nil && p.QuitOnError {
+	if err != nil && me.QuitOnError {
 		fmt.Println(err)
 		os.Exit(2)
 	}
 	return err
 }
 
-func (p *Parser) AddBool(name, help string) {
-	shortName, longName := namesForName(name)
-	option := Option{
-		LongName:   longName,
-		ShortName:  shortName,
-		Help:       help,
-		ValueCount: ZeroOrOne,
-		ValueType:  Bool,
-	}
-	p.Options[longName] = option
+func (me *Parser) AddBool(option MinOption) {
+	opt := option.ToOption()
+	opt.ValueCount = ZeroOrOne
+	opt.ValueType = Bool
+	me.Options[opt.LongName] = opt
 }
 
-func (p *Parser) AddBoolOpt(option Option) {
+func (me *Parser) AddBoolOpt(option Option) {
 	option.ValueType = Bool
-	p.Options[option.LongName] = option
+	me.Options[option.LongName] = option
 }
 
-// TODO func (p *Parser) AddInt(name, help string, defaultValue int)
+// TODO func (me *Parser) AddInt(option MinOption)
 
-func (p *Parser) AddIntOpt(option Option) {
+func (me *Parser) AddIntOpt(option Option) {
 	option.ValueType = Int
-	p.Options[option.LongName] = option
+	me.Options[option.LongName] = option
 }
 
-// TODO func (p *Parser) AddReal(name, help string, defaultValue float64)
+// TODO func (me *Parser) AddReal(option MinOption)
 
-func (p *Parser) AddRealOpt(option Option) {
+func (me *Parser) AddRealOpt(option Option) {
 	option.ValueType = Real
-	p.Options[option.LongName] = option
+	me.Options[option.LongName] = option
 }
 
-// TODO func (p *Parser) AddChoice(name, help string, choices []string)
+// TODO func (me *Parser) AddChoice(name, help string, choices []string)
 // should create a validator to check that the given value is one of the
 // choices
 
-func (p *Parser) AddStrOpt(option Option) {
+// TODO func (me *Parser) AddStr(option MinOption)
+
+func (me *Parser) AddStrOpt(option Option) {
 	option.ValueType = Str
-	p.Options[option.LongName] = option
+	me.Options[option.LongName] = option
 }
 
-func (p *Parser) AddStrsOpt(option Option) {
+func (me *Parser) AddStrs(option MinOption) {
+	opt := option.ToOption()
+	opt.ValueCount = ZeroOrMore
+	opt.ValueType = Strs
+	me.Options[opt.LongName] = opt
+}
+
+func (me *Parser) AddStrsOpt(option Option) {
 	option.ValueType = Strs
-	p.Options[option.LongName] = option
+	me.Options[option.LongName] = option
 }
 
-func (p *Parser) GetBool(name string) (bool, error) {
-	opt, ok := p.Options[name]
-	if !ok {
-		p.handleError(fmt.Sprintf(
-			"GetBool() is for bools, requested for %s", opt.ValueType))
-	}
+func (me *Parser) GetBool(name string) (bool, error) {
+	opt := me.get(name)
 	v, ok := opt.Value.(bool)
 	if !ok {
-		p.handleError(fmt.Sprintf("GetBool() %s has an invalid bool %t",
+		me.handleError(fmt.Sprintf("GetBool() %s has an invalid bool %t",
 			name, v))
 	}
 	return v, nil
 }
 
-func (p *Parser) GetInt(name string) (int, error) {
-	opt, ok := p.Options[name]
+func (me *Parser) get(name string) Option {
+	opt, ok := me.Options[name]
 	if !ok {
-		p.handleError(fmt.Sprintf(
-			"GetInt() is for int, requested for %s", opt.ValueType))
+		me.handleError(fmt.Sprintf("Get*() has no option called %s", name))
 	}
+	return opt
+}
+
+func (me *Parser) GetInt(name string) (int, error) {
+	opt := me.get(name)
 	v, ok := opt.Value.(int)
 	if !ok {
-		p.handleError(fmt.Sprintf("GetInt() %s has an invalid int %d",
+		me.handleError(fmt.Sprintf("GetInt() %s has an invalid int %d",
 			name, v))
 	}
 	return v, nil
 }
 
-func (p *Parser) GetReal(name string) (float64, error) {
-	opt, ok := p.Options[name]
-	if !ok {
-		p.handleError(fmt.Sprintf(
-			"GetReal() is for reals, requested for %s", opt.ValueType))
-	}
+func (me *Parser) GetReal(name string) (float64, error) {
+	opt := me.get(name)
 	v, ok := opt.Value.(float64)
 	if !ok {
-		p.handleError(fmt.Sprintf("GetReal() %s has an invalid bool %f",
+		me.handleError(fmt.Sprintf("GetReal() %s has an invalid bool %f",
 			name, v))
 	}
 	return v, nil
 }
 
-func (p *Parser) GetStr(name string) (string, error) {
-	opt, ok := p.Options[name]
-	if !ok {
-		p.handleError(fmt.Sprintf(
-			"GetStr() is for strings, requested for %s", opt.ValueType))
-	}
+func (me *Parser) GetStr(name string) (string, error) {
+	opt := me.get(name)
 	v, ok := opt.Value.(string)
 	if !ok {
-		p.handleError(fmt.Sprintf("GetStr() %s has an invalid str %s",
+		me.handleError(fmt.Sprintf("GetStr() %s has an invalid str %s",
 			name, v))
 	}
 	return v, nil
 }
 
-func (p *Parser) GetStrs(name string) ([]string, error) {
-	opt, ok := p.Options[name]
-	if !ok {
-		p.handleError(fmt.Sprintf(
-			"GetStrs() is for slices of strings, requested for %s",
-			opt.ValueType))
-	}
+func (me *Parser) GetStrs(name string) ([]string, error) {
+	opt := me.get(name)
 	v, ok := opt.Value.([]string)
 	if !ok {
-		p.handleError(fmt.Sprintf("GetStrs() %s has an invalid bool %v",
+		me.handleError(fmt.Sprintf("GetStrs() %s has an invalid bool %v",
 			name, v))
 	}
 	return v, nil
 }
 
-func (p *Parser) handleError(msg string) error {
+func (me *Parser) handleError(msg string) error {
 	msg = fmt.Sprintf("error: %s", msg)
-	if p.QuitOnError {
+	if me.QuitOnError {
 		fmt.Fprintln(os.Stderr, msg)
 		os.Exit(2)
 	}
 	return errors.New(msg)
+}
+
+type MinOption struct {
+	Name         string
+	Help         string
+	ValueCount   ValueCount
+	DefaultValue any
+	Value        any
+}
+
+func (me MinOption) ToOption() Option {
+	shortName, longName := namesForName(me.Name)
+	hasDefaultValue := false
+	if me.DefaultValue != nil {
+		hasDefaultValue = true
+	}
+	return Option{
+		LongName:        longName,
+		ShortName:       shortName,
+		Help:            me.Help,
+		ValueCount:      me.ValueCount,
+		HasDefaultValue: hasDefaultValue,
+		DefaultValue:    me.DefaultValue,
+	}
 }
 
 type Option struct {

@@ -1,12 +1,12 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
-package parg
+package garg
 
 import (
 	"errors"
 	"fmt"
-	"github/mark-summerfield/gong"
+	"github.com/mark-summerfield/gong"
 	"os"
 )
 

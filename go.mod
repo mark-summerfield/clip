@@ -1,7 +1,7 @@
-module github.com/mark-summerfield/parg
+module github.com/mark-summerfield/garg
 
 go 1.19
 
-replace github/mark-summerfield/gong => /home/mark/app/go/gong
+replace github.com/mark-summerfield/gong => /home/mark/app/go/gong
 
-require github/mark-summerfield/gong v0.0.0-00010101000000-000000000000
+require github.com/mark-summerfield/gong v0.0.0-00010101000000-000000000000

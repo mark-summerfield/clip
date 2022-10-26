@@ -10,6 +10,9 @@ import (
 	"strings"
 )
 
+// A validator should return whether the given value is acceptable
+type Validator func(any) bool
+
 type Parser struct {
 	AppName         string
 	AppVersion      string
@@ -42,27 +45,47 @@ func (p *Parser) ParseArgs(args []string) error {
 	return err
 }
 
-func (p *Parser) AddBool(option Option) {
+func (p *Parser) AddBool(name, help string) {
+	shortName, longName := namesForName(name)
+	option := Option{
+		LongName:   longName,
+		ShortName:  shortName,
+		Help:       help,
+		ValueCount: ZeroOrOne,
+		ValueType:  Bool,
+	}
+	p.Options[longName] = option
+}
+
+func (p *Parser) AddBoolOpt(option Option) {
 	option.ValueType = Bool
 	p.Options[option.LongName] = option
 }
 
-func (p *Parser) AddInt(option Option) {
+// TODO func (p *Parser) AddInt(name, help string, defaultValue int)
+
+func (p *Parser) AddIntOpt(option Option) {
 	option.ValueType = Int
 	p.Options[option.LongName] = option
 }
 
-func (p *Parser) AddReal(option Option) {
+// TODO func (p *Parser) AddReal(name, help string, defaultValue float64)
+
+func (p *Parser) AddRealOpt(option Option) {
 	option.ValueType = Real
 	p.Options[option.LongName] = option
 }
 
-func (p *Parser) AddStr(option Option) {
+// TODO func (p *Parser) AddChoice(name, help string, choices []string)
+// should create a validator to check that the given value is one of the
+// choices
+
+func (p *Parser) AddStrOpt(option Option) {
 	option.ValueType = Str
 	p.Options[option.LongName] = option
 }
 
-func (p *Parser) AddStrs(option Option) {
+func (p *Parser) AddStrsOpt(option Option) {
 	option.ValueType = Strs
 	p.Options[option.LongName] = option
 }
@@ -157,12 +180,35 @@ type Option struct {
 	DefaultValue    any
 	Value           any
 	ValueType       ValueType
+	Validator       Validator
 }
 
 func (opt Option) String() string {
 	return fmt.Sprintf("-%s|--%s req=%t vc=%v hasd=%t def=%v val=%v vt=%s",
 		opt.ShortName, opt.LongName, opt.Required, opt.ValueCount,
 		opt.HasDefaultValue, opt.DefaultValue, opt.Value, opt.ValueType)
+}
+
+func namesForName(name string) (string, string) {
+	var shortName string
+	for _, c := range name {
+		shortName = string(c)
+		break
+	}
+	return shortName, name
+}
+
+// TODO provide default function makers for use as validators
+
+type Number interface {
+	int | float64
+}
+
+// TODO see if this will work
+func MakeRangeValidator[V Number](minimum, maximum V) func(V) bool {
+	return func(x V) bool {
+		return minimum <= x && x <= maximum
+	}
 }
 
 type ValueType uint8

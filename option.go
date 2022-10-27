@@ -27,7 +27,7 @@ func newOption(name, help string) *Option {
 }
 
 func (me *Option) AsBool() bool {
-	if me.ValueType != Bool {
+	if me.ValueType != Flag {
 		panic(fmt.Sprintf("AsBool() called on type %s", me.ValueType))
 	}
 	if me.Value == nil {

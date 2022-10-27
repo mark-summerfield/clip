@@ -13,11 +13,11 @@ func Test1(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	parser.PositionalCount = ZeroOrMore
 	parser.PositionalVarName = "FILENAME"
-	summaryOpt := parser.Bool("summary", "summary help TODO")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.ShortName = 'S'
-	sortByLinesOpt := parser.Bool("sortbylines", "Sort by lines")
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	specialSubCommand := parser.SubCommand("special", "Special help")
-	extraOpt := specialSubCommand.Bool("extra", "extra help")
+	extraOpt := specialSubCommand.Flag("extra", "extra help")
 
 	parser.Debug()
 

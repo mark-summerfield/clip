@@ -25,10 +25,10 @@ func newSubCommand(name, help string) *SubCommand {
 		Options: make([]*Option, 0)}
 }
 
-func (me *SubCommand) Bool(name, help string) *Option {
+func (me *SubCommand) Flag(name, help string) *Option {
 	option := newOption(name, help)
 	option.ValueCount = ZeroOrOne
-	option.ValueType = Bool
+	option.ValueType = Flag
 	me.Options = append(me.Options, option)
 	return option
 }

@@ -51,10 +51,10 @@ func (me *Parser) SubCommand(name, help string) *SubCommand {
 	return subcommand
 }
 
-func (me *Parser) Bool(name, help string) *Option {
+func (me *Parser) Flag(name, help string) *Option {
 	option := newOption(name, help)
 	option.ValueCount = ZeroOrOne
-	option.ValueType = Bool
+	option.ValueType = Flag
 	me.SubCommands[MainSubCommand].Options = append(
 		me.SubCommands[MainSubCommand].Options, option)
 	return option
@@ -102,11 +102,11 @@ func (me *Parser) AddStrsOpt(option Option) {
 */
 
 /*
-func (me *Parser) GetBool(name string) (bool, error) {
+func (me *Parser) GetFlag(name string) (bool, error) {
 	opt := me.get(name)
 	v, ok := opt.Value.(bool)
 	if !ok {
-		me.handleError(fmt.Sprintf("GetBool() %s has an invalid bool %t",
+		me.handleError(fmt.Sprintf("GetFlag() %s has an invalid bool %t",
 			name, v))
 	}
 	return v, nil

@@ -18,7 +18,7 @@ type Number interface {
 type ValueType uint8
 
 const (
-	Bool ValueType = iota
+	Flag ValueType = iota
 	Int
 	Real
 	Str
@@ -27,7 +27,7 @@ const (
 
 func (me ValueType) String() string {
 	switch me {
-	case Bool:
+	case Flag:
 		return "bool"
 	case Int:
 		return "int"

@@ -18,34 +18,26 @@ func Test1(t *testing.T) {
 	skipLanguageOpt.ShortName = 'L'
 	excludeOpt := parser.Strs("exclude", "exclude help")
 	includeOpt := parser.Strs("include", "include help")
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.ShortName = 'S'
-	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
-	specialSubCommand := parser.SubCommand("special", "Special help")
-	extraOpt := specialSubCommand.Flag("extra", "extra help")
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
+	specialSubCommand := parser.SubCommand("special", "Special help")
+	extraOpt := specialSubCommand.Flag("extra", "extra help")
 
-	fmt.Println("BEFORE")
-	parser.Debug()
-
-	if err := parser.ParseLine("-sS -l cpp d pas file1.cpp file2.d"); err != nil {
+	line := "-sS -l cpp d pas file1.cpp file2.d"
+	if err := parser.ParseLine(line); err != nil {
 		fmt.Println(err)
-	} else {
-		fmt.Println("AFTER")
-		parser.Debug()
 	}
 
-	if false {
-		summary := summaryOpt.AsBool()
-		sortByLines := sortByLinesOpt.AsBool()
-		fmt.Println()
-		fmt.Printf("summary=%t sortbylines=%t extra=%t maxwidth=%d\n",
-			summary, sortByLines, extraOpt.AsBool(), maxWidthOpt.AsInt())
-		fmt.Printf("language=%v", languageOpt.AsStrs())
-		fmt.Printf("skiplanguage=%v", skipLanguageOpt.AsStrs())
-		fmt.Printf("exclude=%v", excludeOpt.AsStrs())
-		fmt.Printf("include=%v", includeOpt.AsStrs())
-		fmt.Println()
-	}
+	fmt.Println()
+	fmt.Printf("language=%v\n", languageOpt.AsStrs())
+	fmt.Printf("skiplanguage=%v\n", skipLanguageOpt.AsStrs())
+	fmt.Printf("exclude=%v\n", excludeOpt.AsStrs())
+	fmt.Printf("include=%v\n", includeOpt.AsStrs())
+	fmt.Printf("summary=%v\n", summaryOpt.AsBool())
+	fmt.Printf("sortbylines=%v\n", sortByLinesOpt.AsBool())
+	fmt.Printf("maxwidth=%v\n", maxWidthOpt.AsInt())
+	fmt.Printf("extra=%v\n", extraOpt.AsBool())
 }

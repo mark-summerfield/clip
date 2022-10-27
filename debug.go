@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-func (me *Parser) Debug() {
+func (me *Parser) debug() {
 	fmt.Println("Parser")
 	fmt.Printf("    %v v%v\n", me.AppName, me.AppVersion)
 	fmt.Printf("    QuitOnError=%t\n", me.QuitOnError)
@@ -21,14 +21,14 @@ func (me *Parser) Debug() {
 			name = "<MAIN>"
 		}
 		fmt.Printf("    SubCommand=%v\n", name)
-		subcommand.Debug(8)
+		subcommand.debug(8)
 	}
 	fmt.Printf("    PositionalCount=%s\n", me.PositionalCount)
 	fmt.Printf("    PositionalVarName=%s\n", me.PositionalVarName)
 	fmt.Printf("    Positionals=%v\n", me.Positionals)
 }
 
-func (me *Option) Debug(indent int) {
+func (me *Option) debug(indent int) {
 	tab := strings.Repeat(" ", indent)
 	fmt.Printf("%sLongName=%s\n", tab, me.LongName)
 	fmt.Printf("%sShortName=%s\n", tab, string(me.ShortName))
@@ -46,13 +46,13 @@ func (me *Option) Debug(indent int) {
 	}
 }
 
-func (me *SubCommand) Debug(indent int) {
+func (me *SubCommand) debug(indent int) {
 	tab := strings.Repeat(" ", indent)
 	fmt.Printf("%sLongName=%s\n", tab, me.LongName)
 	fmt.Printf("%sShortName=%s\n", tab, string(me.ShortName))
 	fmt.Printf("%sHelp=%s\n", tab, me.Help)
 	for i, option := range me.Options {
 		fmt.Printf("%sOption #%d:\n", tab, i)
-		option.Debug(indent + 4)
+		option.debug(indent + 4)
 	}
 }

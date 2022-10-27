@@ -181,14 +181,6 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 	return cmdForName
 }
 
-func (me *Parser) getSubCommands() []string {
-	keys := make([]string, 0, len(me.SubCommands))
-	for key := range me.SubCommands {
-		keys = append(keys, key)
-	}
-	return keys
-}
-
 func (me *Parser) checkPositionals(state *parserState) error {
 	size := len(state.args)
 	if size == 0 {
@@ -222,7 +214,7 @@ func (me *Parser) handleLongPrefix(arg string, state *parserState) error {
 	name := strings.TrimPrefix(arg, "--")
 	option, ok := state.optionForLongName[name]
 	if ok { // --option
-		if err := me.handleOption(option, state); err != nil {
+		if err := me.handleOption(option, "", state); err != nil {
 			return err
 		}
 	} else {
@@ -230,8 +222,8 @@ func (me *Parser) handleLongPrefix(arg string, state *parserState) error {
 		if len(parts) == 2 { // --option=value
 			option, ok := state.optionForLongName[parts[0]]
 			if ok {
-				state.args[state.index] = parts[1] // just keep the value
-				if err := me.handleOption(option, state); err != nil {
+				if err := me.handleOption(option, parts[1],
+					state); err != nil {
 					return err
 				}
 				return nil
@@ -247,19 +239,19 @@ func (me *Parser) handleShortPrefix(arg string, state *parserState) error {
 	name := strings.TrimPrefix(arg, "-")
 	option, ok := state.optionForShortName[name]
 	if ok { // -o
-		if err := me.handleOption(option, state); err != nil {
+		if err := me.handleOption(option, "", state); err != nil {
 			return err
 		}
 	} else {
 		parts := strings.SplitN(name, "=", 2)
 		if len(parts) == 2 { // -a=value or -abc=value
-			state.args[state.index] = parts[1] // just keep the value
 			flags := []rune(parts[0])
 			if len(flags) == 1 { // -a=value
 				name := string(flags[0])
 				option, ok := state.optionForShortName[name]
 				if ok {
-					if err := me.handleOption(option, state); err != nil {
+					if err := me.handleOption(option, parts[1],
+						state); err != nil {
 						return err
 					}
 				}
@@ -268,7 +260,7 @@ func (me *Parser) handleShortPrefix(arg string, state *parserState) error {
 					name := string(flag)
 					option, ok := state.optionForShortName[name]
 					if ok {
-						if err := me.handleOption(option,
+						if err := me.handleOption(option, parts[1],
 							state); err != nil {
 							return err
 						}
@@ -276,16 +268,17 @@ func (me *Parser) handleShortPrefix(arg string, state *parserState) error {
 				}
 			}
 			return nil
-		} else { // -abc
+		} else { // -abc or -aValue
 			for _, flag := range name {
 				name = string(flag)
 				option, ok := state.optionForShortName[name]
 				if ok {
-					if err := me.handleOption(option,
+					if err := me.handleOption(option, "",
 						state); err != nil {
 						return err
 					}
 				} else {
+					// TODO handle -aValue case
 					return me.handleError(30,
 						fmt.Sprintf("unrecognized option %s", arg))
 				}
@@ -313,13 +306,15 @@ func (me *Parser) handlePossibleSubcommand(arg string,
 	return false, nil
 }
 
-func (me *Parser) handleOption(option *Option, state *parserState) error {
+func (me *Parser) handleOption(option *Option, value string,
+	state *parserState) error {
 	// TODO set the option's value & if necessary keep reading args (& inc
 	// index) until next - or --
 	// If the option accepts anything other than Zero & the args[index] item
 	// doesn't start with - then that's a value, ..., and so on
 	// NOTE should leave the index ready at the next item
-	fmt.Printf("handleOption() %v %v", *option, state.args[state.index])
+	fmt.Printf("handleOption() %v %v %v\n", *option, value,
+		state.args[state.index])
 	return nil
 }
 

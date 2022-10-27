@@ -72,4 +72,3 @@ type parserState struct {
 	args               []string
 	index              int
 }
-

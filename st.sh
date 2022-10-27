@@ -1,5 +1,5 @@
 #!/bin/bash
-clc -sS -e zOld
+clc -s -e zOld
 go mod tidy
 go fmt .
 staticcheck .

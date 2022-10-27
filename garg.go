@@ -10,21 +10,21 @@ import (
 	"strings"
 )
 
-// A validator should return whether the given value is acceptable
-type Validator func(any) bool
-
 type Parser struct {
-	AppName         string
-	AppVersion      string
-	QuitOnError     bool
-	Options         map[string]Option
-	PositionalCount ValueCount
-	Positionals     []string
+	AppName           string
+	AppVersion        string
+	QuitOnError       bool
+	SubCommands       map[string]*SubCommand
+	PositionalCount   ValueCount
+	PositionalVarName string
+	Positionals       []string
 }
 
 func NewParser(appname, version string) Parser {
+	subcommands := make(map[string]*SubCommand)
+	subcommands[MainSubCommand] = newMainSubCommand()
 	return Parser{AppName: appname, AppVersion: version,
-		QuitOnError: true, Options: make(map[string]Option)}
+		QuitOnError: true, SubCommands: subcommands}
 }
 
 func (me *Parser) Parse() error {
@@ -45,18 +45,24 @@ func (me *Parser) ParseArgs(args []string) error {
 	return err
 }
 
-func (me *Parser) AddBool(option MinOption) {
-	opt := option.ToOption()
-	opt.ValueCount = ZeroOrOne
-	opt.ValueType = Bool
-	me.Options[opt.LongName] = opt
+func (me *Parser) SubCommand(name, help string) *SubCommand {
+	subcommand := newSubCommand(name, help)
+	me.SubCommands[name] = subcommand
+	return subcommand
 }
 
-func (me *Parser) AddBoolOpt(option Option) {
+func (me *Parser) Bool(name, help string) *Option {
+	option := newOption(name, help)
+	option.ValueCount = ZeroOrOne
 	option.ValueType = Bool
-	me.Options[option.LongName] = option
+	me.SubCommands[MainSubCommand].Options = append(
+		me.SubCommands[MainSubCommand].Options, option)
+	return option
 }
 
+// TODO Int() Real() Str() Strs() Choice()
+
+/*
 // TODO func (me *Parser) AddInt(option MinOption)
 
 func (me *Parser) AddIntOpt(option Option) {
@@ -93,7 +99,9 @@ func (me *Parser) AddStrsOpt(option Option) {
 	option.ValueType = Strs
 	me.Options[option.LongName] = option
 }
+*/
 
+/*
 func (me *Parser) GetBool(name string) (bool, error) {
 	opt := me.get(name)
 	v, ok := opt.Value.(bool)
@@ -151,6 +159,7 @@ func (me *Parser) GetStrs(name string) ([]string, error) {
 	}
 	return v, nil
 }
+*/
 
 func (me *Parser) handleError(msg string) error {
 	msg = fmt.Sprintf("error: %s", msg)
@@ -161,105 +170,18 @@ func (me *Parser) handleError(msg string) error {
 	return errors.New(msg)
 }
 
-type MinOption struct {
-	Name         string
-	Help         string
-	ValueCount   ValueCount
-	DefaultValue any
-	Value        any
-}
-
-func (me MinOption) ToOption() Option {
-	shortName, longName := namesForName(me.Name)
-	hasDefaultValue := false
-	if me.DefaultValue != nil {
-		hasDefaultValue = true
+func (me *Parser) Debug() {
+	fmt.Println("Parser")
+	fmt.Printf("    %v v%v\n", me.AppName, me.AppVersion)
+	fmt.Printf("    QuitOnError=%t\n", me.QuitOnError)
+	for name, subcommand := range me.SubCommands {
+		if name == MainSubCommand {
+			name = "<MAIN>"
+		}
+		fmt.Printf("    SubCommand=%v\n", name)
+		subcommand.Debug(8)
 	}
-	return Option{
-		LongName:        longName,
-		ShortName:       shortName,
-		Help:            me.Help,
-		ValueCount:      me.ValueCount,
-		HasDefaultValue: hasDefaultValue,
-		DefaultValue:    me.DefaultValue,
-	}
+	fmt.Printf("    PositionalCount=%s\n", me.PositionalCount)
+	fmt.Printf("    PositionalVarName=%s\n", me.PositionalVarName)
+	fmt.Printf("    Positionals=%v\n", me.Positionals)
 }
-
-type Option struct {
-	LongName        string
-	ShortName       string
-	Help            string
-	Required        bool
-	ValueCount      ValueCount
-	VarName         string // e.g., -o|--outfile FILENAME
-	HasDefaultValue bool
-	DefaultValue    any
-	Value           any
-	ValueType       ValueType
-	Validator       Validator
-}
-
-func (opt Option) String() string {
-	return fmt.Sprintf("-%s|--%s req=%t vc=%v hasd=%t def=%v val=%v vt=%s",
-		opt.ShortName, opt.LongName, opt.Required, opt.ValueCount,
-		opt.HasDefaultValue, opt.DefaultValue, opt.Value, opt.ValueType)
-}
-
-func namesForName(name string) (string, string) {
-	var shortName string
-	for _, c := range name {
-		shortName = string(c)
-		break
-	}
-	return shortName, name
-}
-
-// TODO provide default function makers for use as validators
-
-type Number interface {
-	int | float64
-}
-
-// TODO see if this will work
-func MakeRangeValidator[V Number](minimum, maximum V) func(V) bool {
-	return func(x V) bool {
-		return minimum <= x && x <= maximum
-	}
-}
-
-type ValueType uint8
-
-const (
-	Bool ValueType = iota
-	Int
-	Real
-	Str
-	Strs
-)
-
-func (vt ValueType) String() string {
-	switch vt {
-	case Bool:
-		return "bool"
-	case Int:
-		return "int"
-	case Real:
-		return "float64"
-	case Str:
-		return "string"
-	case Strs:
-		return "[]string"
-	default:
-		panic("invalid ValueType")
-	}
-}
-
-type ValueCount uint8
-
-const (
-	Zero      ValueCount = iota // for flags; for no positionals allowed
-	ZeroOrOne                   // i.e., optional
-	ZeroOrMore
-	One
-	OneOrMore
-)

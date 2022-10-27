@@ -26,7 +26,8 @@ func NewParser(appname, version string) Parser {
 	subcommands[mainSubCommand] = newMainSubCommand()
 	return Parser{AppName: appname, AppVersion: version,
 		QuitOnError: true, AutoVersionOption: true,
-		SubCommands: subcommands}
+		SubCommands: subcommands, PositionalCount: ZeroOrMore,
+		PositionalVarName: "FILENAME"}
 }
 
 func (me *Parser) SubCommand(name, help string) *SubCommand {
@@ -105,10 +106,16 @@ func (me *Parser) ParseArgs(args []string) error {
 	}
 	state.optionForLongName, state.optionForShortName =
 		state.subcommand.optionsForNames()
-	for state.index < len(state.args) {
-		arg := state.args[state.index]
+	for {
+		arg := state.next()
+		if arg == "" {
+			break
+		}
+		if arg == "-h" || arg == "--help" {
+			me.OnHelp() // never returns
+			break
+		}
 		if arg == "--" { // end of options
-			state.index++
 			if err := me.checkPositionals(&state); err != nil {
 				return err
 			}
@@ -135,7 +142,6 @@ func (me *Parser) ParseArgs(args []string) error {
 			}
 			break
 		}
-		state.index++
 	}
 	return nil
 }
@@ -308,14 +314,44 @@ func (me *Parser) handlePossibleSubcommand(arg string,
 
 func (me *Parser) handleOption(option *Option, value string,
 	state *parserState) error {
+	if option.LongName == "version" {
+		me.OnVersion() // never returns
+		return nil
+	}
+	if option.ValueType == Flag {
+		if value == "" {
+			option.Value = true
+		} else {
+			return me.handleError(40, fmt.Sprintf(
+				"unexpected value for flag %s: %s", option.LongName, value))
+		}
+	}
+
 	// TODO set the option's value & if necessary keep reading args (& inc
 	// index) until next - or --
 	// If the option accepts anything other than Zero & the args[index] item
 	// doesn't start with - then that's a value, ..., and so on
 	// NOTE should leave the index ready at the next item
-	fmt.Printf("handleOption() %v %v %v\n", *option, value,
-		state.args[state.index])
+
+	// DEBUG
+	var next string
+	if state.index < len(state.args) {
+		next = state.args[state.index]
+	}
+	fmt.Printf("handleOption() %v %#v %#v\n", *option, value, next)
+	// END DEBUG
+
 	return nil
+}
+
+func (me *Parser) OnHelp() {
+	fmt.Printf("usage: %s TODO", me.AppName)
+	os.Exit(0)
+}
+
+func (me *Parser) OnVersion() {
+	fmt.Printf("%s v%s", me.AppName, me.AppVersion)
+	os.Exit(0)
 }
 
 func (me *Parser) handleError(code int, msg string) error {

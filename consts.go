@@ -72,3 +72,13 @@ type parserState struct {
 	args               []string
 	index              int
 }
+
+// Returns the current arg and increments the index to point at the next
+func (me *parserState) next() string {
+	if me.index < len(me.args) {
+		arg := me.args[me.index]
+		me.index++
+		return arg
+	}
+	return ""
+}

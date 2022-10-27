@@ -3,7 +3,9 @@
 
 package garg
 
-import "strconv"
+import (
+	"strconv"
+)
 
 func namesForName(name string) (rune, string) {
 	var shortName rune

@@ -4,7 +4,6 @@
 package garg
 
 import (
-	//"fmt"
 	"regexp"
 	"strconv"
 	"testing"
@@ -58,10 +57,101 @@ func Test4(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.ShortName = 'S'
 	line := "-s4"
+	e := 30
 	if err := parser.ParseLine(line); err != nil {
-		expectedError(30, err, t)
+		expectedError(e, err, t)
 	} else {
-		t.Error("expected error")
+		t.Errorf("expected error #%d, got nil", e)
+	}
+}
+
+func Test5(t *testing.T) {
+	parser := NewParser("myapp", "1.0.0")
+	parser.QuitOnError = false // for testing
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.ShortName = 'S'
+	line := "-sS"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected summary=true, got false")
+	}
+	if !sortByLinesOpt.AsBool() {
+		t.Error("expected sortbylines=true, got false")
+	}
+}
+
+func Test6(t *testing.T) {
+	parser := NewParser("myapp", "1.0.0")
+	parser.QuitOnError = false // for testing
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.ShortName = 'S'
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000)
+	line := "-sSm60"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected summary=true, got false")
+	}
+	if !sortByLinesOpt.AsBool() {
+		t.Error("expected sortbylines=true, got false")
+	}
+	m := maxWidthOpt.AsInt()
+	if m != 60 {
+		t.Errorf("expected maxwidth=60, got %d", m)
+	}
+}
+
+func Test7(t *testing.T) {
+	parser := NewParser("myapp", "1.0.0")
+	parser.QuitOnError = false // for testing
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.ShortName = 'S'
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000)
+	line := "-sSm=60"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected summary=true, got false")
+	}
+	if !sortByLinesOpt.AsBool() {
+		t.Error("expected sortbylines=true, got false")
+	}
+	m := maxWidthOpt.AsInt()
+	if m != 60 {
+		t.Errorf("expected maxwidth=60, got %d", m)
+	}
+}
+
+func Test8(t *testing.T) {
+	parser := NewParser("myapp", "1.0.0")
+	parser.QuitOnError = false // for testing
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.ShortName = 'S'
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000)
+	line := "-sSm 60"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected summary=true, got false")
+	}
+	if !sortByLinesOpt.AsBool() {
+		t.Error("expected sortbylines=true, got false")
+	}
+	m := maxWidthOpt.AsInt()
+	if m != 60 {
+		t.Errorf("expected maxwidth=60, got %d", m)
 	}
 }
 

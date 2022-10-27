@@ -3,6 +3,8 @@
 
 package garg
 
+import "fmt"
+
 const mainSubCommand = ""
 const noShortName = 0
 
@@ -62,23 +64,34 @@ func (me ValueCount) String() string {
 	}
 }
 
-type parserState struct {
+type tokenState struct {
 	subcommand         *SubCommand
 	subCommandForName  map[string]*SubCommand
 	optionForLongName  map[string]*Option
 	optionForShortName map[string]*Option
 	hasSubCommands     bool
 	hadSubCommand      bool
-	args               []string
-	index              int
 }
 
-// Returns the current arg and increments the index to point at the next
-func (me *parserState) next() string {
-	if me.index < len(me.args) {
-		arg := me.args[me.index]
-		me.index++
-		return arg
+type Token struct {
+	text    string
+	isValue bool
+}
+
+func (me Token) String() string {
+	if me.isValue {
+		return fmt.Sprintf("%#v", me.text)
 	}
-	return ""
+	if len(me.text) == 1 {
+		return fmt.Sprintf("-%s", me.text)
+	}
+	return fmt.Sprintf("--%s", me.text)
+}
+
+func NewNameToken(text string) Token {
+	return Token{text: text}
+}
+
+func NewValueToken(text string) Token {
+	return Token{text: text, isValue: true}
 }

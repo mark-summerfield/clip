@@ -97,54 +97,91 @@ func (me *Parser) ParseLine(line string) error {
 
 func (me *Parser) ParseArgs(args []string) error {
 	me.maybeAddVersionOption()
-	state := parserState{
-		subcommand:        me.SubCommands[mainSubCommand],
-		subCommandForName: me.getSubCommandsForNames(),
-		hasSubCommands:    len(me.SubCommands) > 1,
-		hadSubCommand:     false,
-		args:              args,
+	tokens, err := me.tokenize(args)
+	if err == nil {
+		fmt.Printf("TOKENS for %s: %s\n", args, tokens)
+	} else {
+		return err
 	}
-	state.optionForLongName, state.optionForShortName =
-		state.subcommand.optionsForNames()
+	index := 0
 	for {
-		arg := state.next()
-		if arg == "" {
+		if index >= len(tokens) {
 			break
 		}
-		if arg == "-h" || arg == "--help" {
-			me.OnHelp() // never returns
-			break
+		token := tokens[index]
+		index++
+		if !token.isValue { // Name
+		} else { // Value
 		}
-		if arg == "--" { // end of options
-			if err := me.checkPositionals(&state); err != nil {
-				return err
-			}
-			break
-		} else if strings.HasPrefix(arg, "--") { // long option
-			if err := me.handleLongPrefix(arg, &state); err != nil {
-				return err
-			}
-		} else if strings.HasPrefix(arg, "-") { // short option
-			if err := me.handleShortPrefix(arg, &state); err != nil {
-				return err
-			}
-		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
-			do_break, err := me.handlePossibleSubcommand(arg, &state)
-			if err != nil {
-				return err
-			}
-			if do_break {
-				break
-			}
-		} else { // positionals
-			if err := me.checkPositionals(&state); err != nil {
-				return err
-			}
-			break
-		}
+		// TODO
 	}
 	return nil
 }
+
+/* TODO
+func (me *Parser) checkPositionals(state *parserState) error {
+	size := len(state.args)
+	if size == 0 {
+		if me.PositionalCount == One {
+			return me.handleError(10,
+				"expected one positional argument, got none")
+		} else if me.PositionalCount == OneOrMore {
+			return me.handleError(11,
+				"expected at least one positional argument, got none")
+		}
+	} else if size == 1 && me.PositionalCount == Zero {
+		return me.handleError(12,
+			"no positional arguments expected, got one")
+	} else if size > 1 {
+		if me.PositionalCount == Zero {
+			return me.handleError(13, fmt.Sprintf(
+				"no positional arguments expected, got %d", size))
+		} else if me.PositionalCount == ZeroOrOne {
+			return me.handleError(14, fmt.Sprintf(
+				"expected at most one positional argument, got %d", size))
+		} else if me.PositionalCount == One {
+			return me.handleError(15, fmt.Sprintf(
+				"expected one positional argument, got %d", size))
+		}
+	}
+	me.Positionals = state.args
+	return nil
+}
+*/
+
+/* TODO
+func (me *Parser) handleOption(option *Option, value string,
+	state *parserState) error {
+	if option.LongName == "version" {
+		me.onVersion() // never returns
+		return nil
+	}
+	if option.ValueType == Flag {
+		if value == "" {
+			option.Value = true
+		} else {
+			return me.handleError(40, fmt.Sprintf(
+				"unexpected value for flag %s: %s", option.LongName, value))
+		}
+	}
+
+	// TODO set the option's value & if necessary keep reading args (& inc
+	// index) until next - or --
+	// If the option accepts anything other than Zero & the args[index] item
+	// doesn't start with - then that's a value, ..., and so on
+	// NOTE should leave the index ready at the next item
+
+	// DEBUG
+	var next string
+	if state.index < len(state.args) {
+		next = state.args[state.index]
+	}
+	fmt.Printf("handleOption() %v %#v %#v\n", *option, value, next)
+	// END DEBUG
+
+	return nil
+}
+*/
 
 func (me *Parser) maybeAddVersionOption() {
 	if me.AutoVersionOption {
@@ -187,169 +224,12 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 	return cmdForName
 }
 
-func (me *Parser) checkPositionals(state *parserState) error {
-	size := len(state.args)
-	if size == 0 {
-		if me.PositionalCount == One {
-			return me.handleError(10,
-				"expected one positional argument, got none")
-		} else if me.PositionalCount == OneOrMore {
-			return me.handleError(11,
-				"expected at least one positional argument, got none")
-		}
-	} else if size == 1 && me.PositionalCount == Zero {
-		return me.handleError(12,
-			"no positional arguments expected, got one")
-	} else if size > 1 {
-		if me.PositionalCount == Zero {
-			return me.handleError(13, fmt.Sprintf(
-				"no positional arguments expected, got %d", size))
-		} else if me.PositionalCount == ZeroOrOne {
-			return me.handleError(14, fmt.Sprintf(
-				"expected at most one positional argument, got %d", size))
-		} else if me.PositionalCount == One {
-			return me.handleError(15, fmt.Sprintf(
-				"expected one positional argument, got %d", size))
-		}
-	}
-	me.Positionals = state.args
-	return nil
-}
-
-func (me *Parser) handleLongPrefix(arg string, state *parserState) error {
-	name := strings.TrimPrefix(arg, "--")
-	option, ok := state.optionForLongName[name]
-	if ok { // --option
-		if err := me.handleOption(option, "", state); err != nil {
-			return err
-		}
-	} else {
-		parts := strings.SplitN(name, "=", 2)
-		if len(parts) == 2 { // --option=value
-			option, ok := state.optionForLongName[parts[0]]
-			if ok {
-				if err := me.handleOption(option, parts[1],
-					state); err != nil {
-					return err
-				}
-				return nil
-			}
-		}
-		return me.handleError(20, fmt.Sprintf("unrecognized option %s",
-			arg))
-	}
-	return nil
-}
-
-func (me *Parser) handleShortPrefix(arg string, state *parserState) error {
-	name := strings.TrimPrefix(arg, "-")
-	option, ok := state.optionForShortName[name]
-	if ok { // -o
-		if err := me.handleOption(option, "", state); err != nil {
-			return err
-		}
-	} else {
-		parts := strings.SplitN(name, "=", 2)
-		if len(parts) == 2 { // -a=value or -abc=value
-			flags := []rune(parts[0])
-			if len(flags) == 1 { // -a=value
-				name := string(flags[0])
-				option, ok := state.optionForShortName[name]
-				if ok {
-					if err := me.handleOption(option, parts[1],
-						state); err != nil {
-						return err
-					}
-				}
-			} else { // -abc=value
-				for _, flag := range flags {
-					name := string(flag)
-					option, ok := state.optionForShortName[name]
-					if ok {
-						if err := me.handleOption(option, parts[1],
-							state); err != nil {
-							return err
-						}
-					}
-				}
-			}
-			return nil
-		} else { // -abc or -aValue
-			for _, flag := range name {
-				name = string(flag)
-				option, ok := state.optionForShortName[name]
-				if ok {
-					if err := me.handleOption(option, "",
-						state); err != nil {
-						return err
-					}
-				} else {
-					// TODO handle -aValue case
-					return me.handleError(30,
-						fmt.Sprintf("unrecognized option %s", arg))
-				}
-			}
-		}
-	}
-	return nil
-}
-
-func (me *Parser) handlePossibleSubcommand(arg string,
-	state *parserState) (bool, error) {
-	// is it a subcommand? - only allow one subcommand (excl. main)
-	state.hadSubCommand = true
-	cmd, ok := state.subCommandForName[arg]
-	if ok {
-		state.subcommand = cmd
-		state.optionForLongName, state.optionForShortName =
-			state.subcommand.optionsForNames()
-	} else { // must be positionals from now on
-		if err := me.checkPositionals(state); err != nil {
-			return false, err
-		}
-		return true, nil
-	}
-	return false, nil
-}
-
-func (me *Parser) handleOption(option *Option, value string,
-	state *parserState) error {
-	if option.LongName == "version" {
-		me.OnVersion() // never returns
-		return nil
-	}
-	if option.ValueType == Flag {
-		if value == "" {
-			option.Value = true
-		} else {
-			return me.handleError(40, fmt.Sprintf(
-				"unexpected value for flag %s: %s", option.LongName, value))
-		}
-	}
-
-	// TODO set the option's value & if necessary keep reading args (& inc
-	// index) until next - or --
-	// If the option accepts anything other than Zero & the args[index] item
-	// doesn't start with - then that's a value, ..., and so on
-	// NOTE should leave the index ready at the next item
-
-	// DEBUG
-	var next string
-	if state.index < len(state.args) {
-		next = state.args[state.index]
-	}
-	fmt.Printf("handleOption() %v %#v %#v\n", *option, value, next)
-	// END DEBUG
-
-	return nil
-}
-
-func (me *Parser) OnHelp() {
+func (me *Parser) onHelp() {
 	fmt.Printf("usage: %s TODO", me.AppName)
 	os.Exit(0)
 }
 
-func (me *Parser) OnVersion() {
+func (me *Parser) onVersion() {
 	fmt.Printf("%s v%s", me.AppName, me.AppVersion)
 	os.Exit(0)
 }
@@ -361,4 +241,75 @@ func (me *Parser) handleError(code int, msg string) error {
 		os.Exit(2)
 	}
 	return errors.New(msg)
+}
+
+func (me *Parser) tokenize(args []string) ([]Token, error) {
+	state := tokenState{
+		subcommand:        me.SubCommands[mainSubCommand],
+		subCommandForName: me.getSubCommandsForNames(),
+		hasSubCommands:    len(me.SubCommands) > 1,
+		hadSubCommand:     false,
+	}
+	state.optionForLongName, state.optionForShortName =
+		state.subcommand.optionsForNames()
+	tokens := make([]Token, 0, len(args))
+	for i, arg := range args {
+		if arg == "--" { // --
+			for _, v := range args[i+1:] {
+				tokens = append(tokens, NewValueToken(v))
+			}
+			break
+		}
+		if strings.HasPrefix(arg, "--") { // --option --option=value
+			name := strings.TrimPrefix(arg, "--")
+			parts := strings.SplitN(name, "=", 2)
+			if len(parts) == 2 { // --option=value
+				tokens = append(tokens, NewNameToken(parts[0]))
+				tokens = append(tokens, NewValueToken(parts[1]))
+			} else { // --option
+				tokens = append(tokens, NewNameToken(name))
+			}
+		} else if strings.HasPrefix(arg, "-") {
+			// -a -ab -abcValue -c=value -abc=value
+			text := strings.TrimPrefix(arg, "-")
+			parts := strings.SplitN(text, "=", 2)
+			var pendingValue string
+			if len(parts) == 2 { // -a=value -abc=value
+				text = parts[0]
+				pendingValue = parts[1]
+			}
+			for i, c := range text {
+				name := string(c)
+				option, ok := state.optionForShortName[name]
+				if ok {
+					tokens = append(tokens, NewNameToken(name))
+					if option.ValueType != Flag && i+1 < len(text) {
+						value := text[i+1:] // -aValue -abcValue
+						tokens = append(tokens, NewValueToken(value))
+					}
+				}
+			}
+			if pendingValue != "" {
+				tokens = append(tokens, NewValueToken(pendingValue))
+			}
+		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
+			// is it a subcommand? - only allow one subcommand (excl. main)
+			state.hadSubCommand = true
+			cmd, ok := state.subCommandForName[arg]
+			if ok {
+				state.subcommand = cmd
+				state.optionForLongName, state.optionForShortName =
+					state.subcommand.optionsForNames()
+			} else { // positionals
+				tokens = append(tokens, NewValueToken(arg))
+				for _, v := range args[i+1:] {
+					tokens = append(tokens, NewValueToken(v))
+				}
+				break
+			}
+		} else {
+			tokens = append(tokens, NewValueToken(arg))
+		}
+	}
+	return tokens, nil
 }

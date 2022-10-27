@@ -3,6 +3,8 @@
 
 package garg
 
+import "strconv"
+
 func namesForName(name string) (rune, string) {
 	var shortName rune
 	for _, c := range name {
@@ -12,11 +14,33 @@ func namesForName(name string) (rune, string) {
 	return shortName, name
 }
 
-// TODO provide default function makers for use as validators
+func makeIntRangeValidator(minimum, maximum int) func(string) bool {
+	return func(arg string) bool {
+		i, err := strconv.Atoi(arg)
+		if err != nil {
+			return false
+		}
+		return minimum <= i && i <= maximum
+	}
+}
 
-// TODO see if this will work
-func MakeRangeValidator[V Number](minimum, maximum V) func(V) bool {
-	return func(x V) bool {
-		return minimum <= x && x <= maximum
+func makeRealRangeValidator(minimum, maximum float64) func(string) bool {
+	return func(arg string) bool {
+		r, err := strconv.ParseFloat(arg, 64)
+		if err != nil {
+			return false
+		}
+		return minimum <= r && r <= maximum
+	}
+}
+
+func makeChoiceValidator(choices []string) func(string) bool {
+	return func(arg string) bool {
+		for _, choice := range choices {
+			if arg == choice {
+				return true
+			}
+		}
+		return false
 	}
 }

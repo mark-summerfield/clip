@@ -1,6 +1,6 @@
-garg.go # TODO Int() Real() Str() Strs() Choice()
-option.go # TODO AsInt() AsReal() AsStr() AsStrs()
-subcommand.go # TODO Int() Real() Str() Strs() Choice()
+garg.go
+option.go
+subcommand.go
 util.go
 consts.go
 
@@ -10,3 +10,5 @@ zOld/optarg.go
 zOld/optarg_test.go
 
 st.sh
+
+# vim: syn=yaml

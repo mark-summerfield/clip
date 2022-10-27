@@ -21,9 +21,10 @@ type Option struct {
 	Validator    Validator
 }
 
-func newOption(name, help string) *Option {
+func newOption(name, help string, valueType ValueType) *Option {
 	shortName, longName := namesForName(name)
-	return &Option{LongName: longName, ShortName: shortName, Help: help}
+	return &Option{LongName: longName, ShortName: shortName, Help: help,
+		ValueCount: One, ValueType: valueType}
 }
 
 func (me *Option) AsBool() bool {
@@ -39,7 +40,57 @@ func (me *Option) AsBool() bool {
 	return me.Value.(bool)
 }
 
-// TODO AsT...
+func (me *Option) AsInt() int {
+	if me.ValueType != Int {
+		panic(fmt.Sprintf("AsInt() called on type %s", me.ValueType))
+	}
+	if me.Value == nil {
+		if me.DefaultValue == nil {
+			return 0
+		}
+		return me.DefaultValue.(int)
+	}
+	return me.Value.(int)
+}
+
+func (me *Option) AsReal() float64 {
+	if me.ValueType != Real {
+		panic(fmt.Sprintf("AsReal() called on type %s", me.ValueType))
+	}
+	if me.Value == nil {
+		if me.DefaultValue == nil {
+			return 0.0
+		}
+		return me.DefaultValue.(float64)
+	}
+	return me.Value.(float64)
+}
+
+func (me *Option) AsStr() string {
+	if me.ValueType != Str {
+		panic(fmt.Sprintf("AsStr() called on type %s", me.ValueType))
+	}
+	if me.Value == nil {
+		if me.DefaultValue == nil {
+			return ""
+		}
+		return me.DefaultValue.(string)
+	}
+	return me.Value.(string)
+}
+
+func (me *Option) AsStrs() []string {
+	if me.ValueType != Strs {
+		panic(fmt.Sprintf("AsStrs() called on type %s", me.ValueType))
+	}
+	if me.Value == nil {
+		if me.DefaultValue == nil {
+			return []string{}
+		}
+		return me.DefaultValue.([]string)
+	}
+	return me.Value.([]string)
+}
 
 func (me *Option) Debug(indent int) {
 	tab := strings.Repeat(" ", indent)

@@ -3,17 +3,10 @@
 
 package garg
 
-const MainSubCommand = ""
-const NoShortName = 0
+const mainSubCommand = ""
+const noShortName = 0
 
-// A validator should return whether the given value is acceptable
-type Validator func(any) bool
-
-// TODO provide default function makers for use as validators
-
-type Number interface {
-	int | float64
-}
+type Validator func(string) bool
 
 type ValueType uint8
 

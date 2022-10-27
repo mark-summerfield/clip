@@ -98,10 +98,10 @@ func (me *Parser) ParseLine(line string) error {
 func (me *Parser) ParseArgs(args []string) error {
 	me.maybeAddVersionOption()
 	tokens, err := me.tokenize(args)
-	if err == nil {
-		fmt.Printf("TOKENS for %s: %s\n", args, tokens)
-	} else {
+	if err != nil {
 		return err
+	} else { // TODO delete this else clause
+		fmt.Printf("TOKENS for %s: %s\n", args, tokens)
 	}
 	index := 0
 	for {
@@ -243,7 +243,7 @@ func (me *Parser) handleError(code int, msg string) error {
 	return errors.New(msg)
 }
 
-func (me *Parser) tokenize(args []string) ([]Token, error) {
+func (me *Parser) tokenize(args []string) ([]token, error) {
 	state := tokenState{
 		subcommand:        me.SubCommands[mainSubCommand],
 		subCommandForName: me.getSubCommandsForNames(),
@@ -252,11 +252,12 @@ func (me *Parser) tokenize(args []string) ([]Token, error) {
 	}
 	state.optionForLongName, state.optionForShortName =
 		state.subcommand.optionsForNames()
-	tokens := make([]Token, 0, len(args))
+	tokens := make([]token, 0, len(args))
 	for i, arg := range args {
 		if arg == "--" { // --
+			tokens = append(tokens, newPositionalsFollowToken())
 			for _, v := range args[i+1:] {
-				tokens = append(tokens, NewValueToken(v))
+				tokens = append(tokens, newValueToken(v))
 			}
 			break
 		}
@@ -264,10 +265,10 @@ func (me *Parser) tokenize(args []string) ([]Token, error) {
 			name := strings.TrimPrefix(arg, "--")
 			parts := strings.SplitN(name, "=", 2)
 			if len(parts) == 2 { // --option=value
-				tokens = append(tokens, NewNameToken(parts[0]))
-				tokens = append(tokens, NewValueToken(parts[1]))
+				tokens = append(tokens, newNameToken(parts[0]))
+				tokens = append(tokens, newValueToken(parts[1]))
 			} else { // --option
-				tokens = append(tokens, NewNameToken(name))
+				tokens = append(tokens, newNameToken(name))
 			}
 		} else if strings.HasPrefix(arg, "-") {
 			// -a -ab -abcValue -c=value -abc=value
@@ -282,15 +283,15 @@ func (me *Parser) tokenize(args []string) ([]Token, error) {
 				name := string(c)
 				option, ok := state.optionForShortName[name]
 				if ok {
-					tokens = append(tokens, NewNameToken(name))
+					tokens = append(tokens, newNameToken(name))
 					if option.ValueType != Flag && i+1 < len(text) {
 						value := text[i+1:] // -aValue -abcValue
-						tokens = append(tokens, NewValueToken(value))
+						tokens = append(tokens, newValueToken(value))
 					}
 				}
 			}
 			if pendingValue != "" {
-				tokens = append(tokens, NewValueToken(pendingValue))
+				tokens = append(tokens, newValueToken(pendingValue))
 			}
 		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
 			// is it a subcommand? - only allow one subcommand (excl. main)
@@ -301,14 +302,14 @@ func (me *Parser) tokenize(args []string) ([]Token, error) {
 				state.optionForLongName, state.optionForShortName =
 					state.subcommand.optionsForNames()
 			} else { // positionals
-				tokens = append(tokens, NewValueToken(arg))
+				tokens = append(tokens, newValueToken(arg))
 				for _, v := range args[i+1:] {
-					tokens = append(tokens, NewValueToken(v))
+					tokens = append(tokens, newValueToken(v))
 				}
 				break
 			}
 		} else {
-			tokens = append(tokens, NewValueToken(arg))
+			tokens = append(tokens, newValueToken(arg))
 		}
 	}
 	return tokens, nil

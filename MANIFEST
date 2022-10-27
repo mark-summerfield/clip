@@ -1,4 +1,5 @@
 garg.go
+token.go
 option.go
 subcommand.go
 util.go

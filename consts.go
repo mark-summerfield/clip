@@ -3,8 +3,6 @@
 
 package garg
 
-import "fmt"
-
 const mainSubCommand = ""
 const noShortName = 0
 
@@ -62,36 +60,4 @@ func (me ValueCount) String() string {
 	default:
 		panic("invalid ValueCount")
 	}
-}
-
-type tokenState struct {
-	subcommand         *SubCommand
-	subCommandForName  map[string]*SubCommand
-	optionForLongName  map[string]*Option
-	optionForShortName map[string]*Option
-	hasSubCommands     bool
-	hadSubCommand      bool
-}
-
-type Token struct {
-	text    string
-	isValue bool
-}
-
-func (me Token) String() string {
-	if me.isValue {
-		return fmt.Sprintf("%#v", me.text)
-	}
-	if len(me.text) == 1 {
-		return fmt.Sprintf("-%s", me.text)
-	}
-	return fmt.Sprintf("--%s", me.text)
-}
-
-func NewNameToken(text string) Token {
-	return Token{text: text}
-}
-
-func NewValueToken(text string) Token {
-	return Token{text: text, isValue: true}
 }

@@ -115,7 +115,7 @@ func Test7(t *testing.T) {
 	summaryOpt.ShortName = 'S'
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
-	line := "-sSm=60"
+	line := "-sSm=60 file1.txt file2.dat file3.uxf"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
@@ -152,6 +152,48 @@ func Test8(t *testing.T) {
 	m := maxWidthOpt.AsInt()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
+	}
+}
+
+func Test9(t *testing.T) {
+	parser := NewParser("myapp", "1.0.0")
+	parser.QuitOnError = false // for testing
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.ShortName = 'S'
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000)
+	languageOpt := parser.Strs("language", "lang help")
+	line := "-sSm=60 -l cpp pas xml -- file1.txt file2.dat file3.uxf"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected summary=true, got false")
+	}
+	if !sortByLinesOpt.AsBool() {
+		t.Error("expected sortbylines=true, got false")
+	}
+	m := maxWidthOpt.AsInt()
+	if m != 60 {
+		t.Errorf("expected maxwidth=60, got %d", m)
+	}
+	langs := languageOpt.AsStrs()
+	if len(langs) != 3 {
+		t.Errorf("expected 3 languages, got %d", len(langs))
+	} else {
+		lang := "cpp"
+		if langs[0] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+		lang = "pas"
+		if langs[1] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+		lang = "xml"
+		if langs[2] != lang {
+			t.Errorf("expected language %s", lang)
+		}
 	}
 }
 

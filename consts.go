@@ -61,3 +61,15 @@ func (me ValueCount) String() string {
 		panic("invalid ValueCount")
 	}
 }
+
+type parserState struct {
+	subcommand         *SubCommand
+	subCommandForName  map[string]*SubCommand
+	optionForLongName  map[string]*Option
+	optionForShortName map[string]*Option
+	hasSubCommands     bool
+	hadSubCommand      bool
+	args               []string
+	index              int
+}
+

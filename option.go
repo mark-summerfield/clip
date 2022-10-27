@@ -3,10 +3,7 @@
 
 package garg
 
-import (
-	"fmt"
-	"strings"
-)
+import "fmt"
 
 type Option struct {
 	LongName     string
@@ -90,22 +87,4 @@ func (me *Option) AsStrs() []string {
 		return me.DefaultValue.([]string)
 	}
 	return me.Value.([]string)
-}
-
-func (me *Option) Debug(indent int) {
-	tab := strings.Repeat(" ", indent)
-	fmt.Printf("%sLongName=%s\n", tab, me.LongName)
-	fmt.Printf("%sShortName=%s\n", tab, string(me.ShortName))
-	fmt.Printf("%sHelp=%s\n", tab, me.Help)
-	fmt.Printf("%sRequired=%t\n", tab, me.Required)
-	fmt.Printf("%sValueCount=%s\n", tab, me.ValueCount)
-	fmt.Printf("%sVarName=%s\n", tab, me.VarName)
-	fmt.Printf("%sDefaultValue=%v\n", tab, me.DefaultValue)
-	fmt.Printf("%sValue=%v\n", tab, me.Value)
-	fmt.Printf("%sValueType=%s\n", tab, me.ValueType)
-	if me.Validator == nil {
-		fmt.Printf("%sValidator=nil\n", tab)
-	} else {
-		fmt.Printf("%sValidator=func(any) bool\n", tab)
-	}
 }

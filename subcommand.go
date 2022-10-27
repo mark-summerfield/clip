@@ -3,11 +3,6 @@
 
 package garg
 
-import (
-	"fmt"
-	"strings"
-)
-
 type SubCommand struct {
 	LongName  string
 	ShortName rune
@@ -89,15 +84,4 @@ func (me *SubCommand) optionsForNames() (map[string]*Option,
 		}
 	}
 	return optionForLongName, optionForShortName
-}
-
-func (me *SubCommand) Debug(indent int) {
-	tab := strings.Repeat(" ", indent)
-	fmt.Printf("%sLongName=%s\n", tab, me.LongName)
-	fmt.Printf("%sShortName=%s\n", tab, string(me.ShortName))
-	fmt.Printf("%sHelp=%s\n", tab, me.Help)
-	for i, option := range me.Options {
-		fmt.Printf("%sOption #%d:\n", tab, i)
-		option.Debug(indent + 4)
-	}
 }

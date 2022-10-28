@@ -4,20 +4,25 @@
 package garg
 
 type SubCommand struct {
-	LongName  string
-	ShortName rune
-	Help      string
-	Options   []*Option
+	longName  string
+	shortName rune
+	help      string
+	options   []*Option
 }
 
+// Can't change long name or help after creation
 func newMainSubCommand() *SubCommand {
-	return &SubCommand{LongName: "", ShortName: noShortName, Help: "",
-		Options: make([]*Option, 0)}
+	return &SubCommand{longName: "", shortName: noShortName, help: "",
+		options: make([]*Option, 0)}
 }
 
 func newSubCommand(name, help string) *SubCommand {
-	return &SubCommand{LongName: name, ShortName: noShortName, Help: help,
-		Options: make([]*Option, 0)}
+	return &SubCommand{longName: name, shortName: noShortName, help: help,
+		options: make([]*Option, 0)}
+}
+
+func (me *SubCommand) SetShortName(c rune) {
+	me.shortName = c
 }
 
 func (me *SubCommand) Flag(name, help string) *Option {
@@ -67,15 +72,15 @@ func (me *SubCommand) Strs(name, help string) *Option {
 func (me *SubCommand) newOption(name, help string,
 	valueType ValueType) *Option {
 	option := newOption(name, help, valueType)
-	me.Options = append(me.Options, option)
+	me.options = append(me.options, option)
 	return option
 }
 
 func (me *SubCommand) optionsForNames() (map[string]*Option,
 	map[string]*Option) {
-	optionForLongName := make(map[string]*Option, len(me.Options))
-	optionForShortName := make(map[string]*Option, len(me.Options))
-	for _, option := range me.Options {
+	optionForLongName := make(map[string]*Option, len(me.options))
+	optionForShortName := make(map[string]*Option, len(me.options))
+	for _, option := range me.options {
 		if option.longName != "" {
 			optionForLongName[option.longName] = option
 		}

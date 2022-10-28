@@ -88,8 +88,8 @@ func (me *Parser) Strs(name, help string) *Option {
 
 func (me *Parser) newOption(name, help string, valueType ValueType) *Option {
 	option := newOption(name, help, valueType)
-	me.SubCommands[mainSubCommand].Options = append(
-		me.SubCommands[mainSubCommand].Options, option)
+	me.SubCommands[mainSubCommand].options = append(
+		me.SubCommands[mainSubCommand].options, option)
 	return option
 }
 
@@ -171,7 +171,7 @@ func (me *Parser) addPositional(value string) bool {
 func (me *Parser) prepareHelpAndVersionOptions() {
 	seen_V := false
 	main := me.SubCommands[mainSubCommand]
-	for _, option := range main.Options {
+	for _, option := range main.options {
 		if option.longName == me.HelpName {
 			panic("only auto-generated help is supported")
 		} else if option.longName == me.VersionName {
@@ -317,8 +317,8 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 	for long, command := range me.SubCommands {
 		if long != mainSubCommand {
 			cmdForName[long] = command
-			if command.ShortName != 0 {
-				cmdForName[string(command.ShortName)] = command
+			if command.shortName != 0 {
+				cmdForName[string(command.shortName)] = command
 			}
 		}
 	}

@@ -5,6 +5,7 @@ package garg
 
 import (
 	"fmt"
+	"strconv"
 )
 
 type Option struct {
@@ -14,7 +15,7 @@ type Option struct {
 	Required     bool
 	ValueCount   ValueCount
 	VarName      string // e.g., -o|--outfile FILENAME
-	DefaultValue any
+	DefaultValue any // not valid if ValueType == Strs
 	Value        any
 	ValueType    ValueType
 	Validator    Validator
@@ -113,11 +114,19 @@ func (me *Option) AddValue(value string) error {
 		return fmt.Errorf("flag %s got unexpected value %s", me.LongName,
 			value)
 	case Int:
-		// TODO convert value to appropriate type
-		me.Value = value
+		i, err := strconv.Atoi(value)
+		if err != nil {
+			return fmt.Errorf("option %s expected an int value, got %s",
+				me.LongName, value)
+		}
+		me.Value = i
 	case Real:
-		// TODO convert value to appropriate type
-		me.Value = value
+		r, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return fmt.Errorf("option %s expected a real value, got %s",
+				me.LongName, value)
+		}
+		me.Value = r
 	case Str:
 		me.Value = value
 	case Strs:
@@ -126,7 +135,7 @@ func (me *Option) AddValue(value string) error {
 		}
 		me.Value = append(me.Value.([]string), value)
 	default:
-		panic("invalid ValueType")
+		panic("invalid ValueType #2")
 	}
 	return nil
 }

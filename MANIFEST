@@ -1,6 +1,8 @@
+# TODO tests for invalid no. of positionals
+# TODO additional checks at the end of ParseArgs + commensurate tests
 garg.go
 token.go
-option.go # TODO AddValue
+option.go
 subcommand.go
 util.go
 consts.go

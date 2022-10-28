@@ -106,47 +106,66 @@ func (me *Parser) ParseArgs(args []string) error {
 	tokens, err := me.tokenize(args)
 	if err != nil {
 		return err
-	} else { // TODO delete this else clause
-		fmt.Printf("TOKENS for \"%s\" %s\n", strings.Join(args, " "),
-			tokens)
 	}
 	var currentOption *Option
+	inPositionals := false
 	expect := Zero // ValueCount - how many values we expect to follow opt
 	for _, token := range tokens {
-		if !token.isValue() { // Option
+		if token.positionalsFollow {
+			inPositionals = true
+		}
+		if inPositionals {
+			me.addPositional(token.text)
+		} else if !token.isValue() { // Option
 			currentOption = token.option
 			expect = currentOption.ValueCount
 			if currentOption.ValueType == Flag {
 				currentOption.Value = true
-			} else {
+			} else if currentOption.ValueType != Strs {
 				currentOption.Value = currentOption.DefaultValue
 			}
 		} else { // Value
 			switch expect {
 			case Zero:
-				return me.handleError(20,
-					fmt.Sprintf("unexpected value: %s", token.text))
+				inPositionals = me.addPositional(token.text)
 			case ZeroOrOne:
 				if currentOption.Size() == 1 {
-					return me.handleError(22,
-						fmt.Sprintf("unexpected extra value: %s",
-							token.text))
+					inPositionals = me.addPositional(token.text)
+				} else {
+					currentOption.AddValue(token.text)
 				}
-				currentOption.AddValue(token.text)
-				// TODO
 			case ZeroOrMore:
-				// TODO
+				currentOption.AddValue(token.text)
 			case One:
-				// TODO
+				if currentOption.Size() == 0 {
+					currentOption.AddValue(token.text)
+				} else {
+					inPositionals = me.addPositional(token.text)
+				}
 			case OneOrMore:
-				// TODO
+				currentOption.AddValue(token.text)
 			default:
-				panic("invalid ValueCount")
+				panic("invalid ValueCount #2")
 			}
 		}
 	}
+	if err := me.checkPositionals(); err != nil {
+		return err
+	}
+	// TODO check that options which have OneOrMore have Size() > 0 etc.
+	// error 30...
+
 	// TODO check for absent Required options that don't have a DefaultValue
+	// error 40...
 	return nil
+}
+
+func (me *Parser) addPositional(value string) bool {
+	if me.Positionals == nil {
+		me.Positionals = make([]string, 0, 1)
+	}
+	me.Positionals = append(me.Positionals, value)
+	return true
 }
 
 func (me *Parser) prepareHelpAndVersionOptions() {
@@ -172,8 +191,9 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 	}
 }
 
-// TODO refactor into cases
+// TODO refactor subcommand
 func (me *Parser) tokenize(args []string) ([]token, error) {
+	var err error
 	state := tokenState{
 		subcommand:        me.SubCommands[mainSubCommand],
 		subCommandForName: me.getSubCommandsForNames(),
@@ -201,60 +221,14 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 			break
 		}
 		if strings.HasPrefix(arg, "--") { // --option --option=value
-			name := strings.TrimPrefix(arg, "--")
-			parts := strings.SplitN(name, "=", 2)
-			if len(parts) == 2 { // --option=value
-				name := parts[0]
-				option, ok := state.optionForLongName[name]
-				if ok {
-					tokens = append(tokens, newNameToken(name, option))
-					tokens = append(tokens, newValueToken(parts[1]))
-				} else {
-					return tokens, me.handleError(10, fmt.Sprintf(
-						"unrecognized option --%s", name))
-				}
-			} else { // --option
-				option, ok := state.optionForLongName[name]
-				if ok {
-					tokens = append(tokens, newNameToken(name, option))
-				} else {
-					return tokens, me.handleError(12, fmt.Sprintf(
-						"unrecognized option --%s", name))
-				}
+			tokens, err = me.handleLongOption(arg, tokens, &state)
+			if err != nil {
+				return tokens, err
 			}
 		} else if strings.HasPrefix(arg, "-") {
-			// -a -ab -abcValue -c=value -abc=value
-			text := strings.TrimPrefix(arg, "-")
-			parts := strings.SplitN(text, "=", 2)
-			var pendingValue string
-			if len(parts) == 2 { // -a=value -abc=value
-				text = parts[0]
-				pendingValue = parts[1]
-			}
-			for i, c := range text {
-				name := string(c)
-				option, ok := state.optionForShortName[name]
-				if ok {
-					tokens = append(tokens, newNameToken(name, option))
-					if option.ValueType != Flag && i+1 < len(text) {
-						value := text[i+1:] // -aValue -abcValue
-						tokens = append(tokens, newValueToken(value))
-					}
-				} else if pendingValue == "" {
-					size := len(tokens)
-					rest := text[i:]
-					if size > 0 && rest != tokens[size-1].text {
-						return tokens, me.handleError(14, fmt.Sprintf(
-							"unexpected value %s", rest))
-					}
-					break
-				} else {
-					return tokens, me.handleError(16, fmt.Sprintf(
-						"unrecognized option -%s", name))
-				}
-			}
-			if pendingValue != "" {
-				tokens = append(tokens, newValueToken(pendingValue))
+			tokens, err = me.handleShortOption(arg, tokens, &state)
+			if err != nil {
+				return tokens, err
 			}
 		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
 			// is it a subcommand? - only allow one subcommand (excl. main)
@@ -270,6 +244,70 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 		} else {
 			tokens = append(tokens, newValueToken(arg))
 		}
+	}
+	return tokens, nil
+}
+
+func (me *Parser) handleLongOption(arg string, tokens []token,
+	state *tokenState) ([]token, error) {
+	name := strings.TrimPrefix(arg, "--")
+	parts := strings.SplitN(name, "=", 2)
+	if len(parts) == 2 { // --option=value
+		name := parts[0]
+		option, ok := state.optionForLongName[name]
+		if ok {
+			tokens = append(tokens, newNameToken(name, option))
+			tokens = append(tokens, newValueToken(parts[1]))
+		} else {
+			return tokens, me.handleError(10, fmt.Sprintf(
+				"unrecognized option --%s", name))
+		}
+	} else { // --option
+		option, ok := state.optionForLongName[name]
+		if ok {
+			tokens = append(tokens, newNameToken(name, option))
+		} else {
+			return tokens, me.handleError(12, fmt.Sprintf(
+				"unrecognized option --%s", name))
+		}
+	}
+	return tokens, nil
+}
+
+func (me *Parser) handleShortOption(arg string, tokens []token,
+	state *tokenState) ([]token, error) {
+	// -a -ab -abcValue -c=value -abc=value
+	text := strings.TrimPrefix(arg, "-")
+	parts := strings.SplitN(text, "=", 2)
+	var pendingValue string
+	if len(parts) == 2 { // -a=value -abc=value
+		text = parts[0]
+		pendingValue = parts[1]
+	}
+	for i, c := range text {
+		name := string(c)
+		option, ok := state.optionForShortName[name]
+		if ok {
+			tokens = append(tokens, newNameToken(name, option))
+			if option.ValueType != Flag && i+1 < len(text) {
+				value := text[i+1:] // -aValue -abcValue
+				tokens = append(tokens, newValueToken(value))
+			}
+		} else if pendingValue == "" {
+			size := len(tokens)
+			rest := text[i:]
+			if size > 0 && rest != tokens[size-1].text {
+				return tokens, me.handleError(14, fmt.Sprintf(
+					"unexpected value %s", rest))
+			}
+			break
+		} else {
+			return tokens, me.handleError(16, fmt.Sprintf(
+				"unrecognized option -%s", name))
+		}
+	}
+	if pendingValue != "" {
+		tokens = append(tokens, newValueToken(pendingValue))
 	}
 	return tokens, nil
 }
@@ -297,6 +335,42 @@ func (me *Parser) onVersion() {
 	os.Exit(0)
 }
 
+func (me *Parser) checkPositionals() error {
+	size := len(me.Positionals)
+	switch me.PositionalCount {
+	case Zero:
+		if size > 0 {
+			return me.handleError(20,
+				fmt.Sprintf("expected no positional arguments, got %d",
+					size))
+		}
+	case ZeroOrOne:
+		if size > 1 {
+			return me.handleError(22,
+				fmt.Sprintf(
+					"expected zero or one positional arguments, got %d",
+					size))
+		}
+	case ZeroOrMore: // any size is valid
+	case One:
+		if size != 1 {
+			return me.handleError(24,
+				fmt.Sprintf("expected one positional argument, got %d",
+					size))
+		}
+	case OneOrMore:
+		if size == 0 {
+			return me.handleError(26,
+				fmt.Sprintf(
+					"expected at least one positional arguments, got %d",
+					size))
+		}
+	default:
+		panic("invalid ValueCount #3")
+	}
+	return nil
+}
+
 func (me *Parser) handleError(code int, msg string) error {
 	msg = fmt.Sprintf("error #%d: %s", code, msg)
 	if me.QuitOnError {
@@ -305,68 +379,3 @@ func (me *Parser) handleError(code int, msg string) error {
 	}
 	return errors.New(msg)
 }
-
-/* TODO
-func (me *Parser) checkPositionals(state *parserState) error {
-	size := len(state.args)
-	if size == 0 {
-		if me.PositionalCount == One {
-			return me.handleError(10,
-				"expected one positional argument, got none")
-		} else if me.PositionalCount == OneOrMore {
-			return me.handleError(11,
-				"expected at least one positional argument, got none")
-		}
-	} else if size == 1 && me.PositionalCount == Zero {
-		return me.handleError(12,
-			"no positional arguments expected, got one")
-	} else if size > 1 {
-		if me.PositionalCount == Zero {
-			return me.handleError(13, fmt.Sprintf(
-				"no positional arguments expected, got %d", size))
-		} else if me.PositionalCount == ZeroOrOne {
-			return me.handleError(14, fmt.Sprintf(
-				"expected at most one positional argument, got %d", size))
-		} else if me.PositionalCount == One {
-			return me.handleError(15, fmt.Sprintf(
-				"expected one positional argument, got %d", size))
-		}
-	}
-	me.Positionals = state.args
-	return nil
-}
-*/
-
-/* TODO
-func (me *Parser) handleOption(option *Option, value string,
-	state *parserState) error {
-	if option.LongName == "version" {
-		me.onVersion() // never returns
-		return nil
-	}
-	if option.ValueType == Flag {
-		if value == "" {
-			option.Value = true
-		} else {
-			return me.handleError(40, fmt.Sprintf(
-				"unexpected value for flag %s: %s", option.LongName, value))
-		}
-	}
-
-	// TODO set the option's value & if necessary keep reading args (& inc
-	// index) until next - or --
-	// If the option accepts anything other than Zero & the args[index] item
-	// doesn't start with - then that's a value, ..., and so on
-	// NOTE should leave the index ready at the next item
-
-	// DEBUG
-	var next string
-	if state.index < len(state.args) {
-		next = state.args[state.index]
-	}
-	fmt.Printf("handleOption() %v %#v %#v\n", *option, value, next)
-	// END DEBUG
-
-	return nil
-}
-*/

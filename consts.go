@@ -31,7 +31,7 @@ func (me ValueType) String() string {
 	case Strs:
 		return "[]string"
 	default:
-		panic("invalid ValueType")
+		panic("invalid ValueType #1")
 	}
 }
 
@@ -58,6 +58,6 @@ func (me ValueCount) String() string {
 	case OneOrMore:
 		return "OneOrMore"
 	default:
-		panic("invalid ValueCount")
+		panic("invalid ValueCount #1")
 	}
 }

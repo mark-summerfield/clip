@@ -44,7 +44,7 @@ func (me *Parser) SubCommand(name, help string) *SubCommand {
 
 func (me *Parser) Flag(name, help string) *Option {
 	option := me.newOption(name, help, Flag)
-	option.ValueCount = Zero
+	option.valueCount = Zero
 	return option
 }
 
@@ -55,7 +55,7 @@ func (me *Parser) Int(name, help string) *Option {
 func (me *Parser) IntInRange(name, help string,
 	minimum, maximum int) *Option {
 	option := me.newOption(name, help, Int)
-	option.Validator = makeIntRangeValidator(minimum, maximum)
+	option.validator = makeIntRangeValidator(minimum, maximum)
 	return option
 }
 
@@ -66,7 +66,7 @@ func (me *Parser) Real(name, help string) *Option {
 func (me *Parser) RealInRange(name, help string,
 	minimum, maximum float64) *Option {
 	option := me.newOption(name, help, Real)
-	option.Validator = makeRealRangeValidator(minimum, maximum)
+	option.validator = makeRealRangeValidator(minimum, maximum)
 	return option
 }
 
@@ -76,13 +76,13 @@ func (me *Parser) Str(name, help string) *Option {
 
 func (me *Parser) Choice(name, help string, choices []string) *Option {
 	option := me.newOption(name, help, Str)
-	option.Validator = makeChoiceValidator(choices)
+	option.validator = makeChoiceValidator(choices)
 	return option
 }
 
 func (me *Parser) Strs(name, help string) *Option {
 	option := me.newOption(name, help, Strs)
-	option.ValueCount = OneOrMore
+	option.valueCount = OneOrMore
 	return option
 }
 
@@ -118,11 +118,11 @@ func (me *Parser) ParseArgs(args []string) error {
 			me.addPositional(token.text)
 		} else if !token.isValue() { // Option
 			currentOption = token.option
-			expect = currentOption.ValueCount
-			if currentOption.ValueType == Flag {
-				currentOption.Value = true
-			} else if currentOption.ValueType != Strs {
-				currentOption.Value = currentOption.DefaultValue
+			expect = currentOption.valueCount
+			if currentOption.valueType == Flag {
+				currentOption.value = true
+			} else if currentOption.valueType != Strs {
+				currentOption.value = currentOption.defaultValue
 			}
 		} else { // Value
 			switch expect {
@@ -172,17 +172,17 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 	seen_V := false
 	main := me.SubCommands[mainSubCommand]
 	for _, option := range main.Options {
-		if option.LongName == me.HelpName {
+		if option.longName == me.HelpName {
 			panic("only auto-generated help is supported")
-		} else if option.LongName == me.VersionName {
+		} else if option.longName == me.VersionName {
 			panic("only auto-generated version is supported")
 		}
-		if me.use_h_for_help && option.ShortName == 'h' {
+		if me.use_h_for_help && option.shortName == 'h' {
 			me.use_h_for_help = false
 		}
-		if option.ShortName == 'v' {
+		if option.shortName == 'v' {
 			me.use_v_for_version = false
-		} else if option.ShortName == 'V' {
+		} else if option.shortName == 'V' {
 			seen_V = true
 		}
 	}
@@ -289,7 +289,7 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 		option, ok := state.optionForShortName[name]
 		if ok {
 			tokens = append(tokens, newNameToken(name, option))
-			if option.ValueType != Flag && i+1 < len(text) {
+			if option.valueType != Flag && i+1 < len(text) {
 				value := text[i+1:] // -aValue -abcValue
 				tokens = append(tokens, newValueToken(value))
 			}

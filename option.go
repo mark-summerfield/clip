@@ -9,131 +9,161 @@ import (
 )
 
 type Option struct {
-	LongName     string
-	ShortName    rune
-	Help         string
-	Required     bool
-	ValueCount   ValueCount
-	VarName      string // e.g., -o|--outfile FILENAME
-	DefaultValue any    // not valid if ValueType == Strs
-	Value        any
-	ValueType    ValueType
-	Validator    Validator
+	longName     string
+	shortName    rune
+	help         string
+	required     bool
+	valueCount   ValueCount
+	varName      string // e.g., -o|--outfile FILENAME
+	defaultValue any    // not valid if ValueType == Strs
+	value        any
+	valueType    ValueType
+	validator    Validator
 }
 
+// Can't change long name, help, or valueType after creation
 func newOption(name, help string, valueType ValueType) *Option {
 	shortName, longName := namesForName(name)
-	return &Option{LongName: longName, ShortName: shortName, Help: help,
-		ValueCount: One, ValueType: valueType}
+	return &Option{longName: longName, shortName: shortName, help: help,
+		valueCount: One, valueType: valueType}
+}
+
+func (me *Option) SetShortName(c rune) {
+	me.shortName = c
+}
+
+func (me *Option) SetRequired() {
+	me.required = true
+}
+
+func (me *Option) SetVarName(name string) {
+	me.varName = name
+}
+
+func (me *Option) SetDefaultValue(dv any) {
+	if me.valueType == Flag {
+		panic("can't set a default value for a flag")
+	}
+	if me.valueType == Strs {
+		panic("can't set a default value for a string list")
+	}
+	me.defaultValue = dv
+}
+
+func (me *Option) SetValidator(vf Validator) {
+	if me.valueType == Flag {
+		panic("can't set a validator for a flag")
+	}
+	me.validator = vf
 }
 
 func (me *Option) AsBool() bool {
-	if me.ValueType != Flag {
-		panic(fmt.Sprintf("AsBool() called on type %s", me.ValueType))
+	if me.valueType != Flag {
+		panic(fmt.Sprintf("AsBool() called on type %s", me.valueType))
 	}
-	if me.Value == nil {
-		if me.DefaultValue == nil {
+	if me.value == nil {
+		if me.defaultValue == nil {
 			return false
 		}
-		return me.DefaultValue.(bool)
+		return me.defaultValue.(bool)
 	}
-	return me.Value.(bool)
+	return me.value.(bool)
 }
 
 func (me *Option) AsInt() int {
-	if me.ValueType != Int {
-		panic(fmt.Sprintf("AsInt() called on type %s", me.ValueType))
+	if me.valueType != Int {
+		panic(fmt.Sprintf("AsInt() called on type %s", me.valueType))
 	}
-	if me.Value == nil {
-		if me.DefaultValue == nil {
+	if me.value == nil {
+		if me.defaultValue == nil {
 			return 0
 		}
-		return me.DefaultValue.(int)
+		return me.defaultValue.(int)
 	}
-	return me.Value.(int)
+	return me.value.(int)
 }
 
 func (me *Option) AsReal() float64 {
-	if me.ValueType != Real {
-		panic(fmt.Sprintf("AsReal() called on type %s", me.ValueType))
+	if me.valueType != Real {
+		panic(fmt.Sprintf("AsReal() called on type %s", me.valueType))
 	}
-	if me.Value == nil {
-		if me.DefaultValue == nil {
+	if me.value == nil {
+		if me.defaultValue == nil {
 			return 0.0
 		}
-		return me.DefaultValue.(float64)
+		return me.defaultValue.(float64)
 	}
-	return me.Value.(float64)
+	return me.value.(float64)
 }
 
 func (me *Option) AsStr() string {
-	if me.ValueType != Str {
-		panic(fmt.Sprintf("AsStr() called on type %s", me.ValueType))
+	if me.valueType != Str {
+		panic(fmt.Sprintf("AsStr() called on type %s", me.valueType))
 	}
-	if me.Value == nil {
-		if me.DefaultValue == nil {
+	if me.value == nil {
+		if me.defaultValue == nil {
 			return ""
 		}
-		return me.DefaultValue.(string)
+		return me.defaultValue.(string)
 	}
-	return me.Value.(string)
+	return me.value.(string)
 }
 
 func (me *Option) AsStrs() []string {
-	if me.ValueType != Strs {
-		panic(fmt.Sprintf("AsStrs() called on type %s", me.ValueType))
+	if me.valueType != Strs {
+		panic(fmt.Sprintf("AsStrs() called on type %s", me.valueType))
 	}
-	if me.Value == nil {
-		if me.DefaultValue == nil {
+	if me.value == nil {
+		if me.defaultValue == nil {
 			return []string{}
 		}
-		return me.DefaultValue.([]string)
+		return me.defaultValue.([]string)
 	}
-	return me.Value.([]string)
+	return me.value.([]string)
 }
 
 func (me *Option) Size() int {
-	if me.Value == nil || me.ValueType == Flag {
+	if me.value == nil || me.valueType == Flag {
 		return 0
 	}
-	if me.ValueType == Strs {
-		return len(me.Value.([]string))
+	if me.valueType == Strs {
+		return len(me.value.([]string))
 	}
 	return 1
 }
 
 func (me *Option) AddValue(value string) error {
-	if me.Validator != nil {
-		if !me.Validator(value) {
-			return fmt.Errorf("invalid value for %s: %s", me.LongName,
+	if me.validator != nil {
+		if !me.validator(value) {
+			return fmt.Errorf("invalid value for %s: %s", me.longName,
 				value)
 		}
 	}
-	switch me.ValueType {
+	switch me.valueType {
 	case Flag:
-		return fmt.Errorf("flag %s got unexpected value %s", me.LongName,
+		return fmt.Errorf("flag %s got unexpected value %s", me.longName,
 			value)
 	case Int:
 		i, err := strconv.Atoi(value)
 		if err != nil {
 			return fmt.Errorf("option %s expected an int value, got %s",
-				me.LongName, value)
+				me.longName, value)
 		}
-		me.Value = i
+		me.value = i
 	case Real:
 		r, err := strconv.ParseFloat(value, 64)
 		if err != nil {
 			return fmt.Errorf("option %s expected a real value, got %s",
-				me.LongName, value)
+				me.longName, value)
 		}
-		me.Value = r
+		me.value = r
 	case Str:
-		me.Value = value
+		me.value = value
 	case Strs:
-		if me.Value == nil {
-			me.Value = make([]string, 0, 1)
+		if me.value == nil {
+			me.value = make([]string, 0, 1)
 		}
-		me.Value = append(me.Value.([]string), value)
+		me.value = append(me.value.([]string), value)
 	default:
 		panic("invalid ValueType #2")
 	}

@@ -13,7 +13,7 @@ func Test1(t *testing.T) {
 	parser := NewParser("myapp", "1.0.0")
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -27,7 +27,7 @@ func Test2(t *testing.T) {
 	parser := NewParser("myapp", "1.0.0")
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	line := "-S"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -41,7 +41,7 @@ func Test3(t *testing.T) {
 	parser := NewParser("myapp", "1.0.0")
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	line := "--summary"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -55,7 +55,7 @@ func Test4(t *testing.T) {
 	parser := NewParser("myapp", "1.0.0")
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	line := "-S4"
 	e := 14
 	if err := parser.ParseLine(line); err != nil {
@@ -70,7 +70,7 @@ func Test5(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	line := "-sS"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -88,7 +88,7 @@ func Test6(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
 	line := "-sSm60"
@@ -112,7 +112,7 @@ func Test7(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
 	line := "-sSm=60 file1.txt file2.dat file3.uxf"
@@ -136,7 +136,7 @@ func Test8(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
 	line := "-sSm 60"
@@ -160,7 +160,7 @@ func Test9(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
 	languageOpt := parser.Strs("language", "lang help")
@@ -346,12 +346,12 @@ func Test18(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
-	skipLanguageOpt.ShortName = 'L'
+	skipLanguageOpt.SetShortName('L')
 	excludeOpt := parser.Strs("exclude", "exclude help")
 	includeOpt := parser.Strs("include", "include help")
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
 	specialSubCommand := parser.SubCommand("special", "Special help")
@@ -424,12 +424,12 @@ func Test19(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
-	skipLanguageOpt.ShortName = 'L'
+	skipLanguageOpt.SetShortName('L')
 	parser.Strs("exclude", "exclude help")
 	parser.Strs("include", "include help")
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	parser.IntInRange("maxwidth", "max width help", 20, 10000)
 	specialSubCommand := parser.SubCommand("special", "Special help")
 	extraOpt := specialSubCommand.Flag("extra", "extra help")
@@ -459,12 +459,12 @@ func Test20(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
-	skipLanguageOpt.ShortName = 'L'
+	skipLanguageOpt.SetShortName('L')
 	excludeOpt := parser.Strs("exclude", "exclude help")
 	includeOpt := parser.Strs("include", "include help")
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
 	line := "-S -l h red -e zOld t -L d -i peek -m 40 file1.cpp file2.d"
@@ -532,15 +532,15 @@ func Test21(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
-	skipLanguageOpt.ShortName = 'L'
+	skipLanguageOpt.SetShortName('L')
 	excludeOpt := parser.Strs("exclude", "exclude help")
 	includeOpt := parser.Strs("include", "include help")
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.ShortName = 'S'
+	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
-	maxWidthOpt.DefaultValue = 80
+	maxWidthOpt.SetDefaultValue(80)
 	line := "-l h red -e zOld t -L d -i peek -s file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)

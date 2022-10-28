@@ -27,6 +27,7 @@ func (me *SubCommand) SetShortName(c rune) {
 
 func (me *SubCommand) Flag(name, help string) *Option {
 	option := me.newOption(name, help, Flag)
+	option.value = false
 	option.valueCount = Zero
 	return option
 }

@@ -1,7 +1,7 @@
-# TODO bugfix checkValueCounts()
-# TODO additional checks at the end of ParseArgs + commensurate tests
 # TODO Additional ValueTypes: Ints Reals (both with ValueCount OneOrMore)
-# + commensurate tests
+#      & commensurate tests
+# TODO add tests for every error code
+
 garg.go
 token.go
 option.go
@@ -10,9 +10,6 @@ util.go
 consts.go
 
 garg_test.go
-
-zOld/optarg.go
-zOld/optarg_test.go
 
 st.sh
 

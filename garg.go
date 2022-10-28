@@ -44,6 +44,7 @@ func (me *Parser) SubCommand(name, help string) *SubCommand {
 
 func (me *Parser) Flag(name, help string) *Option {
 	option := me.newOption(name, help, Flag)
+	option.value = false
 	option.valueCount = Zero
 	return option
 }
@@ -106,10 +107,6 @@ func (me *Parser) ParseArgs(args []string) error {
 	subcommand, tokens, err := me.tokenize(args)
 	if err != nil {
 		return err
-		/*
-			} else {
-				fmt.Printf("TOKENS: \"%s\" %s\n", strings.Join(args, " "), tokens)
-		*/
 	}
 	var currentOption *Option
 	inPositionals := false
@@ -153,16 +150,10 @@ func (me *Parser) ParseArgs(args []string) error {
 			}
 		}
 	}
-	me.setDefaultsWhereNeeded(subcommand.options)
 	if err := me.checkPositionals(); err != nil {
 		return err
 	}
-	if err := me.checkValueCounts(subcommand.options); err != nil {
-		return err
-	}
-	// TODO check for absent Required options that don't have a DefaultValue
-	// error 40...
-	return nil
+	return me.checkValues(subcommand.options)
 }
 
 func (me *Parser) addPositional(value string) bool {
@@ -196,17 +187,9 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 	}
 }
 
-// TODO refactor subcommand
 func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 	var err error
-	state := tokenState{
-		subcommand:        me.SubCommands[mainSubCommand],
-		subCommandForName: me.getSubCommandsForNames(),
-		hasSubCommands:    len(me.SubCommands) > 1,
-		hadSubCommand:     false,
-	}
-	state.optionForLongName, state.optionForShortName =
-		state.subcommand.optionsForNames()
+	state := me.initializeTokenState()
 	tokens := make([]token, 0, len(args))
 	for i, arg := range args {
 		if arg == me.HelpName || (me.use_h_for_help && arg == "-h") {
@@ -236,21 +219,24 @@ func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 				return state.subcommand, tokens, err
 			}
 		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
-			// is it a subcommand? - only allow one subcommand (excl. main)
-			state.hadSubCommand = true
-			cmd, ok := state.subCommandForName[arg]
-			if ok {
-				state.subcommand = cmd
-				state.optionForLongName, state.optionForShortName =
-					state.subcommand.optionsForNames()
-			} else { // value
-				tokens = append(tokens, newValueToken(arg))
-			}
+			tokens = me.handlePossibleSubcommand(arg, tokens, &state)
 		} else {
 			tokens = append(tokens, newValueToken(arg))
 		}
 	}
 	return state.subcommand, tokens, nil
+}
+
+func (me *Parser) initializeTokenState() tokenState {
+	state := tokenState{
+		subcommand:        me.SubCommands[mainSubCommand],
+		subCommandForName: me.getSubCommandsForNames(),
+		hasSubCommands:    len(me.SubCommands) > 1,
+		hadSubCommand:     false,
+	}
+	state.optionForLongName, state.optionForShortName =
+		state.subcommand.optionsForNames()
+	return state
 }
 
 func (me *Parser) handleLongOption(arg string, tokens []token,
@@ -317,6 +303,21 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 	return tokens, nil
 }
 
+// is it a subcommand? - only allow one subcommand (excl. main)
+func (me *Parser) handlePossibleSubcommand(arg string, tokens []token,
+	state *tokenState) []token {
+	state.hadSubCommand = true
+	cmd, ok := state.subCommandForName[arg]
+	if ok {
+		state.subcommand = cmd
+		state.optionForLongName, state.optionForShortName =
+			state.subcommand.optionsForNames()
+	} else { // value
+		tokens = append(tokens, newValueToken(arg))
+	}
+	return tokens
+}
+
 func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 	cmdForName := make(map[string]*SubCommand, len(me.SubCommands)*2)
 	for long, command := range me.SubCommands {
@@ -331,27 +332,13 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 }
 
 func (me *Parser) onHelp() {
-	fmt.Printf("usage: %s TODO", me.AppName)
+	fmt.Printf("usage: %s TODO", me.AppName) // TODO
 	os.Exit(0)
 }
 
 func (me *Parser) onVersion() {
 	fmt.Printf("%s v%s", me.AppName, me.AppVersion)
 	os.Exit(0)
-}
-
-func (me *Parser) setDefaultsWhereNeeded(options []*Option) {
-	for _, option := range options {
-		if option.value == nil {
-			if option.valueType == Flag {
-				option.value = false
-			} else if option.valueType == Strs {
-				option.value = make([]string, 0)
-			} else if option.defaultValue != nil {
-				option.value = option.defaultValue
-			}
-		}
-	}
 }
 
 func (me *Parser) checkPositionals() error {
@@ -390,8 +377,13 @@ func (me *Parser) checkPositionals() error {
 	return nil
 }
 
-func (me *Parser) checkValueCounts(options []*Option) error {
+func (me *Parser) checkValues(options []*Option) error {
 	for _, option := range options {
+		option.setDefaultIfAppropriate()
+		if option.required && option.value == nil {
+			return me.handleError(30,
+				fmt.Sprintf("expected a value for %s", option.longName))
+		}
 		size := option.Size()
 		switch option.valueCount {
 		case Zero:

@@ -159,3 +159,15 @@ func (me *Option) AddValue(value string) error {
 	}
 	return nil
 }
+
+func (me *Option) setDefaultIfAppropriate() {
+	if me.value == nil {
+		if me.valueType == Flag {
+			me.value = false
+		} else if me.valueType == Strs {
+			me.value = make([]string, 0)
+		} else if me.defaultValue != nil {
+			me.value = me.defaultValue
+		}
+	}
+}

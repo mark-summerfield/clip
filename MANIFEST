@@ -1,4 +1,4 @@
-# TODO tests for invalid no. of positionals
+# TODO bugfix checkValueCounts()
 # TODO additional checks at the end of ParseArgs + commensurate tests
 # TODO Additional ValueTypes: Ints Reals (both with ValueCount OneOrMore)
 # + commensurate tests

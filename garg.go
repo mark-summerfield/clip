@@ -103,9 +103,11 @@ func (me *Parser) ParseLine(line string) error {
 
 func (me *Parser) ParseArgs(args []string) error {
 	me.prepareHelpAndVersionOptions()
-	tokens, err := me.tokenize(args)
+	subcommand, tokens, err := me.tokenize(args)
 	if err != nil {
 		return err
+	} else {
+		fmt.Printf("TOKENS: \"%s\" %s\n", strings.Join(args, " "), tokens)
 	}
 	var currentOption *Option
 	inPositionals := false
@@ -152,6 +154,9 @@ func (me *Parser) ParseArgs(args []string) error {
 	if err := me.checkPositionals(); err != nil {
 		return err
 	}
+	if err := me.checkValueCounts(subcommand.options); err != nil {
+		return err
+	}
 	// TODO check that options which have OneOrMore have Size() > 0 etc.
 	// error 30...
 
@@ -192,7 +197,7 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 }
 
 // TODO refactor subcommand
-func (me *Parser) tokenize(args []string) ([]token, error) {
+func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 	var err error
 	state := tokenState{
 		subcommand:        me.SubCommands[mainSubCommand],
@@ -206,12 +211,12 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 	for i, arg := range args {
 		if arg == me.HelpName || (me.use_h_for_help && arg == "-h") {
 			me.onHelp() // doesn't return
-			return nil, nil
+			return nil, nil, nil
 		}
 		if arg == me.VersionName || (me.use_v_for_version && arg == "-v") ||
 			(me.use_V_for_version && arg == "-V") {
 			me.onVersion() // doesn't return
-			return nil, nil
+			return nil, nil, nil
 		}
 		if arg == "--" { // --
 			tokens = append(tokens, newPositionalsFollowToken())
@@ -223,12 +228,12 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 		if strings.HasPrefix(arg, "--") { // --option --option=value
 			tokens, err = me.handleLongOption(arg, tokens, &state)
 			if err != nil {
-				return tokens, err
+				return state.subcommand, tokens, err
 			}
 		} else if strings.HasPrefix(arg, "-") {
 			tokens, err = me.handleShortOption(arg, tokens, &state)
 			if err != nil {
-				return tokens, err
+				return state.subcommand, tokens, err
 			}
 		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
 			// is it a subcommand? - only allow one subcommand (excl. main)
@@ -245,7 +250,7 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 			tokens = append(tokens, newValueToken(arg))
 		}
 	}
-	return tokens, nil
+	return state.subcommand, tokens, nil
 }
 
 func (me *Parser) handleLongOption(arg string, tokens []token,
@@ -362,11 +367,44 @@ func (me *Parser) checkPositionals() error {
 		if size == 0 {
 			return me.handleError(26,
 				fmt.Sprintf(
-					"expected at least one positional arguments, got %d",
+					"expected at least one positional argument, got %d",
 					size))
 		}
 	default:
 		panic("invalid ValueCount #3")
+	}
+	return nil
+}
+
+func (me *Parser) checkValueCounts(options []*Option) error {
+	for _, option := range options {
+		size := option.Size()
+		switch option.valueCount {
+		case Zero:
+			if option.valueType != Flag {
+				panic("nonflag option with zero ValueCount")
+			}
+		case ZeroOrOne:
+			if size > 1 {
+				return me.handleError(32,
+					fmt.Sprintf("expected zero or one values, got %d",
+						size))
+			}
+		case ZeroOrMore: // any size is valid
+		case One:
+			if size != 1 {
+				return me.handleError(34,
+					fmt.Sprintf("expected exactly one value, got %d", size))
+			}
+		case OneOrMore:
+			if size == 0 {
+				return me.handleError(36,
+					fmt.Sprintf("expected at least one value, got %d",
+						size))
+			}
+		default:
+			panic("invalid ValueCount #4")
+		}
 	}
 	return nil
 }

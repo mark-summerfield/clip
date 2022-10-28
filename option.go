@@ -15,7 +15,7 @@ type Option struct {
 	Required     bool
 	ValueCount   ValueCount
 	VarName      string // e.g., -o|--outfile FILENAME
-	DefaultValue any // not valid if ValueType == Strs
+	DefaultValue any    // not valid if ValueType == Strs
 	Value        any
 	ValueType    ValueType
 	Validator    Validator

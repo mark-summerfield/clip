@@ -3,7 +3,9 @@
 
 package garg
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Option struct {
 	LongName     string
@@ -87,4 +89,44 @@ func (me *Option) AsStrs() []string {
 		return me.DefaultValue.([]string)
 	}
 	return me.Value.([]string)
+}
+
+func (me *Option) Size() int {
+	if me.Value == nil || me.ValueType == Flag {
+		return 0
+	}
+	if me.ValueType == Strs {
+		return len(me.Value.([]string))
+	}
+	return 1
+}
+
+func (me *Option) AddValue(value string) error {
+	if me.Validator != nil {
+		if !me.Validator(value) {
+			return fmt.Errorf("invalid value for %s: %s", me.LongName,
+				value)
+		}
+	}
+	switch me.ValueType {
+	case Flag:
+		return fmt.Errorf("flag %s got unexpected value %s", me.LongName,
+			value)
+	case Int:
+		// TODO convert value to appropriate type
+		me.Value = value
+	case Real:
+		// TODO convert value to appropriate type
+		me.Value = value
+	case Str:
+		me.Value = value
+	case Strs:
+		if me.Value == nil {
+			me.Value = make([]string, 0, 1)
+		}
+		me.Value = append(me.Value.([]string), value)
+	default:
+		panic("invalid ValueType")
+	}
+	return nil
 }

@@ -454,6 +454,153 @@ func Test19(t *testing.T) {
 	}
 }
 
+func Test20(t *testing.T) {
+	parser := NewParser("myapp", "1.0.0")
+	parser.QuitOnError = false // for testing
+	languageOpt := parser.Strs("language", "lang help")
+	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
+	skipLanguageOpt.ShortName = 'L'
+	excludeOpt := parser.Strs("exclude", "exclude help")
+	includeOpt := parser.Strs("include", "include help")
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.ShortName = 'S'
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000)
+	line := "-S -l h red -e zOld t -L d -i peek -m 40 file1.cpp file2.d"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	langs := languageOpt.AsStrs()
+	if len(langs) != 2 {
+		t.Errorf("expected 2 languages, got %d", len(langs))
+	} else {
+		lang := "h"
+		if langs[0] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+		lang = "red"
+		if langs[1] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+	}
+	langs = skipLanguageOpt.AsStrs()
+	if len(langs) != 1 {
+		t.Errorf("expected 1 languages, got %d", len(langs))
+	} else {
+		lang := "d"
+		if langs[0] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+	}
+	exclude := excludeOpt.AsStrs()
+	if len(exclude) != 2 {
+		t.Errorf("expected 2 excludes, got %d", len(langs))
+	} else {
+		excl := "zOld"
+		if exclude[0] != excl {
+			t.Errorf("expected exclude %s", excl)
+		}
+		excl = "t"
+		if exclude[1] != excl {
+			t.Errorf("expected exclude %s", excl)
+		}
+	}
+	include := includeOpt.AsStrs()
+	if len(include) != 1 {
+		t.Errorf("expected 1 includes, got %d", len(langs))
+	} else {
+		incl := "peek"
+		if include[0] != incl {
+			t.Errorf("expected include %s", incl)
+		}
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected summary=true, got false")
+	}
+	if sortByLinesOpt.AsBool() {
+		t.Error("expected sortbylines=false, got true")
+	}
+	m := maxWidthOpt.AsInt()
+	if m != 40 {
+		t.Errorf("expected maxwidth=40, got %d", m)
+	}
+}
+
+func Test21(t *testing.T) {
+	parser := NewParser("myapp", "1.0.0")
+	parser.QuitOnError = false // for testing
+	languageOpt := parser.Strs("language", "lang help")
+	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
+	skipLanguageOpt.ShortName = 'L'
+	excludeOpt := parser.Strs("exclude", "exclude help")
+	includeOpt := parser.Strs("include", "include help")
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.ShortName = 'S'
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000)
+	maxWidthOpt.DefaultValue = 80
+	line := "-l h red -e zOld t -L d -i peek -s file1.cpp file2.d"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	langs := languageOpt.AsStrs()
+	if len(langs) != 2 {
+		t.Errorf("expected 2 languages, got %d", len(langs))
+	} else {
+		lang := "h"
+		if langs[0] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+		lang = "red"
+		if langs[1] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+	}
+	langs = skipLanguageOpt.AsStrs()
+	if len(langs) != 1 {
+		t.Errorf("expected 1 languages, got %d", len(langs))
+	} else {
+		lang := "d"
+		if langs[0] != lang {
+			t.Errorf("expected language %s", lang)
+		}
+	}
+	exclude := excludeOpt.AsStrs()
+	if len(exclude) != 2 {
+		t.Errorf("expected 2 excludes, got %d", len(langs))
+	} else {
+		excl := "zOld"
+		if exclude[0] != excl {
+			t.Errorf("expected exclude %s", excl)
+		}
+		excl = "t"
+		if exclude[1] != excl {
+			t.Errorf("expected exclude %s", excl)
+		}
+	}
+	include := includeOpt.AsStrs()
+	if len(include) != 1 {
+		t.Errorf("expected 1 includes, got %d", len(langs))
+	} else {
+		incl := "peek"
+		if include[0] != incl {
+			t.Errorf("expected include %s", incl)
+		}
+	}
+	if summaryOpt.AsBool() {
+		t.Error("expected summary=false, got true")
+	}
+	if !sortByLinesOpt.AsBool() {
+		t.Error("expected sortbylines=true, got false")
+	}
+	m := maxWidthOpt.AsInt()
+	if m != 80 {
+		t.Errorf("expected maxwidth=80, got %d", m)
+	}
+}
+
 func expectedError(code int, err error, t *testing.T) {
 	rx := regexp.MustCompile(`#(\d+):`)
 	matches := rx.FindStringSubmatch(err.Error())

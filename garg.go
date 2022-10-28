@@ -122,11 +122,27 @@ func (me *Parser) ParseArgs(args []string) error {
 				currentOption.Value = currentOption.DefaultValue
 			}
 		} else { // Value
-			if expect == Zero {
+			switch expect {
+			case Zero:
 				return me.handleError(20,
 					fmt.Sprintf("unexpected value: %s", token.text))
+			case ZeroOrOne:
+				if currentOption.Size() == 1 {
+					return me.handleError(22,
+						fmt.Sprintf("unexpected extra value: %s",
+							token.text))
+				}
+				currentOption.AddValue(token.text)
+				// TODO
+			case ZeroOrMore:
+				// TODO
+			case One:
+				// TODO
+			case OneOrMore:
+				// TODO
+			default:
+				panic("invalid ValueCount")
 			}
-			// TODO
 		}
 	}
 	// TODO check for absent Required options that don't have a DefaultValue

@@ -110,6 +110,7 @@ func (me *Parser) ParseArgs(args []string) error {
 		fmt.Printf("TOKENS for \"%s\" %s\n", strings.Join(args, " "),
 			tokens)
 	}
+	var currentOption *Option
 	expect := Zero // ValueCount - how many values we expect to follow opt
 	index := 0
 	for {
@@ -118,7 +119,14 @@ func (me *Parser) ParseArgs(args []string) error {
 		}
 		token := tokens[index]
 		index++
-		if !token.isValue() { // Name
+		if !token.isValue() { // Option
+			currentOption = token.option
+			expect = currentOption.ValueCount
+			if currentOption.ValueType == Flag {
+				currentOption.Value = true
+			} else {
+				currentOption.Value = currentOption.DefaultValue
+			}
 		} else { // Value
 			if expect == Zero {
 				return me.handleError(20,
@@ -127,6 +135,7 @@ func (me *Parser) ParseArgs(args []string) error {
 		}
 		// TODO
 	}
+	// TODO check for absent Required options that don't have a DefaultValue
 	return nil
 }
 
@@ -153,6 +162,7 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 	}
 }
 
+// TODO refactor into cases
 func (me *Parser) tokenize(args []string) ([]token, error) {
 	state := tokenState{
 		subcommand:        me.SubCommands[mainSubCommand],
@@ -220,8 +230,16 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 						value := text[i+1:] // -aValue -abcValue
 						tokens = append(tokens, newValueToken(value))
 					}
+				} else if pendingValue == "" {
+					size := len(tokens)
+					rest := text[i:]
+					if size > 0 && rest != tokens[size-1].text {
+						return tokens, me.handleError(14, fmt.Sprintf(
+							"unexpected value %s", rest))
+					}
+					break
 				} else {
-					return tokens, me.handleError(14, fmt.Sprintf(
+					return tokens, me.handleError(16, fmt.Sprintf(
 						"unrecognized option -%s", name))
 				}
 			}

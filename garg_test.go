@@ -354,6 +354,7 @@ func Test18(t *testing.T) {
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000)
+	maxWidthOpt.SetDefaultValue(56)
 	specialSubCommand := parser.SubCommand("special", "Special help")
 	extraOpt := specialSubCommand.Flag("extra", "extra help")
 	line := "-sS -l h red -e zOld t -L d -i peek -- file1.cpp file2.d"
@@ -411,8 +412,8 @@ func Test18(t *testing.T) {
 		t.Error("expected sortbylines=true, got false")
 	}
 	m := maxWidthOpt.AsInt()
-	if m != 0 {
-		t.Errorf("expected maxwidth=0, got %d", m)
+	if m != 56 {
+		t.Errorf("expected maxwidth=56, got %d", m)
 	}
 	if extraOpt.AsBool() {
 		t.Error("expected extra=false, got true")

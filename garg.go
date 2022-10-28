@@ -106,8 +106,10 @@ func (me *Parser) ParseArgs(args []string) error {
 	subcommand, tokens, err := me.tokenize(args)
 	if err != nil {
 		return err
-	} else {
-		fmt.Printf("TOKENS: \"%s\" %s\n", strings.Join(args, " "), tokens)
+		/*
+			} else {
+				fmt.Printf("TOKENS: \"%s\" %s\n", strings.Join(args, " "), tokens)
+		*/
 	}
 	var currentOption *Option
 	inPositionals := false
@@ -151,15 +153,13 @@ func (me *Parser) ParseArgs(args []string) error {
 			}
 		}
 	}
+	me.setDefaultsWhereNeeded(subcommand.options)
 	if err := me.checkPositionals(); err != nil {
 		return err
 	}
 	if err := me.checkValueCounts(subcommand.options); err != nil {
 		return err
 	}
-	// TODO check that options which have OneOrMore have Size() > 0 etc.
-	// error 30...
-
 	// TODO check for absent Required options that don't have a DefaultValue
 	// error 40...
 	return nil
@@ -340,6 +340,20 @@ func (me *Parser) onVersion() {
 	os.Exit(0)
 }
 
+func (me *Parser) setDefaultsWhereNeeded(options []*Option) {
+	for _, option := range options {
+		if option.value == nil {
+			if option.valueType == Flag {
+				option.value = false
+			} else if option.valueType == Strs {
+				option.value = make([]string, 0)
+			} else if option.defaultValue != nil {
+				option.value = option.defaultValue
+			}
+		}
+	}
+}
+
 func (me *Parser) checkPositionals() error {
 	size := len(me.Positionals)
 	switch me.PositionalCount {
@@ -382,25 +396,29 @@ func (me *Parser) checkValueCounts(options []*Option) error {
 		switch option.valueCount {
 		case Zero:
 			if option.valueType != Flag {
-				panic("nonflag option with zero ValueCount")
+				panic(fmt.Sprintf("nonflag option %s with zero ValueCount",
+					option.longName))
 			}
 		case ZeroOrOne:
 			if size > 1 {
 				return me.handleError(32,
-					fmt.Sprintf("expected zero or one values, got %d",
-						size))
+					fmt.Sprintf(
+						"expected zero or one values for %s, got %d",
+						option.longName, size))
 			}
 		case ZeroOrMore: // any size is valid
 		case One:
 			if size != 1 {
 				return me.handleError(34,
-					fmt.Sprintf("expected exactly one value, got %d", size))
+					fmt.Sprintf("expected exactly one value for %s, got %d",
+						option.longName, size))
 			}
 		case OneOrMore:
 			if size == 0 {
 				return me.handleError(36,
-					fmt.Sprintf("expected at least one value, got %d",
-						size))
+					fmt.Sprintf(
+						"expected at least one value for %s, got %d",
+						option.longName, size))
 			}
 		default:
 			panic("invalid ValueCount #4")

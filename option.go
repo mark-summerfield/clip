@@ -62,10 +62,8 @@ func (me *Option) AsBool() bool {
 		panic(fmt.Sprintf("AsBool() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		if me.defaultValue == nil {
-			return false
-		}
-		return me.defaultValue.(bool)
+		panic(fmt.Sprintf("AsBool() called on type %s with nil value",
+			me.valueType))
 	}
 	return me.value.(bool)
 }
@@ -75,10 +73,8 @@ func (me *Option) AsInt() int {
 		panic(fmt.Sprintf("AsInt() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		if me.defaultValue == nil {
-			return 0
-		}
-		return me.defaultValue.(int)
+		panic(fmt.Sprintf("AsInt() called on type %s with nil value",
+			me.valueType))
 	}
 	return me.value.(int)
 }
@@ -88,10 +84,8 @@ func (me *Option) AsReal() float64 {
 		panic(fmt.Sprintf("AsReal() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		if me.defaultValue == nil {
-			return 0.0
-		}
-		return me.defaultValue.(float64)
+		panic(fmt.Sprintf("AsReal() called on type %s with nil value",
+			me.valueType))
 	}
 	return me.value.(float64)
 }
@@ -101,10 +95,8 @@ func (me *Option) AsStr() string {
 		panic(fmt.Sprintf("AsStr() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		if me.defaultValue == nil {
-			return ""
-		}
-		return me.defaultValue.(string)
+		panic(fmt.Sprintf("AsStr() called on type %s with nil value",
+			me.valueType))
 	}
 	return me.value.(string)
 }
@@ -114,10 +106,8 @@ func (me *Option) AsStrs() []string {
 		panic(fmt.Sprintf("AsStrs() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		if me.defaultValue == nil {
-			return []string{}
-		}
-		return me.defaultValue.([]string)
+		panic(fmt.Sprintf("AsStrs() called on type %s with nil value",
+			me.valueType))
 	}
 	return me.value.([]string)
 }

@@ -107,7 +107,8 @@ func (me *Parser) ParseArgs(args []string) error {
 	if err != nil {
 		return err
 	} else { // TODO delete this else clause
-		fmt.Printf("TOKENS for %s: %s\n", args, tokens)
+		fmt.Printf("TOKENS for \"%s\" %s\n", strings.Join(args, " "),
+			tokens)
 	}
 	expect := Zero // ValueCount - how many values we expect to follow opt
 	index := 0
@@ -235,12 +236,8 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 				state.subcommand = cmd
 				state.optionForLongName, state.optionForShortName =
 					state.subcommand.optionsForNames()
-			} else { // positionals
+			} else { // value
 				tokens = append(tokens, newValueToken(arg))
-				for _, v := range args[i+1:] {
-					tokens = append(tokens, newValueToken(v))
-				}
-				break
 			}
 		} else {
 			tokens = append(tokens, newValueToken(arg))

@@ -16,15 +16,19 @@ type tokenState struct {
 
 type token struct {
 	text              string
-	isValue           bool
+	option            *Option
 	positionalsFollow bool
+}
+
+func (me *token) isValue() bool {
+	return me.option == nil
 }
 
 func (me token) String() string {
 	if me.positionalsFollow {
-		return fmt.Sprintf("--")
+		return "--"
 	}
-	if me.isValue {
+	if me.isValue() {
 		return fmt.Sprintf("%#v", me.text)
 	}
 	if len(me.text) == 1 {
@@ -33,12 +37,12 @@ func (me token) String() string {
 	return fmt.Sprintf("--%s", me.text)
 }
 
-func newNameToken(text string) token {
-	return token{text: text}
+func newNameToken(text string, option *Option) token {
+	return token{text: text, option: option}
 }
 
 func newValueToken(text string) token {
-	return token{text: text, isValue: true}
+	return token{text: text}
 }
 
 func newPositionalsFollowToken() token {

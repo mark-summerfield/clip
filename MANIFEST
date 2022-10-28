@@ -1,6 +1,10 @@
-# TODO Additional ValueTypes: Ints Reals (both with ValueCount OneOrMore)
-#      & commensurate tests
+# TODO Additional ValueTypes:
+#   - Ints
+#   - Reals
+#   (both with ValueCount OneOrMore)
+#   - commensurate tests
 # TODO add tests for every error code
+# TODO add more tests for subcommands
 
 garg.go
 token.go

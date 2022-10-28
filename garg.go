@@ -288,12 +288,12 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 			size := len(tokens)
 			rest := text[i:]
 			if size > 0 && rest != tokens[size-1].text {
-				return tokens, me.handleError(14, fmt.Sprintf(
+				return tokens, me.handleError(16, fmt.Sprintf(
 					"unexpected value %s", rest))
 			}
 			break
 		} else {
-			return tokens, me.handleError(16, fmt.Sprintf(
+			return tokens, me.handleError(18, fmt.Sprintf(
 				"unrecognized option -%s", name))
 		}
 	}

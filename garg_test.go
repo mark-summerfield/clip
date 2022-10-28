@@ -57,7 +57,7 @@ func Test4(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-S4"
-	e := 14
+	e := 16
 	if err := parser.ParseLine(line); err != nil {
 		expectedError(e, err, t)
 	} else {

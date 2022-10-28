@@ -112,13 +112,7 @@ func (me *Parser) ParseArgs(args []string) error {
 	}
 	var currentOption *Option
 	expect := Zero // ValueCount - how many values we expect to follow opt
-	index := 0
-	for {
-		if index >= len(tokens) {
-			break
-		}
-		token := tokens[index]
-		index++
+	for _, token := range tokens {
 		if !token.isValue() { // Option
 			currentOption = token.option
 			expect = currentOption.ValueCount
@@ -132,8 +126,8 @@ func (me *Parser) ParseArgs(args []string) error {
 				return me.handleError(20,
 					fmt.Sprintf("unexpected value: %s", token.text))
 			}
+			// TODO
 		}
-		// TODO
 	}
 	// TODO check for absent Required options that don't have a DefaultValue
 	return nil

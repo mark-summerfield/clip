@@ -644,8 +644,8 @@ func (me *Parser) handleError(code int, msg string) error {
 func (me *Parser) OnMissing(option *Option) error {
 	if option.shortName != 0 {
 		return me.handleError(0,
-			fmt.Sprintf("option -%s (or --%s) is required",
-				string(option.shortName), option.longName))
+			fmt.Sprintf("option -%c (or --%s) is required",
+				option.shortName, option.longName))
 	}
 	return me.handleError(0, fmt.Sprintf("option --%s is required",
 		option.longName))

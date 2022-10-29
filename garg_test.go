@@ -1050,7 +1050,7 @@ func TestPackageDocFlag2(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr()
 	if outfile != "" {
-		t.Errorf("expected outfile=\"\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"\", got %q", outfile)
 	}
 }
 
@@ -1067,7 +1067,7 @@ func TestPackageDocFlag3(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr()
 	if outfile != "outfile.dat" {
-		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
 }
 
@@ -1084,7 +1084,7 @@ func TestPackageDocFlag4(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr()
 	if outfile != "outfile.dat" {
-		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
 }
 
@@ -1101,7 +1101,7 @@ func TestPackageDocFlag5(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr()
 	if outfile != "outfile.dat" {
-		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
 }
 
@@ -1118,7 +1118,7 @@ func TestPackageDocFlag6(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr()
 	if outfile != "outfile.dat" {
-		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
 }
 
@@ -1135,7 +1135,7 @@ func TestPackageDocFlag7(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr()
 	if outfile != "outfile.dat" {
-		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
 }
 
@@ -1152,7 +1152,7 @@ func TestPackageDocFlag8(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr() // since not given we get the default
 	if outfile != "test.dat" {
-		t.Errorf("expected outfile=\"test.dat\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"test.dat\", got %q", outfile)
 	}
 }
 
@@ -1169,7 +1169,7 @@ func TestPackageDocFlag9(t *testing.T) {
 	}
 	outfile := outfileOpt.AsStr() // since given with no value
 	if outfile != "test.dat" {    // we get the default
-		t.Errorf("expected outfile=\"test.dat\", got \"%s\"", outfile)
+		t.Errorf("expected outfile=\"test.dat\", got %q", outfile)
 	}
 }
 

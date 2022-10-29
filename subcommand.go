@@ -32,35 +32,45 @@ func (me *SubCommand) Flag(name, help string) *Option {
 	return option
 }
 
-func (me *SubCommand) Int(name, help string) *Option {
-	return me.newOption(name, help, Int)
+func (me *SubCommand) Int(name, help string, defaultValue int) *Option {
+	option := me.newOption(name, help, Int)
+	option.defaultValue = defaultValue
+	return option
 }
 
 func (me *SubCommand) IntInRange(name, help string,
-	minimum, maximum int) *Option {
+	minimum, maximum, defaultValue int) *Option {
 	option := me.newOption(name, help, Int)
 	option.validator = makeIntRangeValidator(minimum, maximum)
+	option.defaultValue = defaultValue
 	return option
 }
 
-func (me *SubCommand) Real(name, help string) *Option {
-	return me.newOption(name, help, Real)
+func (me *SubCommand) Real(name, help string, defaultValue float64) *Option {
+	option := me.newOption(name, help, Real)
+	option.defaultValue = defaultValue
+	return option
 }
 
 func (me *SubCommand) RealInRange(name, help string,
-	minimum, maximum float64) *Option {
+	minimum, maximum, defaultValue float64) *Option {
 	option := me.newOption(name, help, Real)
 	option.validator = makeRealRangeValidator(minimum, maximum)
+	option.defaultValue = defaultValue
 	return option
 }
 
-func (me *SubCommand) Str(name, help string) *Option {
-	return me.newOption(name, help, Str)
+func (me *SubCommand) Str(name, help, defaultValue string) *Option {
+	option := me.newOption(name, help, Str)
+	option.defaultValue = defaultValue
+	return option
 }
 
-func (me *SubCommand) Choice(name, help string, choices []string) *Option {
+func (me *SubCommand) Choice(name, help string, choices []string,
+	defaultValue string) *Option {
 	option := me.newOption(name, help, Str)
 	option.validator = makeChoiceValidator(choices)
+	option.defaultValue = defaultValue
 	return option
 }
 

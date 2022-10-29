@@ -138,7 +138,7 @@ func Test006(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "-sSm60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -162,7 +162,7 @@ func Test007(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "-sSm=60 file1.txt file2.dat file3.uxf"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -190,7 +190,7 @@ func Test008(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "-sSm 60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -214,7 +214,7 @@ func Test009(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	languageOpt := parser.Strs("language", "lang help")
 	line := "-sSm=60 -l cpp pas xml -- file1.txt file2.dat file3.uxf"
 	if err := parser.ParseLine(line); err != nil {
@@ -244,7 +244,7 @@ func Test010(t *testing.T) {
 	parser := NewParser()
 	parser.QuitOnError = false // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "-m60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -259,7 +259,7 @@ func Test011(t *testing.T) {
 	parser := NewParser()
 	parser.QuitOnError = false // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "-m=60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -274,7 +274,7 @@ func Test012(t *testing.T) {
 	parser := NewParser()
 	parser.QuitOnError = false // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "--maxwidth 60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -289,7 +289,7 @@ func Test013(t *testing.T) {
 	parser := NewParser()
 	parser.QuitOnError = false // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "--maxwidth=60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -304,9 +304,15 @@ func Test014(t *testing.T) {
 	parser := NewParser()
 	parser.QuitOnError = false // for testing
 	languageOpt := parser.Strs("language", "lang help")
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000, 80)
 	line := "-lcpp -- file1.txt file2.dat file3.uxf"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
+	}
+	m := maxWidthOpt.AsInt()
+	if m != 80 {
+		t.Errorf("expected maxwidth=80, got %d", m)
 	}
 	if e := expectEqualSlice([]string{"cpp"}, languageOpt.AsStrs(),
 		"language"); e != "" {
@@ -384,8 +390,7 @@ func Test018(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(56)
+		10000, 56)
 	specialSubCommand := parser.SubCommand("special", "Special help")
 	extraOpt := specialSubCommand.Flag("extra", "extra help")
 	line := "-sS -l h red -e zOld t -L d -i peek -- file1.cpp file2.d"
@@ -434,11 +439,11 @@ func Test019(t *testing.T) {
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	parser.IntInRange("maxwidth", "max width help", 20, 10000)
+	parser.IntInRange("maxwidth", "max width help", 20, 10000, 80)
 	specialSubCommand := parser.SubCommand("special", "Special help")
 	extraOpt := specialSubCommand.Flag("extra", "extra help")
 	maxWidthOpt := specialSubCommand.IntInRange("maxwidth",
-		"max width help", 20, 10000)
+		"max width help", 20, 10000, 80)
 	line := "special -e -m98 file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -484,7 +489,7 @@ func Test020(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "-S -l h red -e zOld t -L d -i peek -m 40 file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -533,8 +538,7 @@ func Test021(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(80)
+		10000, 80)
 	line := "-l h red -e zOld t -L d -i peek -s file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -583,8 +587,7 @@ func Test022(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(80)
+		10000, 80)
 	line := "-l go h red -e zOld t test -s -L f77 asm -i peek unz"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -624,7 +627,7 @@ func Test023(t *testing.T) {
 	parser := NewParser()
 	parser.QuitOnError = false // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
+		10000, 80)
 	line := "-m60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -639,8 +642,7 @@ func Test024(t *testing.T) {
 	parser := NewParser()
 	parser.QuitOnError = false // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(45)
+		10000, 45)
 	line := "-m70"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -657,8 +659,7 @@ func Test025(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(45)
+		10000, 45)
 	line := "--maxwidth"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -678,8 +679,7 @@ func Test026(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(45)
+		10000, 45)
 	line := "--maxwidth -S"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -698,9 +698,7 @@ func Test027(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(45)
+	parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
 	line := "--maxwidth -s"
 	e := 16
 	if err := parser.ParseLine(line); err != nil {
@@ -718,8 +716,7 @@ func Test028(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000)
-	maxWidthOpt.SetDefault(45)
+		10000, 45)
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -738,8 +735,7 @@ func Test029(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help")
-	scaleOpt.SetDefault(4.5)
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -758,8 +754,7 @@ func Test030(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help")
-	scaleOpt.SetDefault(4.5)
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -778,8 +773,7 @@ func Test031(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help")
-	scaleOpt.SetDefault(4.5)
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss3.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -798,8 +792,7 @@ func Test032(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help")
-	scaleOpt.SetDefault(4.5)
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss 3.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -818,8 +811,7 @@ func Test033(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help")
-	scaleOpt.SetDefault(4.5)
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss -2.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -838,8 +830,7 @@ func Test034(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help")
-	scaleOpt.SetDefault(4.5)
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss-1.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -858,8 +849,7 @@ func Test035(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help")
-	scaleOpt.SetDefault(4.5)
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss88"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -878,8 +868,7 @@ func Test036(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN")
-	verboseOpt.SetDefault(1)
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
 	line := "-Sv"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -898,8 +887,7 @@ func Test037(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN")
-	verboseOpt.SetDefault(1)
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
 	line := "-S"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -917,8 +905,7 @@ func Test038(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN")
-	verboseOpt.SetDefault(1)
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
 	line := "-vS"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -941,8 +928,7 @@ func Test039(t *testing.T) {
 	parser.QuitOnError = false // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN")
-	verboseOpt.SetDefault(1)
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
 	line := "-Sv2"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -957,5 +943,27 @@ func Test039(t *testing.T) {
 		}
 	} else {
 		t.Error("expected verbose=Given")
+	}
+}
+
+func Test040(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	line := "-S"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected true, got false")
+	}
+	if verboseOpt.Given() {
+		t.Error("expected verbose=!Given")
+	}
+	v := verboseOpt.AsInt() // Single valued options always have a default
+	if v != 1 {
+		t.Errorf("expected verbose=1, got %d", v)
 	}
 }

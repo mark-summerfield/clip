@@ -7,38 +7,74 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path"
+	"strconv"
 	"strings"
 )
 
 type Parser struct {
-	AppName           string
-	AppVersion        string
 	QuitOnError       bool
-	SubCommands       map[string]*SubCommand
-	PositionalCount   ValueCount
-	PositionalVarName string
 	Positionals       []string
 	HelpName          string
-	use_h_for_help    bool
 	VersionName       string
+	appName           string
+	appVersion        string
+	subCommands       map[string]*SubCommand
+	positionalCount   ValueCount
+	positionalVarName string
+	use_h_for_help    bool
 	use_v_for_version bool
 	use_V_for_version bool
 }
 
-func NewParser(appname, version string) Parser {
+func NewParser() Parser {
+	appName := "<app>"
+	if len(os.Args) > 0 {
+		appName = path.Base(os.Args[0])
+	}
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommand] = newMainSubCommand()
-	return Parser{AppName: appname, AppVersion: version,
-		QuitOnError: true, SubCommands: subcommands,
-		PositionalCount: ZeroOrMore, PositionalVarName: "FILENAME",
-		HelpName: "help", use_h_for_help: true, VersionName: "version",
-		use_v_for_version: true,
+	return Parser{appName: appName, appVersion: "",
+		QuitOnError: true, subCommands: subcommands,
+		positionalCount: ZeroOrMore, positionalVarName: "FILENAME",
+		HelpName: "help", use_h_for_help: true,
 	}
+}
+
+func (me *Parser) AppName() string {
+	return me.appName
+}
+
+func (me *Parser) SetAppName(name string) {
+	if name == "" {
+		panic("#200: can't have empty appname")
+	}
+	me.appName = name
+}
+
+func (me *Parser) Version() string {
+	return me.appVersion
+}
+
+func (me *Parser) SetVersion(version string) {
+	me.appVersion = version
+	if me.VersionName == "" {
+		me.VersionName = "version"
+		me.use_v_for_version = true
+	}
+}
+
+func (me *Parser) SetPositionalCount(vc ValueCount) {
+	me.positionalCount = vc
+}
+
+func (me *Parser) SetPositionalVarName(name string) {
+	me.positionalVarName = name
 }
 
 func (me *Parser) SubCommand(name, help string) *SubCommand {
 	subcommand := newSubCommand(name, help)
-	me.SubCommands[name] = subcommand
+	me.subCommands[name] = subcommand
 	return subcommand
 }
 
@@ -89,8 +125,8 @@ func (me *Parser) Strs(name, help string) *Option {
 
 func (me *Parser) newOption(name, help string, valueType ValueType) *Option {
 	option := newOption(name, help, valueType)
-	me.SubCommands[mainSubCommand].options = append(
-		me.SubCommands[mainSubCommand].options, option)
+	me.subCommands[mainSubCommand].options = append(
+		me.subCommands[mainSubCommand].options, option)
 	return option
 }
 
@@ -114,16 +150,18 @@ func (me *Parser) ParseArgs(args []string) error {
 	for _, token := range tokens {
 		if token.positionalsFollow {
 			inPositionals = true
-		}
-		if inPositionals {
+		} else if inPositionals {
 			me.addPositional(token.text)
 		} else if !token.isValue() { // Option
+			if currentOption != nil && expect == ZeroOrOne &&
+				currentOption.Size() == 0 &&
+				currentOption.defaultValue != nil {
+				currentOption.value = currentOption.defaultValue
+			}
 			currentOption = token.option
 			expect = currentOption.valueCount
 			if currentOption.valueType == Flag {
 				currentOption.value = true
-			} else if currentOption.valueType != Strs {
-				currentOption.value = currentOption.defaultValue
 			}
 		} else { // Value
 			switch expect {
@@ -146,7 +184,7 @@ func (me *Parser) ParseArgs(args []string) error {
 			case OneOrMore:
 				currentOption.AddValue(token.text)
 			default:
-				panic("invalid ValueCount #2")
+				panic("#210: invalid ValueCount") // Two or Three
 			}
 		}
 	}
@@ -166,12 +204,12 @@ func (me *Parser) addPositional(value string) bool {
 
 func (me *Parser) prepareHelpAndVersionOptions() {
 	seen_V := false
-	main := me.SubCommands[mainSubCommand]
+	main := me.subCommands[mainSubCommand]
 	for _, option := range main.options {
 		if option.longName == me.HelpName {
-			panic("only auto-generated help is supported")
+			panic("#220: only auto-generated help is supported")
 		} else if option.longName == me.VersionName {
-			panic("only auto-generated version is supported")
+			panic("#222: only auto-generated version is supported")
 		}
 		if me.use_h_for_help && option.shortName == 'h' {
 			me.use_h_for_help = false
@@ -182,7 +220,7 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 			seen_V = true
 		}
 	}
-	if !me.use_v_for_version && !seen_V {
+	if me.VersionName != "" && !me.use_v_for_version && !seen_V {
 		me.use_V_for_version = true
 	}
 }
@@ -196,8 +234,9 @@ func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 			me.onHelp() // doesn't return
 			return nil, nil, nil
 		}
-		if arg == me.VersionName || (me.use_v_for_version && arg == "-v") ||
-			(me.use_V_for_version && arg == "-V") {
+		if arg == me.VersionName || (me.VersionName != "" &&
+			(me.use_v_for_version && arg == "-v") ||
+			(me.use_V_for_version && arg == "-V")) {
 			me.onVersion() // doesn't return
 			return nil, nil, nil
 		}
@@ -214,9 +253,13 @@ func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 				return state.subcommand, tokens, err
 			}
 		} else if strings.HasPrefix(arg, "-") {
-			tokens, err = me.handleShortOption(arg, tokens, &state)
-			if err != nil {
-				return state.subcommand, tokens, err
+			if _, err := strconv.ParseFloat(arg, 64); err == nil {
+				tokens = append(tokens, newValueToken(arg)) // -int | -real
+			} else {
+				tokens, err = me.handleShortOption(arg, tokens, &state)
+				if err != nil {
+					return state.subcommand, tokens, err
+				}
 			}
 		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
 			tokens = me.handlePossibleSubcommand(arg, tokens, &state)
@@ -229,9 +272,9 @@ func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 
 func (me *Parser) initializeTokenState() tokenState {
 	state := tokenState{
-		subcommand:        me.SubCommands[mainSubCommand],
+		subcommand:        me.subCommands[mainSubCommand],
 		subCommandForName: me.getSubCommandsForNames(),
-		hasSubCommands:    len(me.SubCommands) > 1,
+		hasSubCommands:    len(me.subCommands) > 1,
 		hadSubCommand:     false,
 	}
 	state.optionForLongName, state.optionForShortName =
@@ -319,8 +362,8 @@ func (me *Parser) handlePossibleSubcommand(arg string, tokens []token,
 }
 
 func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
-	cmdForName := make(map[string]*SubCommand, len(me.SubCommands)*2)
-	for long, command := range me.SubCommands {
+	cmdForName := make(map[string]*SubCommand, len(me.subCommands)*2)
+	for long, command := range me.subCommands {
 		if long != mainSubCommand {
 			cmdForName[long] = command
 			if command.shortName != 0 {
@@ -332,18 +375,18 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 }
 
 func (me *Parser) onHelp() {
-	fmt.Printf("usage: %s TODO", me.AppName) // TODO
+	fmt.Printf("usage: %s TODO", me.appName) // TODO
 	os.Exit(0)
 }
 
 func (me *Parser) onVersion() {
-	fmt.Printf("%s v%s", me.AppName, me.AppVersion)
+	fmt.Printf("%s v%s", me.appName, me.appVersion)
 	os.Exit(0)
 }
 
 func (me *Parser) checkPositionals() error {
 	size := len(me.Positionals)
-	switch me.PositionalCount {
+	switch me.positionalCount {
 	case Zero:
 		if size > 0 {
 			return me.handleError(20,
@@ -352,7 +395,7 @@ func (me *Parser) checkPositionals() error {
 		}
 	case ZeroOrOne:
 		if size > 1 {
-			return me.handleError(22,
+			return me.handleError(21,
 				fmt.Sprintf(
 					"expected zero or one positional arguments, got %d",
 					size))
@@ -360,19 +403,34 @@ func (me *Parser) checkPositionals() error {
 	case ZeroOrMore: // any size is valid
 	case One:
 		if size != 1 {
-			return me.handleError(24,
-				fmt.Sprintf("expected one positional argument, got %d",
+			return me.handleError(22,
+				fmt.Sprintf(
+					"expected exactly one positional argument, got %d",
 					size))
 		}
 	case OneOrMore:
 		if size == 0 {
-			return me.handleError(26,
+			return me.handleError(23,
 				fmt.Sprintf(
 					"expected at least one positional argument, got %d",
 					size))
 		}
+	case Two:
+		if size != 2 {
+			return me.handleError(24,
+				fmt.Sprintf(
+					"expected exactly two positional arguments, got %d",
+					size))
+		}
+	case Three:
+		if size != 3 {
+			return me.handleError(25,
+				fmt.Sprintf(
+					"expected exactly three positional arguments, got %d",
+					size))
+		}
 	default:
-		panic("invalid ValueCount #3")
+		panic("#230: invalid ValueCount")
 	}
 	return nil
 }
@@ -380,15 +438,12 @@ func (me *Parser) checkPositionals() error {
 func (me *Parser) checkValues(options []*Option) error {
 	for _, option := range options {
 		option.setDefaultIfAppropriate()
-		if option.required && option.value == nil {
-			return me.handleError(30,
-				fmt.Sprintf("expected a value for %s", option.longName))
-		}
 		size := option.Size()
 		switch option.valueCount {
 		case Zero:
 			if option.valueType != Flag {
-				panic(fmt.Sprintf("nonflag option %s with zero ValueCount",
+				panic(fmt.Sprintf(
+					"#240: nonflag option %s with zero ValueCount",
 					option.longName))
 			}
 		case ZeroOrOne:
@@ -413,7 +468,7 @@ func (me *Parser) checkValues(options []*Option) error {
 						option.longName, size))
 			}
 		default:
-			panic("invalid ValueCount #4")
+			panic("#242: invalid ValueCount") // Two or Three
 		}
 	}
 	return nil

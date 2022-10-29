@@ -5,14 +5,16 @@ package garg
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 type Option struct {
 	longName     string
 	shortName    rune
 	help         string
-	required     bool
+	given        bool
 	valueCount   ValueCount
 	varName      string // e.g., -o|--outfile FILENAME
 	defaultValue any    // not valid if ValueType == Strs
@@ -23,6 +25,18 @@ type Option struct {
 
 // Can't change long name, help, or valueType after creation
 func newOption(name, help string, valueType ValueType) *Option {
+	if name == "" {
+		panic("#100: can't have an unnamed option")
+	}
+	if strings.HasPrefix(name, "-") {
+		panic(fmt.Sprintf(
+			"#102: can't have an option name that begins with '-', got %s",
+			name))
+	}
+	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
+		panic(fmt.Sprintf("#104: can't have a numeric option name, got %s",
+			name))
+	}
 	shortName, longName := namesForName(name)
 	return &Option{longName: longName, shortName: shortName, help: help,
 		valueCount: One, valueType: valueType}
@@ -32,37 +46,38 @@ func (me *Option) SetShortName(c rune) {
 	me.shortName = c
 }
 
-func (me *Option) SetRequired() {
-	me.required = true
-}
-
 func (me *Option) SetVarName(name string) {
 	me.varName = name
 }
 
-func (me *Option) SetDefaultValue(dv any) {
+func (me *Option) SetDefault(dv any) {
 	if me.valueType == Flag {
-		panic("can't set a default value for a flag")
+		panic("#110: can't set a default value for a flag")
 	}
 	if me.valueType == Strs {
-		panic("can't set a default value for a string list")
+		panic("#112: can't set a default value for a string list")
 	}
+	me.valueCount = ZeroOrOne // if option given with no value, use default
 	me.defaultValue = dv
 }
 
 func (me *Option) SetValidator(vf Validator) {
 	if me.valueType == Flag {
-		panic("can't set a validator for a flag")
+		panic("#120: can't set a validator for a flag")
 	}
 	me.validator = vf
 }
 
+func (me *Option) Given() bool {
+	return me.given
+}
+
 func (me *Option) AsBool() bool {
 	if me.valueType != Flag {
-		panic(fmt.Sprintf("AsBool() called on type %s", me.valueType))
+		panic(fmt.Sprintf("#130: AsBool() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		panic(fmt.Sprintf("AsBool() called on type %s with nil value",
+		panic(fmt.Sprintf("#132: AsBool() called on type %s with nil value",
 			me.valueType))
 	}
 	return me.value.(bool)
@@ -70,10 +85,10 @@ func (me *Option) AsBool() bool {
 
 func (me *Option) AsInt() int {
 	if me.valueType != Int {
-		panic(fmt.Sprintf("AsInt() called on type %s", me.valueType))
+		panic(fmt.Sprintf("#140: AsInt() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		panic(fmt.Sprintf("AsInt() called on type %s with nil value",
+		panic(fmt.Sprintf("#142: AsInt() called on type %s with nil value",
 			me.valueType))
 	}
 	return me.value.(int)
@@ -81,10 +96,10 @@ func (me *Option) AsInt() int {
 
 func (me *Option) AsReal() float64 {
 	if me.valueType != Real {
-		panic(fmt.Sprintf("AsReal() called on type %s", me.valueType))
+		panic(fmt.Sprintf("#150: AsReal() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		panic(fmt.Sprintf("AsReal() called on type %s with nil value",
+		panic(fmt.Sprintf("#152: AsReal() called on type %s with nil value",
 			me.valueType))
 	}
 	return me.value.(float64)
@@ -92,10 +107,10 @@ func (me *Option) AsReal() float64 {
 
 func (me *Option) AsStr() string {
 	if me.valueType != Str {
-		panic(fmt.Sprintf("AsStr() called on type %s", me.valueType))
+		panic(fmt.Sprintf("#160: AsStr() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		panic(fmt.Sprintf("AsStr() called on type %s with nil value",
+		panic(fmt.Sprintf("#162: AsStr() called on type %s with nil value",
 			me.valueType))
 	}
 	return me.value.(string)
@@ -103,11 +118,10 @@ func (me *Option) AsStr() string {
 
 func (me *Option) AsStrs() []string {
 	if me.valueType != Strs {
-		panic(fmt.Sprintf("AsStrs() called on type %s", me.valueType))
+		panic(fmt.Sprintf("#170: AsStrs() called on type %s", me.valueType))
 	}
 	if me.value == nil {
-		panic(fmt.Sprintf("AsStrs() called on type %s with nil value",
-			me.valueType))
+		return nil
 	}
 	return me.value.([]string)
 }
@@ -155,16 +169,14 @@ func (me *Option) AddValue(value string) error {
 		}
 		me.value = append(me.value.([]string), value)
 	default:
-		panic("invalid ValueType #2")
+		panic("#180: invalid ValueType")
 	}
 	return nil
 }
 
 func (me *Option) setDefaultIfAppropriate() {
-	if me.value == nil {
-		if me.valueType == Flag {
-			me.value = false
-		} else if me.valueType == Strs {
+	if me.value == nil { // Flag false default is set in ParseArgs()
+		if me.valueType == Strs {
 			me.value = make([]string, 0)
 		} else if me.defaultValue != nil {
 			me.value = me.defaultValue

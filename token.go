@@ -38,6 +38,7 @@ func (me token) String() string {
 }
 
 func newNameToken(text string, option *Option) token {
+	option.given = true
 	return token{text: text, option: option}
 }
 

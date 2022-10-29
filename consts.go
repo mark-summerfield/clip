@@ -31,17 +31,19 @@ func (me ValueType) String() string {
 	case Strs:
 		return "[]string"
 	default:
-		panic("invalid ValueType #1")
+		panic("#300: invalid ValueType")
 	}
 }
 
 type ValueCount uint8
 
 const (
-	Zero      ValueCount = iota // for flags; for no positionals allowed
-	ZeroOrOne                   // i.e., optional
+	Zero      ValueCount = iota // for flags & for no positionals allowed
+	ZeroOrOne                   // for options with default and positionals
 	ZeroOrMore
 	One
+	Two   // for positionals
+	Three // for positionals
 	OneOrMore
 )
 
@@ -55,9 +57,13 @@ func (me ValueCount) String() string {
 		return "ZeroOrMore"
 	case One:
 		return "One"
+	case Two:
+		return "Two"
+	case Three:
+		return "Three"
 	case OneOrMore:
 		return "OneOrMore"
 	default:
-		panic("invalid ValueCount #1")
+		panic("#310: invalid ValueCount")
 	}
 }

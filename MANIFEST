@@ -3,8 +3,11 @@
 #   - Reals
 #   (both with ValueCount OneOrMore)
 #   - commensurate tests
+# TODO Add tests for all ValueCount's for Positionals
 # TODO add tests for every error code
+# TODO add tests for every panic code
 # TODO add more tests for subcommands
+# TODO document all option forms & the corresponding code (see the end)
 
 garg.go
 token.go
@@ -16,5 +19,25 @@ consts.go
 garg_test.go
 
 st.sh
+
+# TODO doc notes
+#   -f --flag
+#   flagOpt := parser.Flag(...)
+#   ...
+#   flag := flagOpt.AsBool() // true if given; otherwise false
+#
+#   -cN --count=N
+#   countOpt := parser.Int(...) // an int value is required
+#   ...
+#   count := countOpt.AsInt()
+#
+#   -v --verbose -vN --verbose=N
+#   verboseOpt := parser.Int(...)
+#   verboseOpt.SetDefault(1) // this means that the int value is optional
+#   ...
+#   verbose := 0
+#   if verboseOpt.Given() { // if the user actually used -v
+#	verbose = verboseOpt.AsInt() // 1 (i.e., default) if -v; N if -vN
+#   }
 
 # vim: syn=yaml

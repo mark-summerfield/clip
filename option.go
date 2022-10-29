@@ -50,7 +50,7 @@ func (me *Option) SetVarName(name string) {
 	me.varName = name
 }
 
-func (me *Option) SetDefault(dv any) {
+func (me *Option) SetDefault(defaultValue any) {
 	if me.valueType == Flag {
 		panic("#110: can't set a default value for a flag")
 	}
@@ -58,14 +58,14 @@ func (me *Option) SetDefault(dv any) {
 		panic("#112: can't set a default value for a string list")
 	}
 	me.valueCount = ZeroOrOne // if option given with no value, use default
-	me.defaultValue = dv
+	me.defaultValue = defaultValue
 }
 
-func (me *Option) SetValidator(vf Validator) {
+func (me *Option) SetValidator(validator Validator) {
 	if me.valueType == Flag {
 		panic("#120: can't set a validator for a flag")
 	}
-	me.validator = vf
+	me.validator = validator
 }
 
 func (me *Option) Given() bool {
@@ -136,7 +136,7 @@ func (me *Option) Size() int {
 	return 1
 }
 
-func (me *Option) AddValue(value string) error {
+func (me *Option) addValue(value string) error {
 	if me.validator != nil {
 		if !me.validator(value) {
 			return fmt.Errorf("invalid value for %s: %s", me.longName,

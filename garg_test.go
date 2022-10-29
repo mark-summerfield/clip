@@ -952,6 +952,7 @@ func Test040(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	verboseOpt.SetShortName(0)
 	line := "-S"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -965,5 +966,295 @@ func Test040(t *testing.T) {
 	v := verboseOpt.AsInt() // Single valued options always have a default
 	if v != 1 {
 		t.Errorf("expected verbose=1, got %d", v)
+	}
+}
+
+func Test041(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	verboseOpt.SetShortName(0)
+	line := "-S --verbose=3"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected true, got false")
+	}
+	v := verboseOpt.AsInt() // Single valued options always have a default
+	if v != 3 {
+		t.Errorf("expected verbose=3, got %d", v)
+	}
+}
+
+func Test042(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	verboseOpt.SetShortName(0)
+	line := "-S --verbose 3 filename.txt"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if !summaryOpt.AsBool() {
+		t.Error("expected true, got false")
+	}
+	v := verboseOpt.AsInt() // Single valued options always have a default
+	if v != 3 {
+		t.Errorf("expected verbose=3, got %d", v)
+	}
+	if e := expectEqualSlice([]string{"filename.txt"}, parser.Positionals,
+		"positionals"); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestPackageDocFlag1(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt := parser.Flag("verbose", "whether to show more output")
+	parser.ParseLine("")
+	verbose := verboseOpt.AsBool() // verbose == false
+	if verbose {
+		t.Error("expected verbose=false, got true")
+	}
+	verbose = verboseOpt.Given() // verbose == false
+	if verbose {
+		t.Error("expected verbose=false, got true")
+	}
+	parser.ParseLine("-v")
+	verbose = verboseOpt.AsBool() // verbose == true
+	if !verbose {
+		t.Error("expected verbose=true, got false")
+	}
+	verbose = verboseOpt.Given() // verbose == true
+	if !verbose {
+		t.Error("expected verbose=true, got false")
+	}
+}
+
+func TestPackageDocFlag2(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "")
+	parser.ParseLine("")
+	if outfileOpt.Given() {
+		t.Error("expected outfile=!Given")
+	}
+	outfile := outfileOpt.AsStr()
+	if outfile != "" {
+		t.Errorf("expected outfile=\"\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocFlag3(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "")
+	parser.ParseLine("-v -x -c -o outfile.dat")
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.AsStr()
+	if outfile != "outfile.dat" {
+		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocFlag4(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "")
+	parser.ParseLine("-v -x -c -o=outfile.dat")
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.AsStr()
+	if outfile != "outfile.dat" {
+		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocFlag5(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "")
+	parser.ParseLine("-vxcooutfile.dat")
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.AsStr()
+	if outfile != "outfile.dat" {
+		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocFlag6(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "")
+	parser.ParseLine("-vxco outfile.dat")
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.AsStr()
+	if outfile != "outfile.dat" {
+		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocFlag7(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "")
+	parser.ParseLine("-vxco=outfile.dat")
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.AsStr()
+	if outfile != "outfile.dat" {
+		t.Errorf("expected outfile=\"outfile.dat\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocFlag8(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
+	parser.ParseLine("-vxc")
+	if outfileOpt.Given() {
+		t.Error("expected outfile=!Given")
+	}
+	outfile := outfileOpt.AsStr() // since not given we get the default
+	if outfile != "test.dat" {
+		t.Errorf("expected outfile=\"test.dat\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocFlag9(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
+	parser.ParseLine("-vxco")
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.AsStr() // since given with no value
+	if outfile != "test.dat" {    // we get the default
+		t.Errorf("expected outfile=\"test.dat\", got \"%s\"", outfile)
+	}
+}
+
+func TestPackageDocSingleValue(t *testing.T) {
+	parser := NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt := parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("")
+	verbose := 0
+	expected := 1
+	if verboseOpt.Given() {
+		t.Error("expected verbose=!Given")
+	}
+	verbose = verboseOpt.AsInt() // default
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+
+	parser = NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("-v")
+	expected = 1
+	verbose = verboseOpt.AsInt()
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+
+	parser = NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("--verbose")
+	expected = 1
+	verbose = verboseOpt.AsInt()
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+
+	parser = NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("-v1")
+	expected = 1
+	verbose = verboseOpt.AsInt()
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+
+	parser = NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("-v=2")
+	expected = 2
+	verbose = verboseOpt.AsInt()
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+
+	parser = NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("-v 3")
+	expected = 3
+	verbose = verboseOpt.AsInt()
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+
+	parser = NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("--verbose=4")
+	expected = 4
+	verbose = verboseOpt.AsInt()
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+
+	parser = NewParser()
+	parser.QuitOnError = false // for testing
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	parser.ParseLine("--verbose 5")
+	expected = 5
+	verbose = verboseOpt.AsInt()
+	if verbose != expected {
+		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 }

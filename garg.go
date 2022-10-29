@@ -1,6 +1,153 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: GPLv3
 
+// Package garg “gee arg” provides yet another Go command line argument
+// parser.
+//
+// # Overview
+//
+// garg can handle flags, single argument options, multiple argument
+// options, subcommands, and positional options.
+//
+// # Flags
+//
+// A flag is either present or absent.
+//
+// Examples:
+//
+//	myapp -v
+//	myapp --verbose
+//
+// If the flag is present, the option's value is true; otherwise it is
+// false.
+//
+// Flags support short and long names. For example, a flag name of "version"
+// can be set with `--version` or `-v`. If you don't want a short name, or
+// want a different one (e.g., `-V`), use [Option.SetShortName].
+//
+//	parser := NewParser()
+//	verboseOpt := parser.Flag("verbose", "whether to show more output")
+//	parser.ParseLine("")
+//	verbose := verboseOpt.AsBool() // verbose == false
+//	// -or-
+//	verbose = verboseOpt.Given() // verbose == false
+//
+//	parser.ParseLine("-v")
+//	verbose = verboseOpt.AsBool() // verbose == true
+//	// -or-
+//	verbose = verboseOpt.Given() // verbose == true
+//
+// If you want the user to be able to optionally specify how verbose to be
+// then use an Int value option: see [Parser.Int].
+//
+// Multiple flags can be grouped together if their short names are used,
+// e.g., given flags `-v`, `-x`, and `-c`, they can be set individually, or
+// together, i.e., `-v -x -c` or `-vxc`. The last option in such a group may
+// be a single- or multi-value option. For example, if option `o` takes a
+// string argument, we could write any of these:
+//
+//	myapp -v -x -c -o outfile.dat
+//	myapp -v -x -c -o=outfile.dat
+//	myapp -vxcooutfile.dat
+//	myapp -vxco outfile.dat
+//	myapp -vxco=outfile.dat
+//
+// And if we are happy with `-o`'s default value, we can use these:
+//
+//	myapp -v -x -c -o
+//	myapp -v -x -c
+//	myapp -vxco
+//	myapp -vxc
+//
+// All of which set the `v`, `x`, and `c` flags as before and set the `-o`
+// option to its default value.
+//
+// # Single Value Options
+//
+// A single value option is either present—either with a value or without
+// (in which case its default is used)—or absent, in which case its default
+// is its value.
+//
+// Examples:
+//
+//	myapp
+//	myapp -v
+//	myapp --verbose
+//	myapp -v1
+//	myapp -v=2
+//	myapp -v 3
+//	myapp --verbose=4
+//	myapp --verbose 5
+//
+// If the option is absent, the option's value is the default that was set.
+// If the option is present, the option's value is the default if no value
+// is given, otherwise the given value.
+//
+// If you need to distinguish between whether a value was given at all
+// (i.e., between the first two examples, assuming the default was set to
+// 1), then use [Option.Given].
+//
+//	parser := NewParser()
+//	verboseOpt := parser.Int("verbose", "how much output to show", 1)
+//	parser.ParseLine("")
+//	verbose := 0 // assume no verbosity
+//	if verboseOpt.Given() {
+//		verbose = verboseOpt.AsInt()
+//	}
+//
+// Here, verbose == 0 (since we started at 0 and checked whether it was
+// given and it wasn't)
+//
+//	// first two lines as before
+//	parser.ParseLine("-v")
+//	verbose := 0 // assume no verbosity
+//	if verboseOpt.Given() {
+//		verbose = verboseOpt.AsInt()
+//	}
+//
+// Here, verbose == 1 (since it was given with no value, so the default was
+// used for its value)
+//
+//	// first two lines as before
+//	parser.ParseLine("-v2")
+//	verbose := 0 // assume no verbosity
+//	if verboseOpt.Given() {
+//		verbose = verboseOpt.AsInt()
+//	}
+//
+// Here, verbose == 2 (as given)
+//
+// TODO IntInRange eg + test
+// TODO Real eg + test + note RealInRange
+// TODO Choice eg + test
+// TODO Str eg + test
+//
+// # Multi-Value Options TODO text + tests
+//
+// TODO Strs eg + test
+// TODO Ints eg + test
+// TODO Reals eg + test
+//
+// # Setting a Validator # TODO
+//
+// # Post-Parsing Validation TODO test
+//
+// If some post-parsing validation finds invalid data it is possible to
+// treat it as a parser error by calling [Parser.OnError] with a message
+// string.
+//
+// # Required Options TODO tests
+//
+// This is a contradiction in terms, but if we really want to require an
+// option then handle it like this:
+//
+//	parser := NewParser()
+//	countOpt := parser.Int("count", "how many are wanted", 0)
+//	parser.ParseLine("")
+//	if !countOpt.Given() {
+//		parser.OnMissing(countOpt)
+//	}
+//	count = countOpt.AsInt()
 package garg
 
 import (
@@ -182,18 +329,18 @@ func (me *Parser) ParseArgs(args []string) error {
 				if currentOption.Size() == 1 {
 					inPositionals = me.addPositional(token.text)
 				} else {
-					currentOption.AddValue(token.text)
+					currentOption.addValue(token.text)
 				}
 			case ZeroOrMore:
-				currentOption.AddValue(token.text)
+				currentOption.addValue(token.text)
 			case One:
 				if currentOption.Size() == 0 {
-					currentOption.AddValue(token.text)
+					currentOption.addValue(token.text)
 				} else {
 					inPositionals = me.addPositional(token.text)
 				}
 			case OneOrMore:
-				currentOption.AddValue(token.text)
+				currentOption.addValue(token.text)
 			default:
 				panic("#210: invalid ValueCount") // Two or Three
 			}
@@ -492,4 +639,18 @@ func (me *Parser) handleError(code int, msg string) error {
 		os.Exit(2)
 	}
 	return errors.New(msg)
+}
+
+func (me *Parser) OnMissing(option *Option) error {
+	if option.shortName != 0 {
+		return me.handleError(0,
+			fmt.Sprintf("option -%s (or --%s) is required",
+				string(option.shortName), option.longName))
+	}
+	return me.handleError(0, fmt.Sprintf("option --%s is required",
+		option.longName))
+}
+
+func (me *Parser) OnError(msg string) error {
+	return me.handleError(1, msg)
 }

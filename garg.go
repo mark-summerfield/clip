@@ -141,13 +141,13 @@
 // This is a contradiction in terms, but if we really want to require an
 // option then handle it like this:
 //
-//	parser := NewParser()
-//	countOpt := parser.Int("count", "how many are wanted", 0)
+//	parser := NewParser() // below: name, help, minimum, maximum, default
+//	countOpt := parser.IntInRange("count", "how many are wanted", 0, 100, 0)
 //	parser.ParseLine("")
 //	if !countOpt.Given() {
-//		parser.OnMissing(countOpt)
+//		parser.OnMissing(countOpt) // won't return (calls os.Exit)
 //	}
-//	count = countOpt.AsInt()
+//	count := countOpt.AsInt() // if we got here the user set it
 package garg
 
 import (
@@ -160,7 +160,7 @@ import (
 )
 
 type Parser struct {
-	QuitOnError       bool
+	DontExit          bool
 	Positionals       []string
 	HelpName          string
 	VersionName       string
@@ -182,9 +182,9 @@ func NewParser() Parser {
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommand] = newMainSubCommand()
 	return Parser{appName: appName, appVersion: "",
-		QuitOnError: true, subCommands: subcommands,
-		positionalCount: ZeroOrMore, positionalVarName: "FILENAME",
-		HelpName: "help", use_h_for_help: true,
+		subCommands: subcommands, positionalCount: ZeroOrMore,
+		positionalVarName: "FILENAME", HelpName: "help",
+		use_h_for_help: true,
 	}
 }
 
@@ -211,8 +211,8 @@ func (me *Parser) SetVersion(version string) {
 	}
 }
 
-func (me *Parser) SetPositionalCount(vc ValueCount) {
-	me.positionalCount = vc
+func (me *Parser) SetPositionalCount(valueCount ValueCount) {
+	me.positionalCount = valueCount
 }
 
 func (me *Parser) SetPositionalVarName(name string) {
@@ -220,6 +220,9 @@ func (me *Parser) SetPositionalVarName(name string) {
 }
 
 func (me *Parser) SubCommand(name, help string) *SubCommand {
+	if name == "" {
+		panic("#202: can't have empty subcommand name")
+	}
 	subcommand := newSubCommand(name, help)
 	me.subCommands[name] = subcommand
 	return subcommand
@@ -282,6 +285,9 @@ func (me *Parser) Strs(name, help string) *Option {
 
 func (me *Parser) newOption(name, help string,
 	valueType ValueType) *Option {
+	if name == "" {
+		panic("#204: can't have empty option name")
+	}
 	option := newOption(name, help, valueType)
 	me.subCommands[mainSubCommand].options = append(
 		me.subCommands[mainSubCommand].options, option)
@@ -312,7 +318,7 @@ func (me *Parser) ParseArgs(args []string) error {
 			me.addPositional(token.text)
 		} else if !token.isValue() { // Option
 			if currentOption != nil && expect == ZeroOrOne &&
-				currentOption.Size() == 0 &&
+				currentOption.Count() == 0 &&
 				currentOption.defaultValue != nil {
 				currentOption.value = currentOption.defaultValue
 			}
@@ -326,7 +332,7 @@ func (me *Parser) ParseArgs(args []string) error {
 			case Zero:
 				inPositionals = me.addPositional(token.text)
 			case ZeroOrOne:
-				if currentOption.Size() == 1 {
+				if currentOption.Count() == 1 {
 					inPositionals = me.addPositional(token.text)
 				} else {
 					currentOption.addValue(token.text)
@@ -334,7 +340,7 @@ func (me *Parser) ParseArgs(args []string) error {
 			case ZeroOrMore:
 				currentOption.addValue(token.text)
 			case One:
-				if currentOption.Size() == 0 {
+				if currentOption.Count() == 0 {
 					currentOption.addValue(token.text)
 				} else {
 					inPositionals = me.addPositional(token.text)
@@ -386,16 +392,10 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 	var err error
 	state := me.initializeTokenState()
+	helpName, versionName := me.getHelpAndVerboseNames()
 	tokens := make([]token, 0, len(args))
 	for i, arg := range args {
-		if arg == me.HelpName || (me.use_h_for_help && arg == "-h") {
-			me.onHelp() // doesn't return
-			return nil, nil, nil
-		}
-		if arg == me.VersionName || (me.VersionName != "" &&
-			(me.use_v_for_version && arg == "-v") ||
-			(me.use_V_for_version && arg == "-V")) {
-			me.onVersion() // doesn't return
+		if me.handledHelpOrVerbose(arg, helpName, versionName) {
 			return nil, nil, nil
 		}
 		if arg == "--" { // --
@@ -438,6 +438,30 @@ func (me *Parser) initializeTokenState() tokenState {
 	state.optionForLongName, state.optionForShortName =
 		state.subcommand.optionsForNames()
 	return state
+}
+
+func (me *Parser) getHelpAndVerboseNames() (string, string) {
+	helpName := fmt.Sprintf("--%s", me.HelpName)
+	versionName := ""
+	if me.VersionName != "" {
+		versionName = fmt.Sprintf("--%s", me.VersionName)
+	}
+	return helpName, versionName
+}
+
+func (me *Parser) handledHelpOrVerbose(arg, helpName,
+	versionName string) bool {
+	if arg == helpName || (me.use_h_for_help && arg == "-h") {
+		me.onHelp() // doesn't return
+		return true
+	}
+	if arg == versionName || (me.VersionName != "" &&
+		(me.use_v_for_version && arg == "-v") ||
+		(me.use_V_for_version && arg == "-V")) {
+		me.onVersion() // doesn't return
+		return true
+	}
+	return false
 }
 
 func (me *Parser) handleLongOption(arg string, tokens []token,
@@ -486,9 +510,9 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 				tokens = append(tokens, newValueToken(value))
 			}
 		} else if pendingValue == "" {
-			size := len(tokens)
+			last := len(tokens) - 1
 			rest := text[i:]
-			if size > 0 && rest != tokens[size-1].text {
+			if last >= 0 && rest != tokens[last].text {
 				return tokens, me.handleError(16, fmt.Sprintf(
 					"unexpected value %s", rest))
 			}
@@ -534,58 +558,62 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 
 func (me *Parser) onHelp() {
 	fmt.Printf("usage: %s TODO", me.appName) // TODO
-	os.Exit(0)
+	if !me.DontExit {
+		os.Exit(0)
+	}
 }
 
 func (me *Parser) onVersion() {
 	fmt.Printf("%s v%s", me.appName, me.appVersion)
-	os.Exit(0)
+	if !me.DontExit {
+		os.Exit(0)
+	}
 }
 
 func (me *Parser) checkPositionals() error {
-	size := len(me.Positionals)
+	count := len(me.Positionals)
 	switch me.positionalCount {
 	case Zero:
-		if size > 0 {
+		if count > 0 {
 			return me.handleError(20,
 				fmt.Sprintf("expected no positional arguments, got %d",
-					size))
+					count))
 		}
 	case ZeroOrOne:
-		if size > 1 {
+		if count > 1 {
 			return me.handleError(21,
 				fmt.Sprintf(
 					"expected zero or one positional arguments, got %d",
-					size))
+					count))
 		}
-	case ZeroOrMore: // any size is valid
+	case ZeroOrMore: // any count is valid
 	case One:
-		if size != 1 {
+		if count != 1 {
 			return me.handleError(22,
 				fmt.Sprintf(
 					"expected exactly one positional argument, got %d",
-					size))
+					count))
 		}
 	case OneOrMore:
-		if size == 0 {
+		if count == 0 {
 			return me.handleError(23,
 				fmt.Sprintf(
 					"expected at least one positional argument, got %d",
-					size))
+					count))
 		}
 	case Two:
-		if size != 2 {
+		if count != 2 {
 			return me.handleError(24,
 				fmt.Sprintf(
 					"expected exactly two positional arguments, got %d",
-					size))
+					count))
 		}
 	case Three:
-		if size != 3 {
+		if count != 3 {
 			return me.handleError(25,
 				fmt.Sprintf(
 					"expected exactly three positional arguments, got %d",
-					size))
+					count))
 		}
 	default:
 		panic("#230: invalid ValueCount")
@@ -596,7 +624,7 @@ func (me *Parser) checkPositionals() error {
 func (me *Parser) checkValues(options []*Option) error {
 	for _, option := range options {
 		option.setDefaultIfAppropriate()
-		size := option.Size()
+		count := option.Count()
 		switch option.valueCount {
 		case Zero:
 			if option.valueType != Flag {
@@ -605,25 +633,25 @@ func (me *Parser) checkValues(options []*Option) error {
 					option.longName))
 			}
 		case ZeroOrOne:
-			if size > 1 {
+			if count > 1 {
 				return me.handleError(32,
 					fmt.Sprintf(
 						"expected zero or one values for %s, got %d",
-						option.longName, size))
+						option.longName, count))
 			}
-		case ZeroOrMore: // any size is valid
+		case ZeroOrMore: // any count is valid
 		case One:
-			if size != 1 {
+			if count != 1 {
 				return me.handleError(34,
 					fmt.Sprintf("expected exactly one value for %s, got %d",
-						option.longName, size))
+						option.longName, count))
 			}
 		case OneOrMore:
-			if size == 0 {
+			if count == 0 {
 				return me.handleError(36,
 					fmt.Sprintf(
 						"expected at least one value for %s, got %d",
-						option.longName, size))
+						option.longName, count))
 			}
 		default:
 			panic("#242: invalid ValueCount") // Two or Three
@@ -634,7 +662,7 @@ func (me *Parser) checkValues(options []*Option) error {
 
 func (me *Parser) handleError(code int, msg string) error {
 	msg = fmt.Sprintf("error #%d: %s", code, msg)
-	if me.QuitOnError {
+	if !me.DontExit {
 		fmt.Fprintln(os.Stderr, msg)
 		os.Exit(2)
 	}

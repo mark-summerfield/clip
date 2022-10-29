@@ -6,7 +6,7 @@ package garg
 const mainSubCommand = ""
 const noShortName = 0
 
-type Validator func(string) bool
+type Validator func(string) error
 
 type ValueType uint8
 
@@ -38,13 +38,13 @@ func (me ValueType) String() string {
 type ValueCount uint8
 
 const (
-	Zero      ValueCount = iota // for flags & for no positionals allowed
-	ZeroOrOne                   // for options with default and positionals
-	ZeroOrMore
-	One
-	Two   // for positionals
-	Three // for positionals
-	OneOrMore
+	Zero       ValueCount = iota // for flags & for no positionals allowed
+	ZeroOrOne                    // for options with default and positionals
+	ZeroOrMore                   // default for positionals
+	One                          // default for Int, Real, Str
+	Two                          // for positionals
+	Three                        // for positionals
+	OneOrMore                    // default for Strs
 )
 
 func (me ValueCount) String() string {

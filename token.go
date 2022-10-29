@@ -29,7 +29,7 @@ func (me token) String() string {
 		return "--"
 	}
 	if me.isValue() {
-		return fmt.Sprintf("%#v", me.text)
+		return fmt.Sprintf("%q", me.text)
 	}
 	if len(me.text) == 1 {
 		return fmt.Sprintf("-%s", me.text)

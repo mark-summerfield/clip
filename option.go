@@ -47,6 +47,9 @@ func (me *Option) SetShortName(c rune) {
 }
 
 func (me *Option) SetVarName(name string) {
+	if name == "" {
+		panic("#106: can't have an empty varname")
+	}
 	me.varName = name
 }
 
@@ -126,7 +129,7 @@ func (me *Option) AsStrs() []string {
 	return me.value.([]string)
 }
 
-func (me *Option) Size() int {
+func (me *Option) Count() int {
 	if me.value == nil || me.valueType == Flag {
 		return 0
 	}
@@ -138,9 +141,9 @@ func (me *Option) Size() int {
 
 func (me *Option) addValue(value string) error {
 	if me.validator != nil {
-		if !me.validator(value) {
-			return fmt.Errorf("invalid value for %s: %s", me.longName,
-				value)
+		if err := me.validator(value); err != nil {
+			return fmt.Errorf("invalid value of %q for %s: %s", value,
+				me.longName, err)
 		}
 	}
 	switch me.valueType {

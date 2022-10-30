@@ -117,14 +117,8 @@ func (me IntOption) Value() int {
 }
 
 func (me *IntOption) AllowImplicit() {
-	me.valueCount = ZeroOrOne
-}
-
-func (me *IntOption) setDefaultIfAppropriate() {
-	if !me.added && me.valueCount == ZeroOrOne {
-		me.value = me.theDefault
-		me.added = true
-	}
+	me.value = me.theDefault
+	me.added = true
 }
 
 func (me IntOption) Count() int {
@@ -176,14 +170,8 @@ func (me RealOption) Value() float64 {
 }
 
 func (me *RealOption) AllowImplicit() {
-	me.valueCount = ZeroOrOne
-}
-
-func (me *RealOption) setDefaultIfAppropriate() {
-	if !me.added && me.valueCount == ZeroOrOne {
-		me.value = me.theDefault
-		me.added = true
-	}
+	me.value = me.theDefault
+	me.added = true
 }
 
 func (me RealOption) Count() int {
@@ -235,14 +223,8 @@ func (me StrOption) Value() string {
 }
 
 func (me *StrOption) AllowImplicit() {
-	me.valueCount = ZeroOrOne
-}
-
-func (me *StrOption) setDefaultIfAppropriate() {
-	if !me.added && me.valueCount == ZeroOrOne {
-		me.value = me.theDefault
-		me.added = true
-	}
+	me.value = me.theDefault
+	me.added = true
 }
 
 func (me StrOption) Count() int {

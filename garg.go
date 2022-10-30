@@ -650,7 +650,6 @@ func (me *Parser) checkValues(options []Optioner) error {
 }
 
 func (me *Parser) checkValue(option Optioner) error {
-	me.setDefaultIfAppropriate(option)
 	count := option.Count()
 	switch option.ValueCount() {
 	case Zero:
@@ -684,21 +683,6 @@ func (me *Parser) checkValue(option Optioner) error {
 		panic("#602: invalid ValueCount")
 	}
 	return nil
-}
-
-func (me *Parser) setDefaultIfAppropriate(option Optioner) {
-	switch option := option.(type) {
-	case *FlagOption: // already false
-	case *IntOption:
-		option.setDefaultIfAppropriate()
-	case *RealOption:
-		option.setDefaultIfAppropriate()
-	case *StrOption:
-		option.setDefaultIfAppropriate()
-	case *StrsOption: // has no default to set
-	default:
-		panic(fmt.Sprintf("#700: missed type case: %#v %T", option, option))
-	}
 }
 
 func (me *Parser) handleError(code int, msg string) error {

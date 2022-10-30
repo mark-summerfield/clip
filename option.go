@@ -116,6 +116,10 @@ func (me IntOption) Value() int {
 	return me.value
 }
 
+func (me *IntOption) AllowImplicit() {
+	me.valueCount = ZeroOrOne
+}
+
 func (me *IntOption) setDefaultIfAppropriate() {
 	if !me.added {
 		me.value = me.theDefault
@@ -171,6 +175,10 @@ func (me RealOption) Value() float64 {
 	return me.value
 }
 
+func (me *RealOption) AllowImplicit() {
+	me.valueCount = ZeroOrOne
+}
+
 func (me *RealOption) setDefaultIfAppropriate() {
 	if !me.added {
 		me.value = me.theDefault
@@ -224,6 +232,10 @@ func newStrOption(name, help, theDefault string) *StrOption {
 
 func (me StrOption) Value() string {
 	return me.value
+}
+
+func (me *StrOption) AllowImplicit() {
+	me.valueCount = ZeroOrOne
 }
 
 func (me *StrOption) setDefaultIfAppropriate() {

@@ -87,28 +87,29 @@
 // (i.e., between the first two examples, assuming the default was set to
 // 1), then use [Option.Given].
 //
-//	parser := NewParser()
-//	verboseOpt := parser.Int("verbose", "how much output to show", 1)
-//	parser.ParseLine("")
-//	verbose := 0 // assume no verbosity
-//	if verboseOpt.Given() {
-//		verbose = verboseOpt.Value()
-//	}
+//		parser := NewParser()
+//		verboseOpt := parser.Int("verbose", "how much output to show", 1)
+//	 verboseOpt.AllowImplicit() // implicitly use the default so -v → -v1
+//		parser.ParseLine("")
+//		verbose := 0 // assume no verbosity
+//		if verboseOpt.Given() {
+//			verbose = verboseOpt.Value()
+//		}
 //
 // Here, verbose == 0 (since we started at 0 and checked whether it was
 // given and it wasn't)
 //
-//	// first two lines as before
+//	// first three lines as before
 //	parser.ParseLine("-v")
 //	verbose := 0 // assume no verbosity
 //	if verboseOpt.Given() {
 //		verbose = verboseOpt.Value()
 //	}
 //
-// Here, verbose == 1 (since it was given with no value, so the default was
-// used for its value)
+// Here, verbose == 1 (since it was given with no value, but due to
+// AllowImplicit, the default was used for its value)
 //
-//	// first two lines as before
+//	// first three lines as before
 //	parser.ParseLine("-v2")
 //	verbose := 0 // assume no verbosity
 //	if verboseOpt.Given() {

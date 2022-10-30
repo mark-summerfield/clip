@@ -121,7 +121,7 @@ func (me *IntOption) AllowImplicit() {
 }
 
 func (me *IntOption) setDefaultIfAppropriate() {
-	if !me.added {
+	if !me.added && me.valueCount == ZeroOrOne {
 		me.value = me.theDefault
 		me.added = true
 	}
@@ -180,7 +180,7 @@ func (me *RealOption) AllowImplicit() {
 }
 
 func (me *RealOption) setDefaultIfAppropriate() {
-	if !me.added {
+	if !me.added && me.valueCount == ZeroOrOne {
 		me.value = me.theDefault
 		me.added = true
 	}
@@ -239,7 +239,7 @@ func (me *StrOption) AllowImplicit() {
 }
 
 func (me *StrOption) setDefaultIfAppropriate() {
-	if !me.added {
+	if !me.added && me.valueCount == ZeroOrOne {
 		me.value = me.theDefault
 		me.added = true
 	}

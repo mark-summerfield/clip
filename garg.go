@@ -313,7 +313,11 @@ func (me *Parser) ParseArgs(args []string) error {
 		} else if inPositionals {
 			me.addPositional(token.text)
 		} else if !token.isValue() { // Option
-			me.maybeSetToDefault(expect, currentOption)
+			if currentOption != nil {
+				if err = me.checkValue(currentOption); err != nil {
+					return err
+				}
+			}
 			currentOption = token.option
 			expect = currentOption.ValueCount()
 			if option, ok := currentOption.(*FlagOption); ok {
@@ -351,25 +355,6 @@ func (me *Parser) ParseArgs(args []string) error {
 		return err
 	}
 	return me.checkValues(subcommand.options)
-}
-
-func (me *Parser) maybeSetToDefault(expect ValueCount, option Optioner) {
-	if option != nil {
-		defaultValue := option.defaultValue()
-		if expect == ZeroOrOne && option.Count() == 0 &&
-			defaultValue != nil {
-			switch option := option.(type) {
-			case *IntOption:
-				option.setToDefault()
-			case *RealOption:
-				option.setToDefault()
-			case *StrOption:
-				option.setToDefault()
-			default:
-				panic("#210: missed type case")
-			}
-		}
-	}
 }
 
 func (me *Parser) addValue(option Optioner, value string) error {
@@ -657,39 +642,46 @@ func (me *Parser) checkPositionals() error {
 
 func (me *Parser) checkValues(options []Optioner) error {
 	for _, option := range options {
-		me.setDefaultIfAppropriate(option)
-		count := option.Count()
-		switch option.ValueCount() {
-		case Zero:
-			if _, isFlag := option.(*FlagOption); !isFlag {
-				panic(fmt.Sprintf(
-					"#600: nonflag option %s with zero ValueCount",
-					option.LongName()))
-			}
-		case ZeroOrOne:
-			if count > 1 {
-				return me.handleError(32,
-					fmt.Sprintf(
-						"expected zero or one values for %s, got %d",
-						option.LongName(), count))
-			}
-		case ZeroOrMore: // any count is valid
-		case One:
-			if count != 1 {
-				return me.handleError(34,
-					fmt.Sprintf("expected exactly one value for %s, got %d",
-						option.LongName(), count))
-			}
-		case OneOrMore:
-			if count == 0 {
-				return me.handleError(36,
-					fmt.Sprintf(
-						"expected at least one value for %s, got %d",
-						option.LongName(), count))
-			}
-		case Two, Three:
-			panic("#602: invalid ValueCount")
+		if err := me.checkValue(option); err != nil {
+			return err
 		}
+	}
+	return nil
+}
+
+func (me *Parser) checkValue(option Optioner) error {
+	me.setDefaultIfAppropriate(option)
+	count := option.Count()
+	switch option.ValueCount() {
+	case Zero:
+		if _, isFlag := option.(*FlagOption); !isFlag {
+			panic(fmt.Sprintf(
+				"#600: nonflag option %s with zero ValueCount",
+				option.LongName()))
+		}
+	case ZeroOrOne:
+		if count > 1 {
+			return me.handleError(32,
+				fmt.Sprintf(
+					"expected zero or one values for %s, got %d",
+					option.LongName(), count))
+		}
+	case ZeroOrMore: // any count is valid
+	case One:
+		if count != 1 {
+			return me.handleError(34,
+				fmt.Sprintf("expected exactly one value for %s, got %d",
+					option.LongName(), count))
+		}
+	case OneOrMore:
+		if count == 0 {
+			return me.handleError(36,
+				fmt.Sprintf(
+					"expected at least one value for %s, got %d",
+					option.LongName(), count))
+		}
+	case Two, Three:
+		panic("#602: invalid ValueCount")
 	}
 	return nil
 }
@@ -705,7 +697,7 @@ func (me *Parser) setDefaultIfAppropriate(option Optioner) {
 		option.setDefaultIfAppropriate()
 	case *StrsOption: // has no default to set
 	default:
-		panic("#700: missed type case")
+		panic(fmt.Sprintf("#700: missed type case: %#v %T", option, option))
 	}
 }
 

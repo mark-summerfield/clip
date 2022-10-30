@@ -1008,6 +1008,40 @@ func Test042(t *testing.T) {
 	}
 }
 
+func Test043(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	maxWidthOpt := parser.Int("maxwidth", "help", 43)
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	line := "-m -S"
+	e := 16
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
+	}
+}
+
+func Test044(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	maxWidthOpt := parser.Int("maxwidth", "help", 44)
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	line := "--maxwidth -S"
+	e := 16
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
+	}
+}
+
 func TestPackageDocFlag1(t *testing.T) {
 	parser := NewParser()
 	parser.DontExit = true // for testing

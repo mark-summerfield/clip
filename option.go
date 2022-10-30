@@ -16,10 +16,10 @@ type optioner interface {
 	SetShortName(rune)
 	SetVarName(string)
 	SetValidator(Validator)
-	addValue(string) error
+	addValue(string) string
 	wantsValue() bool
 	setGiven()
-	check() error
+	check() string
 }
 
 type commonOption struct {
@@ -90,14 +90,14 @@ func (me FlagOption) wantsValue() bool {
 	return false
 }
 
-func (me FlagOption) check() error {
+func (me FlagOption) check() string {
 	if me.state == HadValue {
 		panic("flag with value logic error")
 	}
-	return nil
+	return ""
 }
-func (me *FlagOption) addValue(value string) error {
-	return fmt.Errorf("flag %s can't accept a value", me.LongName())
+func (me *FlagOption) addValue(value string) string {
+	return fmt.Sprintf("flag %s can't accept a value", me.LongName())
 }
 
 type IntOption struct {
@@ -116,46 +116,42 @@ func newIntOption(name, help string, theDefault int) *IntOption {
 }
 
 func (me IntOption) Value() int {
-	switch me.state {
-	case NotGiven:
-		return me.theDefault
-	default:
+	if me.state == HadValue {
 		return me.value
 	}
+	return me.theDefault
 }
 
 func (me IntOption) wantsValue() bool {
-	if me.state == Given {
-		return true
-	}
-	return false
+	return me.state == Given
 }
 
-func (me IntOption) check() error {
+func (me IntOption) check() string {
 	if me.state == Given {
 		if me.allowImplicit {
-			return nil
+			return ""
 		} else {
-			return fmt.Errorf("expected exactly one value for %s, got none",
+			return fmt.Sprintf(
+				"expected exactly one value for %s, got none",
 				me.LongName())
 		}
 	}
-	return nil
+	return ""
 }
 
 func (me *IntOption) AllowImplicit() {
 	me.allowImplicit = true
 }
 
-func (me *IntOption) addValue(value string) error {
+func (me *IntOption) addValue(value string) string {
 	i, err := strconv.Atoi(value)
 	if err != nil {
-		return fmt.Errorf("option %s expected an int value, got %s",
+		return fmt.Sprintf("option %s expected an int value, got %s",
 			me.longName, value)
 	}
 	me.value = i
 	me.state = HadValue
-	return nil
+	return ""
 }
 
 type RealOption struct {
@@ -174,46 +170,42 @@ func newRealOption(name, help string, theDefault float64) *RealOption {
 }
 
 func (me RealOption) Value() float64 {
-	switch me.state {
-	case NotGiven:
-		return me.theDefault
-	default:
+	if me.state == HadValue {
 		return me.value
 	}
+	return me.theDefault
 }
 
 func (me RealOption) wantsValue() bool {
-	if me.state == Given {
-		return true
-	}
-	return false
+	return me.state == Given
 }
 
-func (me RealOption) check() error {
+func (me RealOption) check() string {
 	if me.state == Given {
 		if me.allowImplicit {
-			return nil
+			return ""
 		} else {
-			return fmt.Errorf("expected exactly one value for %s, got none",
+			return fmt.Sprintf(
+				"expected exactly one value for %s, got none",
 				me.LongName())
 		}
 	}
-	return nil
+	return ""
 }
 
 func (me *RealOption) AllowImplicit() {
 	me.allowImplicit = true
 }
 
-func (me *RealOption) addValue(value string) error {
+func (me *RealOption) addValue(value string) string {
 	r, err := strconv.ParseFloat(value, 64)
 	if err != nil {
-		return fmt.Errorf("option %s expected a real value, got %s",
+		return fmt.Sprintf("option %s expected a real value, got %s",
 			me.longName, value)
 	}
 	me.value = r
 	me.state = HadValue
-	return nil
+	return ""
 }
 
 type StrOption struct {
@@ -232,41 +224,37 @@ func newStrOption(name, help, theDefault string) *StrOption {
 }
 
 func (me StrOption) Value() string {
-	switch me.state {
-	case NotGiven:
-		return me.theDefault
-	default:
+	if me.state == HadValue {
 		return me.value
 	}
+	return me.theDefault
 }
 
 func (me StrOption) wantsValue() bool {
-	if me.state == Given {
-		return true
-	}
-	return false
+	return me.state == Given
 }
 
-func (me StrOption) check() error {
+func (me StrOption) check() string {
 	if me.state == Given {
 		if me.allowImplicit {
-			return nil
+			return ""
 		} else {
-			return fmt.Errorf("expected exactly one value for %s, got none",
+			return fmt.Sprintf(
+				"expected exactly one value for %s, got none",
 				me.LongName())
 		}
 	}
-	return nil
+	return ""
 }
 
 func (me *StrOption) AllowImplicit() {
 	me.allowImplicit = true
 }
 
-func (me *StrOption) addValue(value string) error {
+func (me *StrOption) addValue(value string) string {
 	me.value = value
 	me.state = HadValue
-	return nil
+	return ""
 }
 
 type StrsOption struct {
@@ -287,28 +275,25 @@ func (me StrsOption) Value() []string {
 }
 
 func (me StrsOption) wantsValue() bool {
-	if me.state == NotGiven {
-		return false
-	}
-	return true
+	return me.state != NotGiven
 }
 
-func (me StrsOption) check() error {
+func (me StrsOption) check() string {
 	if me.state == Given {
-		return fmt.Errorf(
+		return fmt.Sprintf(
 			"expected exactly at least one value for %s, got none",
 			me.LongName())
 	}
-	return nil
+	return ""
 }
 
-func (me *StrsOption) addValue(value string) error {
+func (me *StrsOption) addValue(value string) string {
 	if me.value == nil {
 		me.value = make([]string, 0, 1)
 	}
 	me.value = append(me.value, value)
 	me.state = HadValue
-	return nil
+	return ""
 }
 
 func validateName(name string) {

@@ -16,6 +16,19 @@ const (
 	HadValue
 )
 
+func (me optionState) String() string {
+	switch me {
+	case NotGiven:
+		return "NotGiven"
+	case Given:
+		return "Given"
+	case HadValue:
+		return "HadValue"
+	default:
+		panic("invalid optionState")
+	}
+}
+
 type ValueCount uint8
 
 const (

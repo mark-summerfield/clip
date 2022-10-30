@@ -302,7 +302,6 @@ func (me *Parser) ParseArgs(args []string) error {
 	if err != nil {
 		return err
 	}
-	//fmt.Printf("TOKENS: %q %s\n", strings.Join(args, " "), tokens)
 	var currentOption optioner
 	inPositionals := false
 	for _, token := range tokens {
@@ -317,8 +316,8 @@ func (me *Parser) ParseArgs(args []string) error {
 			}
 		} else { // Value
 			if currentOption.wantsValue() {
-				if err := currentOption.addValue(token.text); err != nil {
-					return err
+				if msg := currentOption.addValue(token.text); msg != "" {
+					return me.handleError(8, msg)
 				}
 			} else {
 				inPositionals = me.addPositional(token.text)
@@ -595,8 +594,8 @@ func (me *Parser) checkPositionals() error {
 
 func (me *Parser) checkValues(options []optioner) error {
 	for _, option := range options {
-		if err := option.check(); err != nil {
-			return err
+		if msg := option.check(); msg != "" {
+			return me.handleError(34, msg)
 		}
 	}
 	return nil

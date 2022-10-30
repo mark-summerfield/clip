@@ -314,7 +314,7 @@ func (me *Parser) ParseArgs(args []string) error {
 			me.addPositional(token.text)
 		} else if !token.isValue() { // Option
 			if currentOption != nil {
-				if err = me.checkValue(currentOption); err != nil {
+				if err = me.checkValue(currentOption, false); err != nil {
 					return err
 				}
 			}
@@ -324,11 +324,12 @@ func (me *Parser) ParseArgs(args []string) error {
 				option.value = true
 			}
 		} else { // Value
+			count := currentOption.Count()
 			switch expect {
 			case Zero:
 				inPositionals = me.addPositional(token.text)
 			case ZeroOrOne:
-				if currentOption.Count() == 1 {
+				if count == 1 {
 					inPositionals = me.addPositional(token.text)
 				} else {
 					err = me.addValue(currentOption, token.text)
@@ -336,7 +337,7 @@ func (me *Parser) ParseArgs(args []string) error {
 			case ZeroOrMore:
 				err = me.addValue(currentOption, token.text)
 			case One:
-				if currentOption.Count() == 0 {
+				if count == 0 || !currentOption.beenAdded() {
 					err = me.addValue(currentOption, token.text)
 				} else {
 					inPositionals = me.addPositional(token.text)
@@ -354,7 +355,7 @@ func (me *Parser) ParseArgs(args []string) error {
 	if err := me.checkPositionals(); err != nil {
 		return err
 	}
-	return me.checkValues(subcommand.options)
+	return me.checkValuesAtEnd(subcommand.options)
 }
 
 func (me *Parser) addValue(option Optioner, value string) error {
@@ -640,16 +641,16 @@ func (me *Parser) checkPositionals() error {
 	return nil
 }
 
-func (me *Parser) checkValues(options []Optioner) error {
+func (me *Parser) checkValuesAtEnd(options []Optioner) error {
 	for _, option := range options {
-		if err := me.checkValue(option); err != nil {
+		if err := me.checkValue(option, true); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func (me *Parser) checkValue(option Optioner) error {
+func (me *Parser) checkValue(option Optioner, atEnd bool) error {
 	count := option.Count()
 	switch option.ValueCount() {
 	case Zero:

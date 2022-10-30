@@ -22,6 +22,7 @@ type Optioner interface {
 	ValueCount() ValueCount
 	hasDefault() bool
 	defaultValue() any
+	beenAdded() bool
 }
 
 type commonOption struct {
@@ -86,10 +87,6 @@ func (me FlagOption) Value() bool {
 	return me.value
 }
 
-func (me FlagOption) Count() int {
-	return 0
-}
-
 func (me FlagOption) defaultValue() any {
 	return nil
 }
@@ -98,10 +95,19 @@ func (me FlagOption) hasDefault() bool {
 	return true
 }
 
+func (me FlagOption) Count() int {
+	return 0
+}
+
+func (me FlagOption) beenAdded() bool {
+	return false
+}
+
 type IntOption struct {
 	*commonOption
-	theDefault int
-	value      int
+	theDefault    int
+	value         int
+	allowImplicit bool
 }
 
 func newIntOption(name, help string, theDefault int) *IntOption {
@@ -113,12 +119,22 @@ func newIntOption(name, help string, theDefault int) *IntOption {
 }
 
 func (me IntOption) Value() int {
+	if !me.added {
+		return me.theDefault
+	}
 	return me.value
 }
 
 func (me *IntOption) AllowImplicit() {
-	me.value = me.theDefault
-	me.added = true
+	me.allowImplicit = true
+}
+
+func (me IntOption) defaultValue() any {
+	return me.theDefault
+}
+
+func (me IntOption) hasDefault() bool {
+	return true
 }
 
 func (me IntOption) Count() int {
@@ -128,16 +144,8 @@ func (me IntOption) Count() int {
 	return 0
 }
 
-func (me IntOption) defaultValue() any {
-	return me.theDefault
-}
-
-func (me *IntOption) setToDefault() {
-	me.value = me.theDefault
-}
-
-func (me IntOption) hasDefault() bool {
-	return true
+func (me IntOption) beenAdded() bool {
+	return me.added
 }
 
 func (me *IntOption) addValue(value string) error {
@@ -155,6 +163,7 @@ type RealOption struct {
 	*commonOption
 	theDefault float64
 	value      float64
+	allowImplicit bool
 }
 
 func newRealOption(name, help string, theDefault float64) *RealOption {
@@ -166,12 +175,22 @@ func newRealOption(name, help string, theDefault float64) *RealOption {
 }
 
 func (me RealOption) Value() float64 {
+	if !me.added {
+		return me.theDefault
+	}
 	return me.value
 }
 
 func (me *RealOption) AllowImplicit() {
-	me.value = me.theDefault
-	me.added = true
+	me.allowImplicit = true
+}
+
+func (me RealOption) defaultValue() any {
+	return me.theDefault
+}
+
+func (me RealOption) hasDefault() bool {
+	return true
 }
 
 func (me RealOption) Count() int {
@@ -181,16 +200,8 @@ func (me RealOption) Count() int {
 	return 0
 }
 
-func (me RealOption) defaultValue() any {
-	return me.theDefault
-}
-
-func (me *RealOption) setToDefault() {
-	me.value = me.theDefault
-}
-
-func (me RealOption) hasDefault() bool {
-	return true
+func (me RealOption) beenAdded() bool {
+	return me.added
 }
 
 func (me *RealOption) addValue(value string) error {
@@ -208,6 +219,7 @@ type StrOption struct {
 	*commonOption
 	theDefault string
 	value      string
+	allowImplicit bool
 }
 
 func newStrOption(name, help, theDefault string) *StrOption {
@@ -219,12 +231,22 @@ func newStrOption(name, help, theDefault string) *StrOption {
 }
 
 func (me StrOption) Value() string {
+	if !me.added {
+		return me.theDefault
+	}
 	return me.value
 }
 
 func (me *StrOption) AllowImplicit() {
-	me.value = me.theDefault
-	me.added = true
+	me.allowImplicit = true
+}
+
+func (me StrOption) defaultValue() any {
+	return me.theDefault
+}
+
+func (me StrOption) hasDefault() bool {
+	return true
 }
 
 func (me StrOption) Count() int {
@@ -234,16 +256,8 @@ func (me StrOption) Count() int {
 	return 0
 }
 
-func (me StrOption) defaultValue() any {
-	return me.theDefault
-}
-
-func (me *StrOption) setToDefault() {
-	me.value = me.theDefault
-}
-
-func (me StrOption) hasDefault() bool {
-	return true
+func (me StrOption) beenAdded() bool {
+	return me.added
 }
 
 func (me *StrOption) addValue(value string) error {
@@ -268,15 +282,19 @@ func (me StrsOption) Value() []string {
 	return me.value
 }
 
-func (me StrsOption) Count() int {
-	return len(me.value)
-}
-
 func (me StrsOption) defaultValue() any {
 	return nil
 }
 
 func (me StrsOption) hasDefault() bool {
+	return false
+}
+
+func (me StrsOption) Count() int {
+	return len(me.value)
+}
+
+func (me StrsOption) beenAdded() bool {
 	return false
 }
 

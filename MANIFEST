@@ -1,3 +1,20 @@
+# TODO FIX BUG
+# get rid of added; instead have optionState
+#   NotGiven // default
+#   Given   // -v
+#   HadValue // -v1
+# and add: Check() error
+#
+# func (me XXXOption) Check(atEnd bool) error { // Int Real Str version
+#   if atEnd {
+#	if me.state == Given && !m.allowImplicit {
+#	    return fmt.Errorf(...) # option without value
+#	}
+#   }
+#   return nil
+# }
+#
+#
 # TODO
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
 

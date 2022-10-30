@@ -660,7 +660,7 @@ func Test025(t *testing.T) {
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 45)
-	line := "--maxwidth"
+	line := "--maxwidth=25"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
@@ -668,7 +668,7 @@ func Test025(t *testing.T) {
 		t.Error("expected false, got true")
 	}
 	m := maxWidthOpt.Value()
-	if m != 45 {
+	if m != 25 {
 		t.Errorf("expected maxwidth=45, got %d", m)
 	}
 }
@@ -680,7 +680,7 @@ func Test026(t *testing.T) {
 	summaryOpt.SetShortName('S')
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 45)
-	line := "--maxwidth -S"
+	line := "--maxwidth=99 -S"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
@@ -688,7 +688,7 @@ func Test026(t *testing.T) {
 		t.Error("expected true, got false")
 	}
 	m := maxWidthOpt.Value()
-	if m != 45 {
+	if m != 99 {
 		t.Errorf("expected maxwidth=45, got %d", m)
 	}
 }
@@ -755,7 +755,7 @@ func Test030(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	scaleOpt := parser.Real("scale", "max width help", 4.5)
-	line := "-Ss"
+	line := "-Ss-3.9"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
@@ -763,7 +763,7 @@ func Test030(t *testing.T) {
 		t.Error("expected true, got false")
 	}
 	s := scaleOpt.Value()
-	if !realEqual(4.5, s) {
+	if !realEqual(-3.9, s) {
 		t.Errorf("expected scale=4.5, got %f", s)
 	}
 }
@@ -869,6 +869,7 @@ func Test036(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	verboseOpt.AllowImplicit()
 	line := "-Sv"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1015,7 +1016,7 @@ func Test043(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-m -S"
-	e := 16
+	e := 34
 	if err := parser.ParseLine(line); err != nil {
 		if e := expectError(e, err); e != "" {
 			t.Error(e)
@@ -1032,13 +1033,48 @@ func Test044(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "--maxwidth -S"
-	e := 16
+	e := 34
 	if err := parser.ParseLine(line); err != nil {
 		if e := expectError(e, err); e != "" {
 			t.Error(e)
 		}
 	} else {
 		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
+	}
+}
+
+func Test045(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000, 45)
+	line := "--maxwidth"
+	e := 34
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
+	}
+}
+
+func Test046(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
+	line := "-Ss"
+	e := 34
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%g)", e, scaleOpt.Value())
 	}
 }
 
@@ -1210,6 +1246,7 @@ func TestPackageDocFlag9(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
+	outfileOpt.AllowImplicit()
 	if err := parser.ParseLine("-vxco"); err != nil {
 		t.Error("expected successful parse")
 	}
@@ -1219,6 +1256,45 @@ func TestPackageDocFlag9(t *testing.T) {
 	outfile := outfileOpt.Value() // since given with no value
 	if outfile != "test.dat" {    // we get the default
 		t.Errorf("expected outfile=\"test.dat\", got %q", outfile)
+	}
+}
+
+func TestPackageDocFlag10(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
+	if err := parser.ParseLine("-vxcooutfile.txt"); err != nil {
+		t.Error("expected successful parse")
+	}
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.Value() // since given with no value
+	if outfile != "outfile.txt" {    // we get the default
+		t.Errorf("expected outfile=\"outfile.txt\", got %q", outfile)
+	}
+}
+
+func TestPackageDocFlag11(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
+	outfileOpt.AllowImplicit()
+	if err := parser.ParseLine("-vxcooutfile.txt"); err != nil {
+		t.Error("expected successful parse")
+	}
+	if !outfileOpt.Given() {
+		t.Error("expected outfile=Given")
+	}
+	outfile := outfileOpt.Value() // since given with no value
+	if outfile != "outfile.txt" {    // we get the default
+		t.Errorf("expected outfile=\"outfile.txt\", got %q", outfile)
 	}
 }
 
@@ -1242,6 +1318,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	verboseOpt.AllowImplicit()
 	if err := parser.ParseLine("-v"); err != nil {
 		t.Error("expected successful parse")
 	}
@@ -1254,6 +1331,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
+	verboseOpt.AllowImplicit()
 	if err := parser.ParseLine("--verbose"); err != nil {
 		t.Error("expected successful parse")
 	}

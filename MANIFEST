@@ -1,6 +1,4 @@
-# TODO
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
-
+# TODO rationalize error codes (100 +4) & panic codes (900 +2)
 # TODO Additional ValueTypes:
 #   - Ints
 #   - Reals
@@ -23,5 +21,8 @@ consts.go
 garg_test.go
 
 st.sh
+
+# TODO
+# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
 
 # vim: syn=yaml

@@ -168,7 +168,7 @@ type Parser struct {
 	appName           string
 	appVersion        string
 	subCommands       map[string]*SubCommand
-	positionalCount   ValueCount
+	positionalCount   PositionalCount
 	positionalVarName string
 	use_h_for_help    bool
 	use_v_for_version bool
@@ -212,7 +212,7 @@ func (me *Parser) SetVersion(version string) {
 	}
 }
 
-func (me *Parser) SetPositionalCount(valueCount ValueCount) {
+func (me *Parser) SetPositionalCount(valueCount PositionalCount) {
 	me.positionalCount = valueCount
 }
 

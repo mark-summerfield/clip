@@ -23,13 +23,12 @@ type optioner interface {
 }
 
 type commonOption struct {
-	longName   string
-	shortName  rune
-	help       string
-	valueCount ValueCount
-	varName    string // e.g., -o|--outfile FILENAME
-	validator  Validator
-	state      optionState
+	longName  string
+	shortName rune
+	help      string
+	varName   string // e.g., -o|--outfile FILENAME
+	validator Validator
+	state     optionState
 }
 
 func (me *commonOption) LongName() string {
@@ -55,10 +54,6 @@ func (me *commonOption) SetValidator(validator Validator) {
 	me.validator = validator
 }
 
-func (me *commonOption) ValueCount() ValueCount {
-	return me.valueCount
-}
-
 func (me *commonOption) Given() bool {
 	return me.state != NotGiven
 }
@@ -78,8 +73,7 @@ func newFlagOption(name, help string) *FlagOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &FlagOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: Zero,
-		state: NotGiven}}
+		shortName: shortName, help: help, state: NotGiven}}
 }
 
 func (me FlagOption) Value() bool {
@@ -111,7 +105,7 @@ func newIntOption(name, help string, theDefault int) *IntOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: One, state: NotGiven},
+		shortName: shortName, help: help, state: NotGiven},
 		theDefault: theDefault}
 }
 
@@ -165,7 +159,7 @@ func newRealOption(name, help string, theDefault float64) *RealOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: One, state: NotGiven},
+		shortName: shortName, help: help, state: NotGiven},
 		theDefault: theDefault}
 }
 
@@ -219,7 +213,7 @@ func newStrOption(name, help, theDefault string) *StrOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: One, state: NotGiven},
+		shortName: shortName, help: help, state: NotGiven},
 		theDefault: theDefault}
 }
 
@@ -266,8 +260,7 @@ func newStrsOption(name, help string) *StrsOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: OneOrMore,
-		state: NotGiven}}
+		shortName: shortName, help: help, state: NotGiven}}
 }
 
 func (me StrsOption) Value() []string {

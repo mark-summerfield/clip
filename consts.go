@@ -29,19 +29,19 @@ func (me optionState) String() string {
 	}
 }
 
-type ValueCount uint8
+type PositionalCount uint8
 
 const (
-	Zero       ValueCount = iota // for flags & for no positionals allowed
-	ZeroOrOne                    // for options with default and positionals
-	ZeroOrMore                   // default for positionals
-	One                          // default for Int, Real, Str
-	Two                          // for positionals
-	Three                        // for positionals
-	OneOrMore                    // default for Strs
+	Zero       PositionalCount = iota // for flags & for no positionals allowed
+	ZeroOrOne                         // for options with default and positionals
+	ZeroOrMore                        // default for positionals
+	One                               // default for Int, Real, Str
+	Two                               // for positionals
+	Three                             // for positionals
+	OneOrMore                         // default for Strs
 )
 
-func (me ValueCount) String() string {
+func (me PositionalCount) String() string {
 	switch me {
 	case Zero:
 		return "Zero"
@@ -58,6 +58,6 @@ func (me ValueCount) String() string {
 	case OneOrMore:
 		return "OneOrMore"
 	default:
-		panic("#310: invalid ValueCount")
+		panic("#310: invalid PositionalCount")
 	}
 }

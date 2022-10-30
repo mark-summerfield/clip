@@ -905,21 +905,16 @@ func Test038(t *testing.T) {
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	parser.Int("verbose", "verbosity -v or -vN", 1)
+	// -v expects either nothing (will use the default of 1) or an int
 	line := "-vS"
+	e := 8
 	if err := parser.ParseLine(line); err != nil {
-		t.Error(err)
-	}
-	if !summaryOpt.Value() {
-		t.Error("expected true, got false")
-	}
-	if verboseOpt.Given() {
-		v := verboseOpt.Value()
-		if v != 1 {
-			t.Errorf("expected verbose=1, got %d", v)
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
 		}
 	} else {
-		t.Error("expected verbose=Given")
+		t.Errorf("expected error #%d, got nil", e)
 	}
 }
 

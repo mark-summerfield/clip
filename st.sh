@@ -4,6 +4,5 @@ go mod tidy
 go fmt .
 staticcheck .
 go vet .
-exhaustive .
 golangci-lint run
 git st

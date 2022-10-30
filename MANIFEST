@@ -1,8 +1,5 @@
-# TODO go install github.com/nishanths/exhaustive/cmd/exhaustive@latest
+# TODO
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
-# golangci-lint --version
-
-# TODO -vS BUG FIXME
 
 # TODO Additional ValueTypes:
 #   - Ints

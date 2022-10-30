@@ -161,8 +161,8 @@ func (me *IntOption) addValue(value string) error {
 
 type RealOption struct {
 	*commonOption
-	theDefault float64
-	value      float64
+	theDefault    float64
+	value         float64
 	allowImplicit bool
 }
 
@@ -217,8 +217,8 @@ func (me *RealOption) addValue(value string) error {
 
 type StrOption struct {
 	*commonOption
-	theDefault string
-	value      string
+	theDefault    string
+	value         string
 	allowImplicit bool
 }
 

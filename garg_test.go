@@ -1273,7 +1273,7 @@ func TestPackageDocFlag10(t *testing.T) {
 		t.Error("expected outfile=Given")
 	}
 	outfile := outfileOpt.Value() // since given with no value
-	if outfile != "outfile.txt" {    // we get the default
+	if outfile != "outfile.txt" { // we get the default
 		t.Errorf("expected outfile=\"outfile.txt\", got %q", outfile)
 	}
 }
@@ -1293,7 +1293,7 @@ func TestPackageDocFlag11(t *testing.T) {
 		t.Error("expected outfile=Given")
 	}
 	outfile := outfileOpt.Value() // since given with no value
-	if outfile != "outfile.txt" {    // we get the default
+	if outfile != "outfile.txt" { // we get the default
 		t.Errorf("expected outfile=\"outfile.txt\", got %q", outfile)
 	}
 }

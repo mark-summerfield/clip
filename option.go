@@ -75,7 +75,6 @@ type FlagOption struct {
 	value bool
 }
 
-// Can't change long name or help after creation
 func newFlagOption(name, help string) *FlagOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
@@ -101,17 +100,16 @@ func (me FlagOption) hasDefault() bool {
 
 type IntOption struct {
 	*commonOption
-	theDefaultValue int
-	value           int
+	theDefault int
+	value      int
 }
 
-// Can't change long name or help after creation
-func newIntOption(name, help string, theDefaultValue int) *IntOption {
+func newIntOption(name, help string, theDefault int) *IntOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, valueCount: One},
-		theDefaultValue: theDefaultValue}
+		theDefault: theDefault}
 }
 
 func (me IntOption) Value() int {
@@ -120,7 +118,7 @@ func (me IntOption) Value() int {
 
 func (me *IntOption) setDefaultIfAppropriate() {
 	if !me.added {
-		me.value = me.theDefaultValue
+		me.value = me.theDefault
 		me.added = true
 	}
 }
@@ -133,11 +131,11 @@ func (me IntOption) Count() int {
 }
 
 func (me IntOption) defaultValue() any {
-	return me.theDefaultValue
+	return me.theDefault
 }
 
 func (me *IntOption) setToDefault() {
-	me.value = me.theDefaultValue
+	me.value = me.theDefault
 }
 
 func (me IntOption) hasDefault() bool {
@@ -157,17 +155,16 @@ func (me *IntOption) addValue(value string) error {
 
 type RealOption struct {
 	*commonOption
-	theDefaultValue float64
-	value           float64
+	theDefault float64
+	value      float64
 }
 
-// Can't change long name or help after creation
-func newRealOption(name, help string, theDefaultValue float64) *RealOption {
+func newRealOption(name, help string, theDefault float64) *RealOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, valueCount: One},
-		theDefaultValue: theDefaultValue}
+		theDefault: theDefault}
 }
 
 func (me RealOption) Value() float64 {
@@ -176,7 +173,7 @@ func (me RealOption) Value() float64 {
 
 func (me *RealOption) setDefaultIfAppropriate() {
 	if !me.added {
-		me.value = me.theDefaultValue
+		me.value = me.theDefault
 		me.added = true
 	}
 }
@@ -189,11 +186,11 @@ func (me RealOption) Count() int {
 }
 
 func (me RealOption) defaultValue() any {
-	return me.theDefaultValue
+	return me.theDefault
 }
 
 func (me *RealOption) setToDefault() {
-	me.value = me.theDefaultValue
+	me.value = me.theDefault
 }
 
 func (me RealOption) hasDefault() bool {
@@ -213,17 +210,16 @@ func (me *RealOption) addValue(value string) error {
 
 type StrOption struct {
 	*commonOption
-	theDefaultValue string
-	value           string
+	theDefault string
+	value      string
 }
 
-// Can't change long name or help after creation
-func newStrOption(name, help, theDefaultValue string) *StrOption {
+func newStrOption(name, help, theDefault string) *StrOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, valueCount: One},
-		theDefaultValue: theDefaultValue}
+		theDefault: theDefault}
 }
 
 func (me StrOption) Value() string {
@@ -232,7 +228,7 @@ func (me StrOption) Value() string {
 
 func (me *StrOption) setDefaultIfAppropriate() {
 	if !me.added {
-		me.value = me.theDefaultValue
+		me.value = me.theDefault
 		me.added = true
 	}
 }
@@ -245,11 +241,11 @@ func (me StrOption) Count() int {
 }
 
 func (me StrOption) defaultValue() any {
-	return me.theDefaultValue
+	return me.theDefault
 }
 
 func (me *StrOption) setToDefault() {
-	me.value = me.theDefaultValue
+	me.value = me.theDefault
 }
 
 func (me StrOption) hasDefault() bool {
@@ -267,7 +263,6 @@ type StrsOption struct {
 	value []string
 }
 
-// Can't change long name or help after creation
 func newStrsOption(name, help string) *StrsOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
@@ -277,13 +272,6 @@ func newStrsOption(name, help string) *StrsOption {
 
 func (me StrsOption) Value() []string {
 	return me.value
-}
-
-func (me *StrsOption) setDefaultIfAppropriate() {
-	if !me.added {
-		me.value = make([]string, 0)
-		me.added = true
-	}
 }
 
 func (me StrsOption) Count() int {

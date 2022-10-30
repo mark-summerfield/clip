@@ -10,7 +10,6 @@ type SubCommand struct {
 	options   []Optioner
 }
 
-// Can't change long name or help after creation
 func newMainSubCommand() *SubCommand {
 	return &SubCommand{longName: "", shortName: noShortName, help: "",
 		options: make([]Optioner, 0)}
@@ -35,57 +34,61 @@ func (me *SubCommand) SetShortName(c rune) {
 
 func (me *SubCommand) Flag(name, help string) *FlagOption {
 	option := newFlagOption(name, help)
-	me.options = append(me.options, option)
+	me.registerNewOption(option)
 	return option
 }
 
-func (me *SubCommand) Int(name, help string, theDefaultValue int) *IntOption {
-	option := newIntOption(name, help, theDefaultValue)
-	me.options = append(me.options, option)
+func (me *SubCommand) Int(name, help string, theDefault int) *IntOption {
+	option := newIntOption(name, help, theDefault)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *SubCommand) IntInRange(name, help string,
-	minimum, maximum, theDefaultValue int) *IntOption {
-	option := newIntOption(name, help, theDefaultValue)
+	minimum, maximum, theDefault int) *IntOption {
+	option := newIntOption(name, help, theDefault)
 	option.validator = makeIntRangeValidator(minimum, maximum)
-	me.options = append(me.options, option)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *SubCommand) Real(name, help string,
-	theDefaultValue float64) *RealOption {
-	option := newRealOption(name, help, theDefaultValue)
-	me.options = append(me.options, option)
+	theDefault float64) *RealOption {
+	option := newRealOption(name, help, theDefault)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *SubCommand) RealInRange(name, help string,
-	minimum, maximum, theDefaultValue float64) *RealOption {
-	option := newRealOption(name, help, theDefaultValue)
+	minimum, maximum, theDefault float64) *RealOption {
+	option := newRealOption(name, help, theDefault)
 	option.validator = makeRealRangeValidator(minimum, maximum)
-	me.options = append(me.options, option)
+	me.registerNewOption(option)
 	return option
 }
 
-func (me *SubCommand) Str(name, help, theDefaultValue string) *StrOption {
-	option := newStrOption(name, help, theDefaultValue)
-	me.options = append(me.options, option)
+func (me *SubCommand) Str(name, help, theDefault string) *StrOption {
+	option := newStrOption(name, help, theDefault)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *SubCommand) Choice(name, help string, choices []string,
-	theDefaultValue string) *StrOption {
-	option := newStrOption(name, help, theDefaultValue)
+	theDefault string) *StrOption {
+	option := newStrOption(name, help, theDefault)
 	option.validator = makeChoiceValidator(choices)
-	me.options = append(me.options, option)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *SubCommand) Strs(name, help string) *StrsOption {
 	option := newStrsOption(name, help)
-	me.options = append(me.options, option)
+	me.registerNewOption(option)
 	return option
+}
+
+func (me *SubCommand) registerNewOption(option Optioner) {
+	me.options = append(me.options, option)
 }
 
 func (me *SubCommand) optionsForNames() (map[string]Optioner,

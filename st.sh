@@ -4,4 +4,5 @@ go mod tidy
 go fmt .
 staticcheck .
 go vet .
+exhaustive .
 git st

@@ -310,9 +310,7 @@ func (me *Parser) ParseArgs(args []string) error {
 		} else if inPositionals {
 			me.addPositional(token.text)
 		} else if !token.isValue() { // Option
-			if currentOption != nil {
-				me.maybeSetToDefault(expect, currentOption)
-			}
+			me.maybeSetToDefault(expect, currentOption)
 			currentOption = token.option
 			expect = currentOption.ValueCount()
 			if option, ok := currentOption.(*FlagOption); ok {
@@ -338,8 +336,8 @@ func (me *Parser) ParseArgs(args []string) error {
 				}
 			case OneOrMore:
 				me.addValue(currentOption, token.text)
-			default:
-				panic("#200: invalid ValueCount") // Two or Three
+			case Two, Three:
+				panic("#200: invalid ValueCount")
 			}
 		}
 	}
@@ -350,17 +348,20 @@ func (me *Parser) ParseArgs(args []string) error {
 }
 
 func (me *Parser) maybeSetToDefault(expect ValueCount, option Optioner) {
-	defaultValue := option.defaultValue()
-	if expect == ZeroOrOne && option.Count() == 0 && defaultValue != nil {
-		switch option := option.(type) {
-		case *IntOption:
-			option.setToDefault()
-		case *RealOption:
-			option.setToDefault()
-		case *StrOption:
-			option.setToDefault()
-		default:
-			panic("#210: missed type case")
+	if option != nil {
+		defaultValue := option.defaultValue()
+		if expect == ZeroOrOne && option.Count() == 0 &&
+			defaultValue != nil {
+			switch option := option.(type) {
+			case *IntOption:
+				option.setToDefault()
+			case *RealOption:
+				option.setToDefault()
+			case *StrOption:
+				option.setToDefault()
+			default:
+				panic("#210: missed type case")
+			}
 		}
 	}
 }
@@ -533,8 +534,8 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 		option, ok := state.optionForShortName[name]
 		if ok {
 			tokens = append(tokens, newNameToken(name, option))
-			_, isFlag := option.(*FlagOption)
-			if !isFlag && i+1 < len(text) {
+			if _, isFlag := option.(*FlagOption); !isFlag &&
+				i+1 < len(text) {
 				value := text[i+1:] // -aValue -abcValue
 				tokens = append(tokens, newValueToken(value))
 			}
@@ -644,8 +645,6 @@ func (me *Parser) checkPositionals() error {
 					"expected exactly three positional arguments, got %d",
 					count))
 		}
-	default:
-		panic("#500: invalid ValueCount")
 	}
 	return nil
 }
@@ -682,8 +681,8 @@ func (me *Parser) checkValues(options []Optioner) error {
 						"expected at least one value for %s, got %d",
 						option.LongName(), count))
 			}
-		default:
-			panic("#602: invalid ValueCount") // Two or Three
+		case Two, Three:
+			panic("#602: invalid ValueCount")
 		}
 	}
 	return nil
@@ -698,8 +697,7 @@ func (me *Parser) setDefaultIfAppropriate(option Optioner) {
 		option.setDefaultIfAppropriate()
 	case *StrOption:
 		option.setDefaultIfAppropriate()
-	case *StrsOption:
-		option.setDefaultIfAppropriate()
+	case *StrsOption: // has no default to set
 	default:
 		panic("#700: missed type case")
 	}

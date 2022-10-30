@@ -8,33 +8,6 @@ const noShortName = 0
 
 type Validator func(string) error
 
-type ValueType uint8
-
-const (
-	Flag ValueType = iota
-	Int
-	Real
-	Str
-	Strs
-)
-
-func (me ValueType) String() string {
-	switch me {
-	case Flag:
-		return "bool"
-	case Int:
-		return "int"
-	case Real:
-		return "float64"
-	case Str:
-		return "string"
-	case Strs:
-		return "[]string"
-	default:
-		panic("#300: invalid ValueType")
-	}
-}
-
 type ValueCount uint8
 
 const (

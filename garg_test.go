@@ -49,7 +49,7 @@ func Test001(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if summaryOpt.AsBool() {
+	if summaryOpt.Value() {
 		t.Error("expected false, got true")
 	}
 	if parser.AppName() != "garg.test" {
@@ -66,7 +66,7 @@ func Test002(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
 }
@@ -80,7 +80,7 @@ func Test003(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
 }
@@ -117,10 +117,10 @@ func Test005(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected summary=true, got false")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
 	if parser.AppName() != "myapp" {
@@ -143,13 +143,13 @@ func Test006(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected summary=true, got false")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -167,13 +167,13 @@ func Test007(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected summary=true, got false")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -195,13 +195,13 @@ func Test008(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected summary=true, got false")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -220,18 +220,18 @@ func Test009(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected summary=true, got false")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
 	if e := expectEqualSlice([]string{"cpp", "pas", "xml"},
-		languageOpt.AsStrs(), "language"); e != "" {
+		languageOpt.Value(), "language"); e != "" {
 		t.Error(e)
 	}
 	if e := expectEqualSlice([]string{"file1.txt", "file2.dat",
@@ -249,7 +249,7 @@ func Test010(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -264,7 +264,7 @@ func Test011(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -279,7 +279,7 @@ func Test012(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -294,7 +294,7 @@ func Test013(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -310,11 +310,11 @@ func Test014(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 80 {
 		t.Errorf("expected maxwidth=80, got %d", m)
 	}
-	if e := expectEqualSlice([]string{"cpp"}, languageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"cpp"}, languageOpt.Value(),
 		"language"); e != "" {
 		t.Error(e)
 	}
@@ -332,7 +332,7 @@ func Test015(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if e := expectEqualSlice([]string{"cpp"}, languageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"cpp"}, languageOpt.Value(),
 		"language"); e != "" {
 		t.Error(e)
 	}
@@ -350,7 +350,7 @@ func Test016(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if e := expectEqualSlice([]string{"cpp"}, languageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"cpp"}, languageOpt.Value(),
 		"language"); e != "" {
 		t.Error(e)
 	}
@@ -369,7 +369,7 @@ func Test017(t *testing.T) {
 		t.Error(err)
 	}
 	if e := expectEqualSlice([]string{"cpp", "pas", "xml"},
-		languageOpt.AsStrs(), "language"); e != "" {
+		languageOpt.Value(), "language"); e != "" {
 		t.Error(e)
 	}
 	if e := expectEqualSlice([]string{"file1.txt"}, parser.Positionals,
@@ -397,15 +397,15 @@ func Test018(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if e := expectEqualSlice([]string{"h", "red"}, languageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"h", "red"}, languageOpt.Value(),
 		"language"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"zOld", "t"}, excludeOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"zOld", "t"}, excludeOpt.Value(),
 		"exclude"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"peek"}, includeOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"peek"}, includeOpt.Value(),
 		"include"); e != "" {
 		t.Error(e)
 	}
@@ -413,17 +413,17 @@ func Test018(t *testing.T) {
 		parser.Positionals, "positionals"); e != "" {
 		t.Error(e)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected summary=true, got false")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 56 {
 		t.Errorf("expected maxwidth=56, got %d", m)
 	}
-	if extraOpt.AsBool() {
+	if extraOpt.Value() {
 		t.Error("expected extra=false, got true")
 	}
 }
@@ -448,30 +448,30 @@ func Test019(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if e := expectEmptySlice(skipLanguageOpt.AsStrs(),
+	if e := expectEmptySlice(skipLanguageOpt.Value(),
 		"skiplanguage"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEmptySlice(excludeOpt.AsStrs(), "exclude"); e != "" {
+	if e := expectEmptySlice(excludeOpt.Value(), "exclude"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEmptySlice(includeOpt.AsStrs(), "include"); e != "" {
+	if e := expectEmptySlice(includeOpt.Value(), "include"); e != "" {
 		t.Error(e)
 	}
 	if e := expectEqualSlice([]string{"file1.cpp", "file2.d"},
 		parser.Positionals, "positionals"); e != "" {
 		t.Error(e)
 	}
-	if summaryOpt.AsBool() {
+	if summaryOpt.Value() {
 		t.Error("expected summary=false, got true")
 	}
-	if sortByLinesOpt.AsBool() {
+	if sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=false, got true")
 	}
-	if !extraOpt.AsBool() {
+	if !extraOpt.Value() {
 		t.Error("expected extra=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 98 {
 		t.Errorf("expected maxwidth=98, got %d", m)
 	}
@@ -494,19 +494,19 @@ func Test020(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if e := expectEqualSlice([]string{"h", "red"}, languageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"h", "red"}, languageOpt.Value(),
 		"language"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"d"}, skipLanguageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"d"}, skipLanguageOpt.Value(),
 		"skiplanguage"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"zOld", "t"}, excludeOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"zOld", "t"}, excludeOpt.Value(),
 		"exclude"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"peek"}, includeOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"peek"}, includeOpt.Value(),
 		"include"); e != "" {
 		t.Error(e)
 	}
@@ -514,13 +514,13 @@ func Test020(t *testing.T) {
 		parser.Positionals, "positionals"); e != "" {
 		t.Error(e)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected summary=true, got false")
 	}
-	if sortByLinesOpt.AsBool() {
+	if sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=false, got true")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 40 {
 		t.Errorf("expected maxwidth=40, got %d", m)
 	}
@@ -543,19 +543,19 @@ func Test021(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if e := expectEqualSlice([]string{"h", "red"}, languageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"h", "red"}, languageOpt.Value(),
 		"language"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"d"}, skipLanguageOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"d"}, skipLanguageOpt.Value(),
 		"skiplanguage"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"zOld", "t"}, excludeOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"zOld", "t"}, excludeOpt.Value(),
 		"exclude"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"peek"}, includeOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"peek"}, includeOpt.Value(),
 		"include"); e != "" {
 		t.Error(e)
 	}
@@ -563,13 +563,13 @@ func Test021(t *testing.T) {
 		parser.Positionals, "positionals"); e != "" {
 		t.Error(e)
 	}
-	if summaryOpt.AsBool() {
+	if summaryOpt.Value() {
 		t.Error("expected summary=false, got true")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 80 {
 		t.Errorf("expected maxwidth=80, got %d", m)
 	}
@@ -593,31 +593,31 @@ func Test022(t *testing.T) {
 		t.Error(err)
 	}
 	if e := expectEqualSlice([]string{"go", "h", "red"},
-		languageOpt.AsStrs(), "language"); e != "" {
+		languageOpt.Value(), "language"); e != "" {
 		t.Error(e)
 	}
 	if e := expectEqualSlice([]string{"f77", "asm"},
-		skipLanguageOpt.AsStrs(), "skiplanguage"); e != "" {
+		skipLanguageOpt.Value(), "skiplanguage"); e != "" {
 		t.Error(e)
 	}
 	if e := expectEqualSlice([]string{"zOld", "t", "test"},
-		excludeOpt.AsStrs(), "exclude"); e != "" {
+		excludeOpt.Value(), "exclude"); e != "" {
 		t.Error(e)
 	}
-	if e := expectEqualSlice([]string{"peek", "unz"}, includeOpt.AsStrs(),
+	if e := expectEqualSlice([]string{"peek", "unz"}, includeOpt.Value(),
 		"include"); e != "" {
 		t.Error(e)
 	}
 	if parser.Positionals != nil {
 		t.Errorf("expected positionals=nil, got %s", parser.Positionals)
 	}
-	if summaryOpt.AsBool() {
+	if summaryOpt.Value() {
 		t.Error("expected summary=false, got true")
 	}
-	if !sortByLinesOpt.AsBool() {
+	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 80 {
 		t.Errorf("expected maxwidth=80, got %d", m)
 	}
@@ -632,7 +632,7 @@ func Test023(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 60 {
 		t.Errorf("expected maxwidth=60, got %d", m)
 	}
@@ -647,7 +647,7 @@ func Test024(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 70 {
 		t.Errorf("expected maxwidth=70, got %d", m)
 	}
@@ -664,10 +664,10 @@ func Test025(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if summaryOpt.AsBool() {
+	if summaryOpt.Value() {
 		t.Error("expected false, got true")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 45 {
 		t.Errorf("expected maxwidth=45, got %d", m)
 	}
@@ -684,10 +684,10 @@ func Test026(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 45 {
 		t.Errorf("expected maxwidth=45, got %d", m)
 	}
@@ -721,10 +721,10 @@ func Test028(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if summaryOpt.AsBool() {
+	if summaryOpt.Value() {
 		t.Error("expected false, got true")
 	}
-	m := maxWidthOpt.AsInt()
+	m := maxWidthOpt.Value()
 	if m != 45 {
 		t.Errorf("expected maxwidth=45, got %d", m)
 	}
@@ -740,10 +740,10 @@ func Test029(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if summaryOpt.AsBool() {
+	if summaryOpt.Value() {
 		t.Error("expected false, got true")
 	}
-	s := scaleOpt.AsReal()
+	s := scaleOpt.Value()
 	if !realEqual(4.5, s) {
 		t.Errorf("expected scale=4.5, got %f", s)
 	}
@@ -759,10 +759,10 @@ func Test030(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	s := scaleOpt.AsReal()
+	s := scaleOpt.Value()
 	if !realEqual(4.5, s) {
 		t.Errorf("expected scale=4.5, got %f", s)
 	}
@@ -778,10 +778,10 @@ func Test031(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	s := scaleOpt.AsReal()
+	s := scaleOpt.Value()
 	if !realEqual(3.5, s) {
 		t.Errorf("expected scale=3.5, got %f", s)
 	}
@@ -797,10 +797,10 @@ func Test032(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	s := scaleOpt.AsReal()
+	s := scaleOpt.Value()
 	if !realEqual(3.5, s) {
 		t.Errorf("expected scale=3.5, got %f", s)
 	}
@@ -816,10 +816,10 @@ func Test033(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	s := scaleOpt.AsReal()
+	s := scaleOpt.Value()
 	if !realEqual(-2.5, s) {
 		t.Errorf("expected scale=-2.5, got %f", s)
 	}
@@ -835,10 +835,10 @@ func Test034(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	s := scaleOpt.AsReal()
+	s := scaleOpt.Value()
 	if !realEqual(-1.5, s) {
 		t.Errorf("expected scale=-1.5, got %f", s)
 	}
@@ -854,10 +854,10 @@ func Test035(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	s := scaleOpt.AsReal()
+	s := scaleOpt.Value()
 	if !realEqual(88, s) {
 		t.Errorf("expected scale=88, got %f", s)
 	}
@@ -873,10 +873,10 @@ func Test036(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	v := verboseOpt.AsInt()
+	v := verboseOpt.Value()
 	if v != 1 {
 		t.Errorf("expected verbose=1, got %d", v)
 	}
@@ -892,7 +892,7 @@ func Test037(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
 	if verboseOpt.Given() {
@@ -910,11 +910,11 @@ func Test038(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
 	if verboseOpt.Given() {
-		v := verboseOpt.AsInt()
+		v := verboseOpt.Value()
 		if v != 1 {
 			t.Errorf("expected verbose=1, got %d", v)
 		}
@@ -933,11 +933,11 @@ func Test039(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
 	if verboseOpt.Given() {
-		v := verboseOpt.AsInt()
+		v := verboseOpt.Value()
 		if v != 2 {
 			t.Errorf("expected verbose=1, got %d", v)
 		}
@@ -957,13 +957,13 @@ func Test040(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
 	if verboseOpt.Given() {
 		t.Error("expected verbose=!Given")
 	}
-	v := verboseOpt.AsInt() // Single valued options always have a default
+	v := verboseOpt.Value() // Single valued options always have a default
 	if v != 1 {
 		t.Errorf("expected verbose=1, got %d", v)
 	}
@@ -980,10 +980,10 @@ func Test041(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	v := verboseOpt.AsInt() // Single valued options always have a default
+	v := verboseOpt.Value() // Single valued options always have a default
 	if v != 3 {
 		t.Errorf("expected verbose=3, got %d", v)
 	}
@@ -1000,10 +1000,10 @@ func Test042(t *testing.T) {
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
-	if !summaryOpt.AsBool() {
+	if !summaryOpt.Value() {
 		t.Error("expected true, got false")
 	}
-	v := verboseOpt.AsInt() // Single valued options always have a default
+	v := verboseOpt.Value() // Single valued options always have a default
 	if v != 3 {
 		t.Errorf("expected verbose=3, got %d", v)
 	}
@@ -1018,7 +1018,7 @@ func TestPackageDocFlag1(t *testing.T) {
 	parser.DontExit = true // for testing
 	verboseOpt := parser.Flag("verbose", "whether to show more output")
 	parser.ParseLine("")
-	verbose := verboseOpt.AsBool() // verbose == false
+	verbose := verboseOpt.Value() // verbose == false
 	if verbose {
 		t.Error("expected verbose=false, got true")
 	}
@@ -1027,7 +1027,7 @@ func TestPackageDocFlag1(t *testing.T) {
 		t.Error("expected verbose=false, got true")
 	}
 	parser.ParseLine("-v")
-	verbose = verboseOpt.AsBool() // verbose == true
+	verbose = verboseOpt.Value() // verbose == true
 	if !verbose {
 		t.Error("expected verbose=true, got false")
 	}
@@ -1048,7 +1048,7 @@ func TestPackageDocFlag2(t *testing.T) {
 	if outfileOpt.Given() {
 		t.Error("expected outfile=!Given")
 	}
-	outfile := outfileOpt.AsStr()
+	outfile := outfileOpt.Value()
 	if outfile != "" {
 		t.Errorf("expected outfile=\"\", got %q", outfile)
 	}
@@ -1065,7 +1065,7 @@ func TestPackageDocFlag3(t *testing.T) {
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
-	outfile := outfileOpt.AsStr()
+	outfile := outfileOpt.Value()
 	if outfile != "outfile.dat" {
 		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
@@ -1082,7 +1082,7 @@ func TestPackageDocFlag4(t *testing.T) {
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
-	outfile := outfileOpt.AsStr()
+	outfile := outfileOpt.Value()
 	if outfile != "outfile.dat" {
 		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
@@ -1099,7 +1099,7 @@ func TestPackageDocFlag5(t *testing.T) {
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
-	outfile := outfileOpt.AsStr()
+	outfile := outfileOpt.Value()
 	if outfile != "outfile.dat" {
 		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
@@ -1116,7 +1116,7 @@ func TestPackageDocFlag6(t *testing.T) {
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
-	outfile := outfileOpt.AsStr()
+	outfile := outfileOpt.Value()
 	if outfile != "outfile.dat" {
 		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
@@ -1133,7 +1133,7 @@ func TestPackageDocFlag7(t *testing.T) {
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
-	outfile := outfileOpt.AsStr()
+	outfile := outfileOpt.Value()
 	if outfile != "outfile.dat" {
 		t.Errorf("expected outfile=\"outfile.dat\", got %q", outfile)
 	}
@@ -1150,7 +1150,7 @@ func TestPackageDocFlag8(t *testing.T) {
 	if outfileOpt.Given() {
 		t.Error("expected outfile=!Given")
 	}
-	outfile := outfileOpt.AsStr() // since not given we get the default
+	outfile := outfileOpt.Value() // since not given we get the default
 	if outfile != "test.dat" {
 		t.Errorf("expected outfile=\"test.dat\", got %q", outfile)
 	}
@@ -1167,7 +1167,7 @@ func TestPackageDocFlag9(t *testing.T) {
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
-	outfile := outfileOpt.AsStr() // since given with no value
+	outfile := outfileOpt.Value() // since given with no value
 	if outfile != "test.dat" {    // we get the default
 		t.Errorf("expected outfile=\"test.dat\", got %q", outfile)
 	}
@@ -1183,7 +1183,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	if verboseOpt.Given() {
 		t.Error("expected verbose=!Given")
 	}
-	verbose = verboseOpt.AsInt() // default
+	verbose = verboseOpt.Value() // default
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
@@ -1193,7 +1193,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	parser.ParseLine("-v")
 	expected = 1
-	verbose = verboseOpt.AsInt()
+	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
@@ -1203,7 +1203,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	parser.ParseLine("--verbose")
 	expected = 1
-	verbose = verboseOpt.AsInt()
+	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
@@ -1213,7 +1213,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	parser.ParseLine("-v1")
 	expected = 1
-	verbose = verboseOpt.AsInt()
+	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
@@ -1223,7 +1223,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	parser.ParseLine("-v=2")
 	expected = 2
-	verbose = verboseOpt.AsInt()
+	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
@@ -1233,7 +1233,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	parser.ParseLine("-v 3")
 	expected = 3
-	verbose = verboseOpt.AsInt()
+	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
@@ -1243,7 +1243,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	parser.ParseLine("--verbose=4")
 	expected = 4
-	verbose = verboseOpt.AsInt()
+	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
@@ -1253,7 +1253,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	parser.ParseLine("--verbose 5")
 	expected = 5
-	verbose = verboseOpt.AsInt()
+	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}

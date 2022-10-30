@@ -28,12 +28,12 @@
 //	parser := NewParser()
 //	verboseOpt := parser.Flag("verbose", "whether to show more output")
 //	parser.ParseLine("")
-//	verbose := verboseOpt.AsBool() // verbose == false
+//	verbose := verboseOpt.Value() // verbose == false
 //	// -or-
 //	verbose = verboseOpt.Given() // verbose == false
 //
 //	parser.ParseLine("-v")
-//	verbose = verboseOpt.AsBool() // verbose == true
+//	verbose = verboseOpt.Value() // verbose == true
 //	// -or-
 //	verbose = verboseOpt.Given() // verbose == true
 //
@@ -92,7 +92,7 @@
 //	parser.ParseLine("")
 //	verbose := 0 // assume no verbosity
 //	if verboseOpt.Given() {
-//		verbose = verboseOpt.AsInt()
+//		verbose = verboseOpt.Value()
 //	}
 //
 // Here, verbose == 0 (since we started at 0 and checked whether it was
@@ -102,7 +102,7 @@
 //	parser.ParseLine("-v")
 //	verbose := 0 // assume no verbosity
 //	if verboseOpt.Given() {
-//		verbose = verboseOpt.AsInt()
+//		verbose = verboseOpt.Value()
 //	}
 //
 // Here, verbose == 1 (since it was given with no value, so the default was
@@ -112,7 +112,7 @@
 //	parser.ParseLine("-v2")
 //	verbose := 0 // assume no verbosity
 //	if verboseOpt.Given() {
-//		verbose = verboseOpt.AsInt()
+//		verbose = verboseOpt.Value()
 //	}
 //
 // Here, verbose == 2 (as given)
@@ -147,7 +147,7 @@
 //	if !countOpt.Given() {
 //		parser.OnMissing(countOpt) // won't return (calls os.Exit)
 //	}
-//	count := countOpt.AsInt() // if we got here the user set it
+//	count := countOpt.Value() // if we got here the user set it
 package garg
 
 import (
@@ -194,7 +194,7 @@ func (me *Parser) AppName() string {
 
 func (me *Parser) SetAppName(name string) {
 	if name == "" {
-		panic("#200: can't have empty appname")
+		panic("#100: can't have empty appname")
 	}
 	me.appName = name
 }
@@ -221,77 +221,70 @@ func (me *Parser) SetPositionalVarName(name string) {
 
 func (me *Parser) SubCommand(name, help string) *SubCommand {
 	if name == "" {
-		panic("#202: can't have empty subcommand name")
+		panic("#110: can't have empty subcommand name")
 	}
 	subcommand := newSubCommand(name, help)
 	me.subCommands[name] = subcommand
 	return subcommand
 }
 
-func (me *Parser) Flag(name, help string) *Option {
-	option := me.newOption(name, help, Flag)
-	option.value = false
-	option.valueCount = Zero
+func (me *Parser) Flag(name, help string) *FlagOption {
+	option := newFlagOption(name, help)
+	me.registerNewOption(option)
 	return option
 }
 
-func (me *Parser) Int(name, help string, defaultValue int) *Option {
-	option := me.newOption(name, help, Int)
-	option.defaultValue = defaultValue
+func (me *Parser) Int(name, help string, defaultValue int) *IntOption {
+	option := newIntOption(name, help, defaultValue)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *Parser) IntInRange(name, help string,
-	minimum, maximum, defaultValue int) *Option {
-	option := me.newOption(name, help, Int)
+	minimum, maximum, defaultValue int) *IntOption {
+	option := newIntOption(name, help, defaultValue)
 	option.validator = makeIntRangeValidator(minimum, maximum)
-	option.defaultValue = defaultValue
+	me.registerNewOption(option)
 	return option
 }
 
-func (me *Parser) Real(name, help string, defaultValue float64) *Option {
-	option := me.newOption(name, help, Real)
-	option.defaultValue = defaultValue
+func (me *Parser) Real(name, help string, defaultValue float64) *RealOption {
+	option := newRealOption(name, help, defaultValue)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *Parser) RealInRange(name, help string,
-	minimum, maximum, defaultValue float64) *Option {
-	option := me.newOption(name, help, Real)
+	minimum, maximum, defaultValue float64) *RealOption {
+	option := newRealOption(name, help, defaultValue)
 	option.validator = makeRealRangeValidator(minimum, maximum)
-	option.defaultValue = defaultValue
+	me.registerNewOption(option)
 	return option
 }
 
-func (me *Parser) Str(name, help, defaultValue string) *Option {
-	option := me.newOption(name, help, Str)
-	option.defaultValue = defaultValue
+func (me *Parser) Str(name, help, defaultValue string) *StrOption {
+	option := newStrOption(name, help, defaultValue)
+	me.registerNewOption(option)
 	return option
 }
 
 func (me *Parser) Choice(name, help string, choices []string,
-	defaultValue string) *Option {
-	option := me.newOption(name, help, Str)
+	defaultValue string) *StrOption {
+	option := newStrOption(name, help, defaultValue)
 	option.validator = makeChoiceValidator(choices)
-	option.defaultValue = defaultValue
+	me.registerNewOption(option)
 	return option
 }
 
-func (me *Parser) Strs(name, help string) *Option {
-	option := me.newOption(name, help, Strs)
-	option.valueCount = OneOrMore
+func (me *Parser) Strs(name, help string) *StrsOption {
+	option := newStrsOption(name, help)
+	me.registerNewOption(option)
 	return option
 }
 
-func (me *Parser) newOption(name, help string,
-	valueType ValueType) *Option {
-	if name == "" {
-		panic("#204: can't have empty option name")
-	}
-	option := newOption(name, help, valueType)
+func (me *Parser) registerNewOption(option Optioner) {
 	me.subCommands[mainSubCommand].options = append(
 		me.subCommands[mainSubCommand].options, option)
-	return option
 }
 
 func (me *Parser) Parse() error {
@@ -308,7 +301,7 @@ func (me *Parser) ParseArgs(args []string) error {
 	if err != nil {
 		return err
 	}
-	var currentOption *Option
+	var currentOption Optioner
 	inPositionals := false
 	expect := Zero // ValueCount - how many values we expect to follow opt
 	for _, token := range tokens {
@@ -317,15 +310,13 @@ func (me *Parser) ParseArgs(args []string) error {
 		} else if inPositionals {
 			me.addPositional(token.text)
 		} else if !token.isValue() { // Option
-			if currentOption != nil && expect == ZeroOrOne &&
-				currentOption.Count() == 0 &&
-				currentOption.defaultValue != nil {
-				currentOption.value = currentOption.defaultValue
+			if currentOption != nil {
+				me.maybeSetToDefault(expect, currentOption)
 			}
 			currentOption = token.option
-			expect = currentOption.valueCount
-			if currentOption.valueType == Flag {
-				currentOption.value = true
+			expect = currentOption.ValueCount()
+			if option, ok := currentOption.(*FlagOption); ok {
+				option.value = true
 			}
 		} else { // Value
 			switch expect {
@@ -335,20 +326,20 @@ func (me *Parser) ParseArgs(args []string) error {
 				if currentOption.Count() == 1 {
 					inPositionals = me.addPositional(token.text)
 				} else {
-					currentOption.addValue(token.text)
+					me.addValue(currentOption, token.text)
 				}
 			case ZeroOrMore:
-				currentOption.addValue(token.text)
+				me.addValue(currentOption, token.text)
 			case One:
 				if currentOption.Count() == 0 {
-					currentOption.addValue(token.text)
+					me.addValue(currentOption, token.text)
 				} else {
 					inPositionals = me.addPositional(token.text)
 				}
 			case OneOrMore:
-				currentOption.addValue(token.text)
+				me.addValue(currentOption, token.text)
 			default:
-				panic("#210: invalid ValueCount") // Two or Three
+				panic("#200: invalid ValueCount") // Two or Three
 			}
 		}
 	}
@@ -356,6 +347,43 @@ func (me *Parser) ParseArgs(args []string) error {
 		return err
 	}
 	return me.checkValues(subcommand.options)
+}
+
+func (me *Parser) maybeSetToDefault(expect ValueCount, option Optioner) {
+	defaultValue := option.defaultValue()
+	if expect == ZeroOrOne && option.Count() == 0 && defaultValue != nil {
+		switch option := option.(type) {
+		case *IntOption:
+			option.setToDefault()
+		case *RealOption:
+			option.setToDefault()
+		case *StrOption:
+			option.setToDefault()
+		default:
+			panic("#210: missed type case")
+		}
+	}
+}
+
+func (me *Parser) addValue(option Optioner, value string) error {
+	var err error
+	switch option := option.(type) {
+	case *IntOption:
+		err = option.addValue(value)
+	case *RealOption:
+		err = option.addValue(value)
+	case *StrOption:
+		err = option.addValue(value)
+	case *StrsOption:
+		err = option.addValue(value)
+	default:
+		panic("#300: missed type case")
+	}
+	if err != nil {
+		return me.handleError(8, fmt.Sprintf("invalid value for %s: %s",
+			option.LongName(), err))
+	}
+	return nil
 }
 
 func (me *Parser) addPositional(value string) bool {
@@ -370,17 +398,17 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 	seen_V := false
 	main := me.subCommands[mainSubCommand]
 	for _, option := range main.options {
-		if option.longName == me.HelpName {
-			panic("#220: only auto-generated help is supported")
-		} else if option.longName == me.VersionName {
-			panic("#222: only auto-generated version is supported")
+		if option.LongName() == me.HelpName {
+			panic("#400: only auto-generated help is supported")
+		} else if option.LongName() == me.VersionName {
+			panic("#402: only auto-generated version is supported")
 		}
-		if me.use_h_for_help && option.shortName == 'h' {
+		if me.use_h_for_help && option.ShortName() == 'h' {
 			me.use_h_for_help = false
 		}
-		if option.shortName == 'v' {
+		if option.ShortName() == 'v' {
 			me.use_v_for_version = false
-		} else if option.shortName == 'V' {
+		} else if option.ShortName() == 'V' {
 			seen_V = true
 		}
 	}
@@ -505,7 +533,8 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 		option, ok := state.optionForShortName[name]
 		if ok {
 			tokens = append(tokens, newNameToken(name, option))
-			if option.valueType != Flag && i+1 < len(text) {
+			_, isFlag := option.(*FlagOption)
+			if !isFlag && i+1 < len(text) {
 				value := text[i+1:] // -aValue -abcValue
 				tokens = append(tokens, newValueToken(value))
 			}
@@ -548,8 +577,8 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 	for long, command := range me.subCommands {
 		if long != mainSubCommand {
 			cmdForName[long] = command
-			if command.shortName != 0 {
-				cmdForName[string(command.shortName)] = command
+			if command.ShortName() != 0 {
+				cmdForName[string(command.ShortName())] = command
 			}
 		}
 	}
@@ -616,48 +645,64 @@ func (me *Parser) checkPositionals() error {
 					count))
 		}
 	default:
-		panic("#230: invalid ValueCount")
+		panic("#500: invalid ValueCount")
 	}
 	return nil
 }
 
-func (me *Parser) checkValues(options []*Option) error {
+func (me *Parser) checkValues(options []Optioner) error {
 	for _, option := range options {
-		option.setDefaultIfAppropriate()
+		me.setDefaultIfAppropriate(option)
 		count := option.Count()
-		switch option.valueCount {
+		switch option.ValueCount() {
 		case Zero:
-			if option.valueType != Flag {
+			if _, isFlag := option.(*FlagOption); !isFlag {
 				panic(fmt.Sprintf(
-					"#240: nonflag option %s with zero ValueCount",
-					option.longName))
+					"#600: nonflag option %s with zero ValueCount",
+					option.LongName()))
 			}
 		case ZeroOrOne:
 			if count > 1 {
 				return me.handleError(32,
 					fmt.Sprintf(
 						"expected zero or one values for %s, got %d",
-						option.longName, count))
+						option.LongName(), count))
 			}
 		case ZeroOrMore: // any count is valid
 		case One:
 			if count != 1 {
 				return me.handleError(34,
 					fmt.Sprintf("expected exactly one value for %s, got %d",
-						option.longName, count))
+						option.LongName(), count))
 			}
 		case OneOrMore:
 			if count == 0 {
 				return me.handleError(36,
 					fmt.Sprintf(
 						"expected at least one value for %s, got %d",
-						option.longName, count))
+						option.LongName(), count))
 			}
 		default:
-			panic("#242: invalid ValueCount") // Two or Three
+			panic("#602: invalid ValueCount") // Two or Three
 		}
 	}
 	return nil
+}
+
+func (me *Parser) setDefaultIfAppropriate(option Optioner) {
+	switch option := option.(type) {
+	case *FlagOption: // already false
+	case *IntOption:
+		option.setDefaultIfAppropriate()
+	case *RealOption:
+		option.setDefaultIfAppropriate()
+	case *StrOption:
+		option.setDefaultIfAppropriate()
+	case *StrsOption:
+		option.setDefaultIfAppropriate()
+	default:
+		panic("#700: missed type case")
+	}
 }
 
 func (me *Parser) handleError(code int, msg string) error {
@@ -669,14 +714,14 @@ func (me *Parser) handleError(code int, msg string) error {
 	return errors.New(msg)
 }
 
-func (me *Parser) OnMissing(option *Option) error {
-	if option.shortName != 0 {
+func (me *Parser) OnMissing(option Optioner) error {
+	if option.ShortName() != 0 {
 		return me.handleError(0,
 			fmt.Sprintf("option -%c (or --%s) is required",
-				option.shortName, option.longName))
+				option.ShortName(), option.LongName()))
 	}
 	return me.handleError(0, fmt.Sprintf("option --%s is required",
-		option.longName))
+		option.LongName()))
 }
 
 func (me *Parser) OnError(msg string) error {

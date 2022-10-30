@@ -5,4 +5,5 @@ go fmt .
 staticcheck .
 go vet .
 exhaustive .
+go test
 git st

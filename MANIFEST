@@ -5,6 +5,21 @@
 #   HadValue // -v1
 # and add: Check() error
 #
+# func newXXXOption(...) {
+#   ...
+#   option.state = NotGiven
+#   return option
+# }
+#
+# func (me XXXOption) setGiven() {
+#   me.state = Given
+# }
+# 
+# func (me XXXOption) addValue(...) {
+#   ...
+#   me.state = HadValue
+# }
+# 
 # func (me XXXOption) Check(atEnd bool) error { // Int Real Str version
 #   if atEnd {
 #	if me.state == Given && !m.allowImplicit {

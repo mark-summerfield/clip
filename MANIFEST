@@ -1,3 +1,4 @@
+# TODO add tests for StrsOption SetValueCount()
 # TODO rationalize error codes (100 +4) & panic codes (900 +2)
 # TODO Additional ValueTypes:
 #   - Ints

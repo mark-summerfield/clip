@@ -253,18 +253,24 @@ func (me *StrOption) addValue(value string) string {
 
 type StrsOption struct {
 	*commonOption
-	value []string
+	value      []string
+	valueCount ValueCount
 }
 
 func newStrsOption(name, help string) *StrsOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven}}
+		shortName: shortName, help: help, state: NotGiven},
+		valueCount: OneOrMoreValues}
 }
 
 func (me StrsOption) Value() []string {
 	return me.value
+}
+
+func (me *StrsOption) SetValueCount(valueCount ValueCount) {
+	me.valueCount = valueCount
 }
 
 func (me StrsOption) wantsValue() bool {
@@ -274,8 +280,36 @@ func (me StrsOption) wantsValue() bool {
 func (me StrsOption) check() string {
 	if me.state == Given {
 		return fmt.Sprintf(
-			"expected exactly at least one value for %s, got none",
+			"expected %s values for %s, got none", me.valueCount,
 			me.LongName())
+	} else if me.state == HadValue {
+		count := len(me.value)
+		ok := true
+		switch me.valueCount {
+		case OneOrMoreValues:
+			if count < 1 {
+				ok = false
+			}
+		case TwoValues:
+			if count != 2 {
+				ok = false
+			}
+		case ThreeValues:
+			if count != 3 {
+				ok = false
+			}
+		case FourValues:
+			if count != 3 {
+				ok = false
+			}
+		default:
+			panic("#330: invalid ValueCount")
+		}
+		if !ok {
+			return fmt.Sprintf(
+				"expected %s values for %s, got %d", me.valueCount,
+				me.LongName(), count)
+		}
 	}
 	return ""
 }

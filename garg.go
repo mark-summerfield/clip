@@ -183,7 +183,7 @@ func NewParser() Parser {
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommand] = newMainSubCommand()
 	return Parser{appName: appName, appVersion: "",
-		subCommands: subcommands, positionalCount: ZeroOrMore,
+		subCommands: subcommands, positionalCount: ZeroOrMorePositionals,
 		positionalVarName: "FILENAME", HelpName: "help",
 		use_h_for_help: true,
 	}
@@ -545,49 +545,42 @@ func (me *Parser) onVersion() {
 
 func (me *Parser) checkPositionals() error {
 	count := len(me.Positionals)
+	ok := true
 	switch me.positionalCount {
-	case Zero:
+	case ZeroPositionals:
 		if count > 0 {
-			return me.handleError(20,
-				fmt.Sprintf("expected no positional arguments, got %d",
-					count))
+			ok = false
 		}
-	case ZeroOrOne:
+	case ZeroOrOnePositionals:
 		if count > 1 {
-			return me.handleError(21,
-				fmt.Sprintf(
-					"expected zero or one positional arguments, got %d",
-					count))
+			ok = false
 		}
-	case ZeroOrMore: // any count is valid
-	case One:
+	case ZeroOrMorePositionals: // any count is valid
+	case OnePositional:
 		if count != 1 {
-			return me.handleError(22,
-				fmt.Sprintf(
-					"expected exactly one positional argument, got %d",
-					count))
+			ok = false
 		}
-	case OneOrMore:
+	case OneOrMorePositionals:
 		if count == 0 {
-			return me.handleError(23,
-				fmt.Sprintf(
-					"expected at least one positional argument, got %d",
-					count))
+			ok = false
 		}
-	case Two:
+	case TwoPositionals:
 		if count != 2 {
-			return me.handleError(24,
-				fmt.Sprintf(
-					"expected exactly two positional arguments, got %d",
-					count))
+			ok = false
 		}
-	case Three:
+	case ThreePositionals:
 		if count != 3 {
-			return me.handleError(25,
-				fmt.Sprintf(
-					"expected exactly three positional arguments, got %d",
-					count))
+			ok = false
 		}
+	case FourPositionals:
+		if count != 4 {
+			ok = false
+		}
+	}
+	if !ok {
+		return me.handleError(20,
+			fmt.Sprintf("expected %s positional arguments, got %d",
+				me.positionalCount, count))
 	}
 	return nil
 }

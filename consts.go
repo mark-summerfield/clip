@@ -29,35 +29,62 @@ func (me optionState) String() string {
 	}
 }
 
+type ValueCount uint8
+
+const (
+	OneOrMoreValues ValueCount = iota
+	TwoValues
+	ThreeValues
+	FourValues
+)
+
+func (me ValueCount) String() string {
+	switch me {
+	case OneOrMoreValues:
+		return "one or more"
+	case TwoValues:
+		return "two"
+	case ThreeValues:
+		return "three"
+	case FourValues:
+		return "four"
+	default:
+		panic("#310: invalid ValueCount")
+	}
+}
+
 type PositionalCount uint8
 
 const (
-	Zero       PositionalCount = iota // for flags & for no positionals allowed
-	ZeroOrOne                         // for options with default and positionals
-	ZeroOrMore                        // default for positionals
-	One                               // default for Int, Real, Str
-	Two                               // for positionals
-	Three                             // for positionals
-	OneOrMore                         // default for Strs
+	ZeroPositionals PositionalCount = iota
+	ZeroOrOnePositionals
+	ZeroOrMorePositionals
+	OnePositional
+	TwoPositionals
+	ThreePositionals
+	FourPositionals
+	OneOrMorePositionals
 )
 
 func (me PositionalCount) String() string {
 	switch me {
-	case Zero:
-		return "Zero"
-	case ZeroOrOne:
-		return "ZeroOrOne"
-	case ZeroOrMore:
-		return "ZeroOrMore"
-	case One:
-		return "One"
-	case Two:
-		return "Two"
-	case Three:
-		return "Three"
-	case OneOrMore:
-		return "OneOrMore"
+	case ZeroPositionals:
+		return "no"
+	case ZeroOrOnePositionals:
+		return "zero or one"
+	case ZeroOrMorePositionals:
+		return "zero or more"
+	case OnePositional:
+		return "one"
+	case TwoPositionals:
+		return "two"
+	case ThreePositionals:
+		return "three"
+	case FourPositionals:
+		return "four"
+	case OneOrMorePositionals:
+		return "one or more"
 	default:
-		panic("#310: invalid PositionalCount")
+		panic("#320: invalid PositionalCount")
 	}
 }

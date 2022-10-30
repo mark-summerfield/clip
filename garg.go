@@ -296,11 +296,13 @@ func (me *Parser) ParseLine(line string) error {
 }
 
 func (me *Parser) ParseArgs(args []string) error {
+	var err error
 	me.prepareHelpAndVersionOptions()
 	subcommand, tokens, err := me.tokenize(args)
 	if err != nil {
 		return err
 	}
+	//fmt.Printf("TOKENS: %q %s\n", strings.Join(args, " "), tokens)
 	var currentOption Optioner
 	inPositionals := false
 	expect := Zero // ValueCount - how many values we expect to follow opt
@@ -324,21 +326,24 @@ func (me *Parser) ParseArgs(args []string) error {
 				if currentOption.Count() == 1 {
 					inPositionals = me.addPositional(token.text)
 				} else {
-					me.addValue(currentOption, token.text)
+					err = me.addValue(currentOption, token.text)
 				}
 			case ZeroOrMore:
-				me.addValue(currentOption, token.text)
+				err = me.addValue(currentOption, token.text)
 			case One:
 				if currentOption.Count() == 0 {
-					me.addValue(currentOption, token.text)
+					err = me.addValue(currentOption, token.text)
 				} else {
 					inPositionals = me.addPositional(token.text)
 				}
 			case OneOrMore:
-				me.addValue(currentOption, token.text)
+				err = me.addValue(currentOption, token.text)
 			case Two, Three:
 				panic("#200: invalid ValueCount")
 			}
+		}
+		if err != nil {
+			return err
 		}
 	}
 	if err := me.checkPositionals(); err != nil {

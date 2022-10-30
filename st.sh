@@ -5,5 +5,5 @@ go fmt .
 staticcheck .
 go vet .
 exhaustive .
-go test
+golangci-lint run
 git st

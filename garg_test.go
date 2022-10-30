@@ -1017,7 +1017,9 @@ func TestPackageDocFlag1(t *testing.T) {
 	parser := NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt := parser.Flag("verbose", "whether to show more output")
-	parser.ParseLine("")
+	if err := parser.ParseLine(""); err != nil {
+		t.Error("expected successful parse")
+	}
 	verbose := verboseOpt.Value() // verbose == false
 	if verbose {
 		t.Error("expected verbose=false, got true")
@@ -1026,7 +1028,9 @@ func TestPackageDocFlag1(t *testing.T) {
 	if verbose {
 		t.Error("expected verbose=false, got true")
 	}
-	parser.ParseLine("-v")
+	if err := parser.ParseLine("-v"); err != nil {
+		t.Error("expected successful parse")
+	}
 	verbose = verboseOpt.Value() // verbose == true
 	if !verbose {
 		t.Error("expected verbose=true, got false")
@@ -1044,7 +1048,9 @@ func TestPackageDocFlag2(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
-	parser.ParseLine("")
+	if err := parser.ParseLine(""); err != nil {
+		t.Error("expected successful parse")
+	}
 	if outfileOpt.Given() {
 		t.Error("expected outfile=!Given")
 	}
@@ -1061,7 +1067,9 @@ func TestPackageDocFlag3(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
-	parser.ParseLine("-v -x -c -o outfile.dat")
+	if err := parser.ParseLine("-v -x -c -o outfile.dat"); err != nil {
+		t.Error("expected successful parse")
+	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
@@ -1078,7 +1086,9 @@ func TestPackageDocFlag4(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
-	parser.ParseLine("-v -x -c -o=outfile.dat")
+	if err := parser.ParseLine("-v -x -c -o=outfile.dat"); err != nil {
+		t.Error("expected successful parse")
+	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
@@ -1095,7 +1105,9 @@ func TestPackageDocFlag5(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
-	parser.ParseLine("-vxcooutfile.dat")
+	if err := parser.ParseLine("-vxcooutfile.dat"); err != nil {
+		t.Error("expected successful parse")
+	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
@@ -1112,7 +1124,9 @@ func TestPackageDocFlag6(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
-	parser.ParseLine("-vxco outfile.dat")
+	if err := parser.ParseLine("-vxco outfile.dat"); err != nil {
+		t.Error("expected successful parse")
+	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
@@ -1129,7 +1143,9 @@ func TestPackageDocFlag7(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
-	parser.ParseLine("-vxco=outfile.dat")
+	if err := parser.ParseLine("-vxco=outfile.dat"); err != nil {
+		t.Error("expected successful parse")
+	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
@@ -1146,7 +1162,9 @@ func TestPackageDocFlag8(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
-	parser.ParseLine("-vxc")
+	if err := parser.ParseLine("-vxc"); err != nil {
+		t.Error("expected successful parse")
+	}
 	if outfileOpt.Given() {
 		t.Error("expected outfile=!Given")
 	}
@@ -1163,7 +1181,9 @@ func TestPackageDocFlag9(t *testing.T) {
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
-	parser.ParseLine("-vxco")
+	if err := parser.ParseLine("-vxco"); err != nil {
+		t.Error("expected successful parse")
+	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
 	}
@@ -1177,7 +1197,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser := NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt := parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("")
+	if err := parser.ParseLine(""); err != nil {
+		t.Error("expected successful parse")
+	}
 	verbose := 0
 	expected := 1
 	if verboseOpt.Given() {
@@ -1191,7 +1213,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("-v")
+	if err := parser.ParseLine("-v"); err != nil {
+		t.Error("expected successful parse")
+	}
 	expected = 1
 	verbose = verboseOpt.Value()
 	if verbose != expected {
@@ -1201,7 +1225,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("--verbose")
+	if err := parser.ParseLine("--verbose"); err != nil {
+		t.Error("expected successful parse")
+	}
 	expected = 1
 	verbose = verboseOpt.Value()
 	if verbose != expected {
@@ -1211,7 +1237,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("-v1")
+	if err := parser.ParseLine("-v1"); err != nil {
+		t.Error("expected successful parse")
+	}
 	expected = 1
 	verbose = verboseOpt.Value()
 	if verbose != expected {
@@ -1221,7 +1249,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("-v=2")
+	if err := parser.ParseLine("-v=2"); err != nil {
+		t.Error("expected successful parse")
+	}
 	expected = 2
 	verbose = verboseOpt.Value()
 	if verbose != expected {
@@ -1231,7 +1261,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("-v 3")
+	if err := parser.ParseLine("-v 3"); err != nil {
+		t.Error("expected successful parse")
+	}
 	expected = 3
 	verbose = verboseOpt.Value()
 	if verbose != expected {
@@ -1241,7 +1273,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("--verbose=4")
+	if err := parser.ParseLine("--verbose=4"); err != nil {
+		t.Error("expected successful parse")
+	}
 	expected = 4
 	verbose = verboseOpt.Value()
 	if verbose != expected {
@@ -1251,7 +1285,9 @@ func TestPackageDocSingleValue(t *testing.T) {
 	parser = NewParser()
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
-	parser.ParseLine("--verbose 5")
+	if err := parser.ParseLine("--verbose 5"); err != nil {
+		t.Error("expected successful parse")
+	}
 	expected = 5
 	verbose = verboseOpt.Value()
 	if verbose != expected {

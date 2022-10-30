@@ -7,17 +7,17 @@ type SubCommand struct {
 	longName  string
 	shortName rune
 	help      string
-	options   []Optioner
+	options   []optioner
 }
 
 func newMainSubCommand() *SubCommand {
 	return &SubCommand{longName: "", shortName: noShortName, help: "",
-		options: make([]Optioner, 0)}
+		options: make([]optioner, 0)}
 }
 
 func newSubCommand(name, help string) *SubCommand {
 	return &SubCommand{longName: name, shortName: noShortName, help: help,
-		options: make([]Optioner, 0)}
+		options: make([]optioner, 0)}
 }
 
 func (me *SubCommand) LongName() string {
@@ -87,14 +87,14 @@ func (me *SubCommand) Strs(name, help string) *StrsOption {
 	return option
 }
 
-func (me *SubCommand) registerNewOption(option Optioner) {
+func (me *SubCommand) registerNewOption(option optioner) {
 	me.options = append(me.options, option)
 }
 
-func (me *SubCommand) optionsForNames() (map[string]Optioner,
-	map[string]Optioner) {
-	optionForLongName := make(map[string]Optioner, len(me.options))
-	optionForShortName := make(map[string]Optioner, len(me.options))
+func (me *SubCommand) optionsForNames() (map[string]optioner,
+	map[string]optioner) {
+	optionForLongName := make(map[string]optioner, len(me.options))
+	optionForShortName := make(map[string]optioner, len(me.options))
 	for _, option := range me.options {
 		if option.LongName() != "" {
 			optionForLongName[option.LongName()] = option

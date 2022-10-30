@@ -10,30 +10,26 @@ import (
 	"strings"
 )
 
-type Optioner interface {
+type optioner interface {
 	LongName() string
 	ShortName() rune
 	SetShortName(rune)
 	SetVarName(string)
 	SetValidator(Validator)
+	addValue(string) error
+	wantsValue() bool
 	setGiven()
-	Given() bool
-	Count() int
-	ValueCount() ValueCount
-	hasDefault() bool
-	defaultValue() any
-	beenAdded() bool
+	check() error
 }
 
 type commonOption struct {
 	longName   string
 	shortName  rune
 	help       string
-	given      bool
-	added      bool
 	valueCount ValueCount
 	varName    string // e.g., -o|--outfile FILENAME
 	validator  Validator
+	state      optionState
 }
 
 func (me *commonOption) LongName() string {
@@ -64,11 +60,13 @@ func (me *commonOption) ValueCount() ValueCount {
 }
 
 func (me *commonOption) Given() bool {
-	return me.given
+	return me.state != NotGiven
 }
 
 func (me *commonOption) setGiven() {
-	me.given = true
+	if me.state == NotGiven {
+		me.state = Given
+	}
 }
 
 type FlagOption struct {
@@ -80,27 +78,26 @@ func newFlagOption(name, help string) *FlagOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &FlagOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: Zero}}
+		shortName: shortName, help: help, valueCount: Zero,
+		state: NotGiven}}
 }
 
 func (me FlagOption) Value() bool {
 	return me.value
 }
 
-func (me FlagOption) defaultValue() any {
+func (me FlagOption) wantsValue() bool {
+	return false
+}
+
+func (me FlagOption) check() error {
+	if me.state == HadValue {
+		panic("flag with value logic error")
+	}
 	return nil
 }
-
-func (me FlagOption) hasDefault() bool {
-	return true
-}
-
-func (me FlagOption) Count() int {
-	return 0
-}
-
-func (me FlagOption) beenAdded() bool {
-	return false
+func (me *FlagOption) addValue(value string) error {
+	return fmt.Errorf("flag %s can't accept a value", me.LongName())
 }
 
 type IntOption struct {
@@ -114,38 +111,40 @@ func newIntOption(name, help string, theDefault int) *IntOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: One},
+		shortName: shortName, help: help, valueCount: One, state: NotGiven},
 		theDefault: theDefault}
 }
 
 func (me IntOption) Value() int {
-	if !me.added {
+	switch me.state {
+	case NotGiven:
 		return me.theDefault
+	default:
+		return me.value
 	}
-	return me.value
+}
+
+func (me IntOption) wantsValue() bool {
+	if me.state == Given {
+		return true
+	}
+	return false
+}
+
+func (me IntOption) check() error {
+	if me.state == Given {
+		if me.allowImplicit {
+			return nil
+		} else {
+			return fmt.Errorf("expected exactly one value for %s, got none",
+				me.LongName())
+		}
+	}
+	return nil
 }
 
 func (me *IntOption) AllowImplicit() {
 	me.allowImplicit = true
-}
-
-func (me IntOption) defaultValue() any {
-	return me.theDefault
-}
-
-func (me IntOption) hasDefault() bool {
-	return true
-}
-
-func (me IntOption) Count() int {
-	if me.added {
-		return 1
-	}
-	return 0
-}
-
-func (me IntOption) beenAdded() bool {
-	return me.added
 }
 
 func (me *IntOption) addValue(value string) error {
@@ -155,7 +154,7 @@ func (me *IntOption) addValue(value string) error {
 			me.longName, value)
 	}
 	me.value = i
-	me.added = true
+	me.state = HadValue
 	return nil
 }
 
@@ -170,38 +169,40 @@ func newRealOption(name, help string, theDefault float64) *RealOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: One},
+		shortName: shortName, help: help, valueCount: One, state: NotGiven},
 		theDefault: theDefault}
 }
 
 func (me RealOption) Value() float64 {
-	if !me.added {
+	switch me.state {
+	case NotGiven:
 		return me.theDefault
+	default:
+		return me.value
 	}
-	return me.value
+}
+
+func (me RealOption) wantsValue() bool {
+	if me.state == Given {
+		return true
+	}
+	return false
+}
+
+func (me RealOption) check() error {
+	if me.state == Given {
+		if me.allowImplicit {
+			return nil
+		} else {
+			return fmt.Errorf("expected exactly one value for %s, got none",
+				me.LongName())
+		}
+	}
+	return nil
 }
 
 func (me *RealOption) AllowImplicit() {
 	me.allowImplicit = true
-}
-
-func (me RealOption) defaultValue() any {
-	return me.theDefault
-}
-
-func (me RealOption) hasDefault() bool {
-	return true
-}
-
-func (me RealOption) Count() int {
-	if me.added {
-		return 1
-	}
-	return 0
-}
-
-func (me RealOption) beenAdded() bool {
-	return me.added
 }
 
 func (me *RealOption) addValue(value string) error {
@@ -211,7 +212,7 @@ func (me *RealOption) addValue(value string) error {
 			me.longName, value)
 	}
 	me.value = r
-	me.added = true
+	me.state = HadValue
 	return nil
 }
 
@@ -226,43 +227,45 @@ func newStrOption(name, help, theDefault string) *StrOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: One},
+		shortName: shortName, help: help, valueCount: One, state: NotGiven},
 		theDefault: theDefault}
 }
 
 func (me StrOption) Value() string {
-	if !me.added {
+	switch me.state {
+	case NotGiven:
 		return me.theDefault
+	default:
+		return me.value
 	}
-	return me.value
+}
+
+func (me StrOption) wantsValue() bool {
+	if me.state == Given {
+		return true
+	}
+	return false
+}
+
+func (me StrOption) check() error {
+	if me.state == Given {
+		if me.allowImplicit {
+			return nil
+		} else {
+			return fmt.Errorf("expected exactly one value for %s, got none",
+				me.LongName())
+		}
+	}
+	return nil
 }
 
 func (me *StrOption) AllowImplicit() {
 	me.allowImplicit = true
 }
 
-func (me StrOption) defaultValue() any {
-	return me.theDefault
-}
-
-func (me StrOption) hasDefault() bool {
-	return true
-}
-
-func (me StrOption) Count() int {
-	if me.added {
-		return 1
-	}
-	return 0
-}
-
-func (me StrOption) beenAdded() bool {
-	return me.added
-}
-
 func (me *StrOption) addValue(value string) error {
 	me.value = value
-	me.added = true
+	me.state = HadValue
 	return nil
 }
 
@@ -275,27 +278,28 @@ func newStrsOption(name, help string) *StrsOption {
 	validateName(name)
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, valueCount: OneOrMore}}
+		shortName: shortName, help: help, valueCount: OneOrMore,
+		state: NotGiven}}
 }
 
 func (me StrsOption) Value() []string {
 	return me.value
 }
 
-func (me StrsOption) defaultValue() any {
+func (me StrsOption) wantsValue() bool {
+	if me.state == NotGiven {
+		return false
+	}
+	return true
+}
+
+func (me StrsOption) check() error {
+	if me.state == Given {
+		return fmt.Errorf(
+			"expected exactly at least one value for %s, got none",
+			me.LongName())
+	}
 	return nil
-}
-
-func (me StrsOption) hasDefault() bool {
-	return false
-}
-
-func (me StrsOption) Count() int {
-	return len(me.value)
-}
-
-func (me StrsOption) beenAdded() bool {
-	return false
 }
 
 func (me *StrsOption) addValue(value string) error {
@@ -303,7 +307,7 @@ func (me *StrsOption) addValue(value string) error {
 		me.value = make([]string, 0, 1)
 	}
 	me.value = append(me.value, value)
-	me.added = true
+	me.state = HadValue
 	return nil
 }
 

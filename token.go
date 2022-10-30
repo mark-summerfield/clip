@@ -8,15 +8,15 @@ import "fmt"
 type tokenState struct {
 	subcommand         *SubCommand
 	subCommandForName  map[string]*SubCommand
-	optionForLongName  map[string]Optioner
-	optionForShortName map[string]Optioner
+	optionForLongName  map[string]optioner
+	optionForShortName map[string]optioner
 	hasSubCommands     bool
 	hadSubCommand      bool
 }
 
 type token struct {
 	text              string
-	option            Optioner
+	option            optioner
 	positionalsFollow bool
 }
 
@@ -37,7 +37,7 @@ func (me token) String() string {
 	return fmt.Sprintf("--%s", me.text)
 }
 
-func newNameToken(text string, option Optioner) token {
+func newNameToken(text string, option optioner) token {
 	option.setGiven()
 	return token{text: text, option: option}
 }

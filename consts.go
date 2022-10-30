@@ -8,6 +8,14 @@ const noShortName = 0
 
 type Validator func(string) error
 
+type optionState uint8
+
+const (
+	NotGiven optionState = iota
+	Given
+	HadValue
+)
+
 type ValueCount uint8
 
 const (

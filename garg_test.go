@@ -87,27 +87,31 @@ func Test003(t *testing.T) {
 
 func Test004(t *testing.T) {
 	parser := NewParser()
-	parser.SetAppName("myapp")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	line := "-S4"
-	e := 16
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	verboseOpt.SetShortName(0)
+	line := "-S --verbose 3 filename.txt"
 	if err := parser.ParseLine(line); err != nil {
-		if e := expectError(e, err); e != "" {
-			t.Error(e)
-		}
-	} else {
-		t.Errorf("expected error #%d, got nil", e)
+		t.Error(err)
 	}
-	if parser.AppName() != "myapp" {
-		t.Errorf("expected appname=myapp, got %s", parser.AppName())
+	if !summaryOpt.Value() {
+		t.Error("expected true, got false")
+	}
+	v := verboseOpt.Value() // Single valued options always have a default
+	if v != 3 {
+		t.Errorf("expected verbose=3, got %d", v)
+	}
+	if e := expectEqualSlice([]string{"filename.txt"}, parser.Positionals,
+		"positionals"); e != "" {
+		t.Error(e)
 	}
 }
 
 func Test005(t *testing.T) {
 	parser := NewParser()
-	parser.SetAppName("myapp")
+	_ = parser.SetAppName("myapp")
 	parser.SetVersion("1.0.0")
 	parser.DontExit = true // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
@@ -698,15 +702,18 @@ func Test027(t *testing.T) {
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
-	line := "--maxwidth -s"
-	e := 16
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	verboseOpt.SetShortName(0)
+	line := "-S --verbose=3"
 	if err := parser.ParseLine(line); err != nil {
-		if e := expectError(e, err); e != "" {
-			t.Error(e)
-		}
-	} else {
-		t.Errorf("expected error #%d, got nil", e)
+		t.Error(err)
+	}
+	if !summaryOpt.Value() {
+		t.Error("expected true, got false")
+	}
+	v := verboseOpt.Value() // Single valued options always have a default
+	if v != 3 {
+		t.Errorf("expected verbose=3, got %d", v)
 	}
 }
 
@@ -906,16 +913,21 @@ func Test038(t *testing.T) {
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	parser.Int("verbose", "verbosity -v or -vN", 1)
-	// -v expects either nothing (will use the default of 1) or an int
-	line := "-vS"
-	e := 8
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	verboseOpt.SetShortName(0)
+	line := "-S"
 	if err := parser.ParseLine(line); err != nil {
-		if e := expectError(e, err); e != "" {
-			t.Error(e)
-		}
-	} else {
-		t.Errorf("expected error #%d, got nil", e)
+		t.Error(err)
+	}
+	if !summaryOpt.Value() {
+		t.Error("expected true, got false")
+	}
+	if verboseOpt.Given() {
+		t.Error("expected verbose=!Given")
+	}
+	v := verboseOpt.Value() // Single valued options always have a default
+	if v != 1 {
+		t.Errorf("expected verbose=1, got %d", v)
 	}
 }
 
@@ -939,142 +951,6 @@ func Test039(t *testing.T) {
 		}
 	} else {
 		t.Error("expected verbose=Given")
-	}
-}
-
-func Test040(t *testing.T) {
-	parser := NewParser()
-	parser.DontExit = true // for testing
-	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
-	verboseOpt.SetShortName(0)
-	line := "-S"
-	if err := parser.ParseLine(line); err != nil {
-		t.Error(err)
-	}
-	if !summaryOpt.Value() {
-		t.Error("expected true, got false")
-	}
-	if verboseOpt.Given() {
-		t.Error("expected verbose=!Given")
-	}
-	v := verboseOpt.Value() // Single valued options always have a default
-	if v != 1 {
-		t.Errorf("expected verbose=1, got %d", v)
-	}
-}
-
-func Test041(t *testing.T) {
-	parser := NewParser()
-	parser.DontExit = true // for testing
-	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
-	verboseOpt.SetShortName(0)
-	line := "-S --verbose=3"
-	if err := parser.ParseLine(line); err != nil {
-		t.Error(err)
-	}
-	if !summaryOpt.Value() {
-		t.Error("expected true, got false")
-	}
-	v := verboseOpt.Value() // Single valued options always have a default
-	if v != 3 {
-		t.Errorf("expected verbose=3, got %d", v)
-	}
-}
-
-func Test042(t *testing.T) {
-	parser := NewParser()
-	parser.DontExit = true // for testing
-	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.SetShortName('S')
-	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
-	verboseOpt.SetShortName(0)
-	line := "-S --verbose 3 filename.txt"
-	if err := parser.ParseLine(line); err != nil {
-		t.Error(err)
-	}
-	if !summaryOpt.Value() {
-		t.Error("expected true, got false")
-	}
-	v := verboseOpt.Value() // Single valued options always have a default
-	if v != 3 {
-		t.Errorf("expected verbose=3, got %d", v)
-	}
-	if e := expectEqualSlice([]string{"filename.txt"}, parser.Positionals,
-		"positionals"); e != "" {
-		t.Error(e)
-	}
-}
-
-func Test043(t *testing.T) {
-	parser := NewParser()
-	parser.DontExit = true // for testing
-	maxWidthOpt := parser.Int("maxwidth", "help", 43)
-	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.SetShortName('S')
-	line := "-m -S"
-	e := 34
-	if err := parser.ParseLine(line); err != nil {
-		if e := expectError(e, err); e != "" {
-			t.Error(e)
-		}
-	} else {
-		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
-	}
-}
-
-func Test044(t *testing.T) {
-	parser := NewParser()
-	parser.DontExit = true // for testing
-	maxWidthOpt := parser.Int("maxwidth", "help", 44)
-	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.SetShortName('S')
-	line := "--maxwidth -S"
-	e := 34
-	if err := parser.ParseLine(line); err != nil {
-		if e := expectError(e, err); e != "" {
-			t.Error(e)
-		}
-	} else {
-		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
-	}
-}
-
-func Test045(t *testing.T) {
-	parser := NewParser()
-	parser.DontExit = true // for testing
-	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.SetShortName('S')
-	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
-		10000, 45)
-	line := "--maxwidth"
-	e := 34
-	if err := parser.ParseLine(line); err != nil {
-		if e := expectError(e, err); e != "" {
-			t.Error(e)
-		}
-	} else {
-		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
-	}
-}
-
-func Test046(t *testing.T) {
-	parser := NewParser()
-	parser.DontExit = true // for testing
-	summaryOpt := parser.Flag("summary", "summary help TODO")
-	summaryOpt.SetShortName('S')
-	scaleOpt := parser.Real("scale", "max width help", 4.5)
-	line := "-Ss"
-	e := 34
-	if err := parser.ParseLine(line); err != nil {
-		if e := expectError(e, err); e != "" {
-			t.Error(e)
-		}
-	} else {
-		t.Errorf("expected error #%d, got nil (%g)", e, scaleOpt.Value())
 	}
 }
 
@@ -1399,5 +1275,147 @@ func TestPackageDocSingleValue(t *testing.T) {
 	verbose = verboseOpt.Value()
 	if verbose != expected {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
+	}
+}
+
+func TestE001(t *testing.T) {
+	parser := NewParser()
+	_ = parser.SetAppName("myapp")
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	line := "-S4"
+	e := eUnexpectedValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil", e)
+	}
+	if parser.AppName() != "myapp" {
+		t.Errorf("expected appname=myapp, got %s", parser.AppName())
+	}
+}
+
+func TestE002(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
+	line := "--maxwidth -s"
+	e := eUnexpectedValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil", e)
+	}
+}
+
+func TestE003(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	parser.Int("verbose", "verbosity -v or -vN", 1)
+	// -v expects either nothing (will use the default of 1) or an int
+	line := "-vS"
+	e := eInvalidValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil", e)
+	}
+}
+
+func TestE004(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	maxWidthOpt := parser.Int("maxwidth", "help", 43)
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	line := "-m -S"
+	e := eInvalidOptionValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
+	}
+}
+
+func TestE005(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	maxWidthOpt := parser.Int("maxwidth", "help", 44)
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	line := "--maxwidth -S"
+	e := eInvalidOptionValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
+	}
+}
+
+func TestE006(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000, 45)
+	line := "--maxwidth"
+	e := eInvalidOptionValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
+	}
+}
+
+func TestE007(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
+	line := "-Ss"
+	e := eInvalidOptionValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%g)", e, scaleOpt.Value())
+	}
+}
+
+func TestE008(t *testing.T) {
+	parser := NewParser()
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
+		10000, 45)
+	line := "--maxwidth 11"
+	e := eInvalidValue
+	if err := parser.ParseLine(line); err != nil {
+		if e := expectError(e, err); e != "" {
+			t.Error(e)
+		}
+	} else {
+		t.Errorf("expected error #%d, got nil (%d)", e, maxWidthOpt.Value())
 	}
 }

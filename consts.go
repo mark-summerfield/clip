@@ -6,7 +6,11 @@ package garg
 const mainSubCommandName = ""
 const noShortName = 0
 
-type Validator func(string) error
+// These take an option's name and the given string value and return a
+// valid value and "" or the type's zero value and an error message
+type IntValidator func(string, string) (int, string)
+type RealValidator func(string, string) (float64, string)
+type StrValidator func(string, string) (string, string)
 
 type optionState uint8
 
@@ -88,3 +92,25 @@ func (me PositionalCount) String() string {
 		panic("#320: invalid PositionalCount")
 	}
 }
+
+const (
+	// error codes
+	eUser                     = iota + 100
+	eMissing                  // 101
+	eInvalidValue             // 102
+	eInvalidHelpOption        // 103
+	eInvalidVersionOption     // 104
+	eEmptyAppName             // 105
+	eEmptyVarName             // 106
+	eUnrecognizedLongOption   // 107
+	eUnrecognizedShortOption1 // 108
+	eUnrecognizedShortOption2 // 109
+	eUnexpectedValue          // 110
+	eWrongPositionalCount     // 111
+	eInvalidOptionValue       // 112
+	// panic codes
+	pBug                 = iota + 900
+	pEmptySubCommandName // 901
+	pEmptyOptionName     // 902
+	pNumericOptionName   // 903
+)

@@ -4,7 +4,6 @@
 package garg
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 )
@@ -18,45 +17,85 @@ func namesForName(name string) (rune, string) {
 	return shortName, name
 }
 
-func makeIntRangeValidator(minimum, maximum int) func(string) error {
-	return func(arg string) error {
-		i, err := strconv.Atoi(arg)
+func makeDefaultIntValidator() func(string, string) (int, string) {
+	return func(name, value string) (int, string) {
+		i, err := strconv.Atoi(value)
 		if err != nil {
-			return err
+			return 0, fmt.Sprintf("option %s expected an int value, got %s",
+				name, value)
+		}
+		return i, ""
+	}
+}
+
+func makeIntRangeValidator(minimum, maximum int) func(string, string) (int,
+	string) {
+	return func(name, value string) (int, string) {
+		i, err := strconv.Atoi(value)
+		if err != nil {
+			return 0, err.Error()
 		}
 		if minimum <= i && i <= maximum {
-			return nil
+			return i, ""
 		}
 		if i < minimum {
-			return fmt.Errorf("%d less than the minimum of %d ", i, minimum)
+			return 0, fmt.Sprintf("option %s's minimum is %d, got %d",
+				name, minimum, i)
 		}
-		return fmt.Errorf("%d greater than the maximum of %d ", i, maximum)
+		return 0, fmt.Sprintf("option %s's maximum is %d, got %d",
+			name, maximum, i)
 	}
 }
 
-func makeRealRangeValidator(minimum, maximum float64) func(string) error {
-	return func(arg string) error {
-		r, err := strconv.ParseFloat(arg, 64)
+func makeDefaultRealValidator() func(string, string) (float64, string) {
+	return func(name, value string) (float64, string) {
+		r, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return err
+			return 0, fmt.Sprintf("option %s expected a real value, got %s",
+				name, value)
+		}
+		return r, ""
+	}
+}
+
+func makeRealRangeValidator(minimum, maximum float64) func(string,
+	string) (float64, string) {
+	return func(name, value string) (float64, string) {
+		r, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			return 0, err.Error()
 		}
 		if minimum <= r && r <= maximum {
-			return nil
+			return r, ""
 		}
 		if r < minimum {
-			return fmt.Errorf("%g less than the minimum of %g ", r, minimum)
+			return 0, fmt.Sprintf("option %s's minimum is %g, got %g",
+				name, minimum, r)
 		}
-		return fmt.Errorf("%g greater than the maximum of %g ", r, maximum)
+		return 0, fmt.Sprintf("option %s's maximum is %g, got %g",
+			name, maximum, r)
 	}
 }
 
-func makeChoiceValidator(choices []string) func(string) error {
-	return func(arg string) error {
+func makeDefaultStrValidator() func(string, string) (string, string) {
+	return func(name, value string) (string, string) {
+		if value == "" {
+			return "", fmt.Sprintf("option %s expected a nonempty string",
+				name)
+		}
+		return value, ""
+	}
+}
+
+func makeChoiceValidator(choices []string) func(string, string) (string,
+	string) {
+	return func(name, value string) (string, string) {
 		for _, choice := range choices {
-			if arg == choice {
-				return nil
+			if value == choice {
+				return value, ""
 			}
 		}
-		return errors.New("not one of the valid choices")
+		return "", fmt.Sprintf("option %s's value of %q is not one of "+
+			"the valid choices", name, value)
 	}
 }

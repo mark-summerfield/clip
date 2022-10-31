@@ -194,11 +194,12 @@ func (me *Parser) AppName() string {
 	return me.appName
 }
 
-func (me *Parser) SetAppName(name string) {
+func (me *Parser) SetAppName(name string) error {
 	if name == "" {
-		panic("#100: can't have empty appname")
+		return me.handleError(eEmptyAppName, "can't have empty appname")
 	}
 	me.appName = name
+	return nil
 }
 
 func (me *Parser) Version() string {
@@ -223,7 +224,8 @@ func (me *Parser) SetPositionalVarName(name string) {
 
 func (me *Parser) SubCommand(name, help string) *SubCommand {
 	if name == "" {
-		panic("#110: can't have empty subcommand name")
+		panic(fmt.Sprintf("#%d: can't have empty subcommand name",
+			pEmptySubCommandName))
 	}
 	subcommand := newSubCommand(name, help)
 	me.subCommands[name] = subcommand
@@ -276,7 +278,9 @@ func (me *Parser) ParseLine(line string) error {
 }
 
 func (me *Parser) ParseArgs(args []string) error {
-	me.prepareHelpAndVersionOptions()
+	if err := me.prepareHelpAndVersionOptions(); err != nil {
+		return err
+	}
 	subcommand, tokens, err := me.tokenize(args)
 	if err != nil {
 		return err
@@ -296,7 +300,7 @@ func (me *Parser) ParseArgs(args []string) error {
 		} else { // Value
 			if currentOption.wantsValue() {
 				if msg := currentOption.addValue(token.text); msg != "" {
-					return me.handleError(8, msg)
+					return me.handleError(eInvalidValue, msg)
 				}
 			} else {
 				inPositionals = me.addPositional(token.text)
@@ -317,14 +321,16 @@ func (me *Parser) addPositional(value string) bool {
 	return true
 }
 
-func (me *Parser) prepareHelpAndVersionOptions() {
+func (me *Parser) prepareHelpAndVersionOptions() error {
 	seen_V := false
 	main := me.subCommands[mainSubCommandName]
 	for _, option := range main.options {
 		if option.LongName() == me.HelpName {
-			panic("#400: only auto-generated help is supported")
+			return me.handleError(eInvalidHelpOption,
+				"only auto-generated help is supported")
 		} else if option.LongName() == me.VersionName {
-			panic("#402: only auto-generated version is supported")
+			return me.handleError(eInvalidVersionOption,
+				"only auto-generated version is supported")
 		}
 		if me.use_h_for_help && option.ShortName() == 'h' {
 			me.use_h_for_help = false
@@ -338,6 +344,7 @@ func (me *Parser) prepareHelpAndVersionOptions() {
 	if me.VersionName != "" && !me.use_v_for_version && !seen_V {
 		me.use_V_for_version = true
 	}
+	return nil
 }
 
 func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
@@ -426,16 +433,16 @@ func (me *Parser) handleLongOption(arg string, tokens []token,
 			tokens = append(tokens, newNameToken(name, option))
 			tokens = append(tokens, newValueToken(parts[1]))
 		} else {
-			return tokens, me.handleError(10, fmt.Sprintf(
-				"unrecognized option --%s", name))
+			return tokens, me.handleError(eUnrecognizedLongOption,
+				fmt.Sprintf("unrecognized option --%s", name))
 		}
 	} else { // --option
 		option, ok := state.optionForLongName[name]
 		if ok {
 			tokens = append(tokens, newNameToken(name, option))
 		} else {
-			return tokens, me.handleError(12, fmt.Sprintf(
-				"unrecognized option --%s", name))
+			return tokens, me.handleError(eUnrecognizedShortOption1,
+				fmt.Sprintf("unrecognized option --%s", name))
 		}
 	}
 	return tokens, nil
@@ -465,13 +472,13 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 			last := len(tokens) - 1
 			rest := text[i:]
 			if last >= 0 && rest != tokens[last].text {
-				return tokens, me.handleError(16, fmt.Sprintf(
+				return tokens, me.handleError(eUnexpectedValue, fmt.Sprintf(
 					"unexpected value %s", rest))
 			}
 			break
 		} else {
-			return tokens, me.handleError(18, fmt.Sprintf(
-				"unrecognized option -%s", name))
+			return tokens, me.handleError(eUnrecognizedShortOption2,
+				fmt.Sprintf("unrecognized option -%s", name))
 		}
 	}
 	if pendingValue != "" {
@@ -557,7 +564,7 @@ func (me *Parser) checkPositionals() error {
 		}
 	}
 	if !ok {
-		return me.handleError(20,
+		return me.handleError(eWrongPositionalCount,
 			fmt.Sprintf("expected %s positional arguments, got %d",
 				me.positionalCount, count))
 	}
@@ -567,7 +574,7 @@ func (me *Parser) checkPositionals() error {
 func (me *Parser) checkValues(options []optioner) error {
 	for _, option := range options {
 		if msg := option.check(); msg != "" {
-			return me.handleError(34, msg)
+			return me.handleError(eInvalidOptionValue, msg)
 		}
 	}
 	return nil
@@ -584,14 +591,14 @@ func (me *Parser) handleError(code int, msg string) error {
 
 func (me *Parser) OnMissing(option optioner) error {
 	if option.ShortName() != 0 {
-		return me.handleError(0,
+		return me.handleError(eMissing,
 			fmt.Sprintf("option -%c (or --%s) is required",
 				option.ShortName(), option.LongName()))
 	}
-	return me.handleError(0, fmt.Sprintf("option --%s is required",
+	return me.handleError(eMissing, fmt.Sprintf("option --%s is required",
 		option.LongName()))
 }
 
 func (me *Parser) OnError(msg string) error {
-	return me.handleError(1, msg)
+	return me.handleError(eUser, msg)
 }

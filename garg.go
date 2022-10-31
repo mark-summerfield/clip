@@ -152,7 +152,6 @@
 package garg
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -161,7 +160,6 @@ import (
 )
 
 type Parser struct {
-	DontExit          bool
 	Positionals       []string
 	HelpName          string
 	VersionName       string
@@ -516,28 +514,38 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 }
 
 func (me *Parser) onHelp(subcommand *SubCommand) {
-	if len(me.subCommands) == 1 { // No subcommands
-		// show main help
-		fmt.Printf("usage: %s TODO", me.appName) // TODO
-	} else { // Has subcommands
-		if subcommand.longName == mainSubCommandName {
-			// show main help with list of subcommands
-			fmt.Printf("usage: %s TODO", me.appName) // TODO
-		} else {
-			// show this subcommand's help
-			fmt.Printf("usage: %s TODO", me.appName) // TODO
+	exitFunc(0, me.HelpText(subcommand.LongName()))
+}
+
+// HelpText is public only to aid testing
+func (me *Parser) HelpText(name string) string {
+	var text string
+	if subcommand, ok := me.subCommands[name]; ok {
+		if len(me.subCommands) == 1 { // No subcommands
+			// show main help
+			text = fmt.Sprintf("usage: %s TODO main", me.appName) // TODO
+		} else { // Has subcommands
+			if subcommand.longName == mainSubCommandName {
+				// show main help with list of subcommands
+				text = fmt.Sprintf("usage: %s TODO main + subs", me.appName) // TODO
+			} else {
+				// show this subcommand's help
+				text = fmt.Sprintf("usage: %s TODO sub %s", me.appName, name) // TODO
+			}
 		}
+		return text
 	}
-	if !me.DontExit {
-		os.Exit(0)
-	}
+	panic(fmt.Sprintf("#%d: no main subcommand or subcommand", pBug))
 }
 
 func (me *Parser) onVersion() {
-	fmt.Printf("%s v%s", me.appName, me.appVersion)
-	if !me.DontExit {
-		os.Exit(0)
-	}
+	exitFunc(0, fmt.Sprintf("%s v%s", me.appName, me.appVersion))
+}
+
+// VersionText is public only to aid testing
+
+func (me *Parser) VersionText() string {
+	return fmt.Sprintf("%s v%s", me.appName, me.appVersion)
 }
 
 func (me *Parser) checkPositionals() error {
@@ -592,12 +600,8 @@ func (me *Parser) checkValues(options []optioner) error {
 }
 
 func (me *Parser) handleError(code int, msg string) error {
-	msg = fmt.Sprintf("error #%d: %s", code, msg)
-	if !me.DontExit {
-		fmt.Fprintln(os.Stderr, msg)
-		os.Exit(2)
-	}
-	return errors.New(msg)
+	exitFunc(2, fmt.Sprintf("error #%d: %s", code, msg))
+	return nil // never returns
 }
 
 func (me *Parser) OnMissing(option optioner) error {
@@ -613,3 +617,14 @@ func (me *Parser) OnMissing(option optioner) error {
 func (me *Parser) OnError(msg string) error {
 	return me.handleError(eUser, msg)
 }
+
+func defaultExitFunc(exitCode int, msg string) {
+	if exitCode == 0 {
+		fmt.Println(msg)
+	} else {
+		fmt.Fprintln(os.Stderr, msg)
+	}
+	os.Exit(exitCode)
+}
+
+var exitFunc = defaultExitFunc

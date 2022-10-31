@@ -285,7 +285,7 @@ func (me *Parser) ParseArgs(args []string) error {
 			me.onHelp(subcommand) // doesn't return
 		} else if token.kind == nameTokenKind { // Option
 			currentOption = token.option
-			if me.isVersion(subcommand, currentOption) {
+			if me.isVersion(subcommand, currentOption) { // may not return
 				return nil
 			}
 			if option, ok := currentOption.(*FlagOption); ok {

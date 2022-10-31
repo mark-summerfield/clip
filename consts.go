@@ -100,14 +100,13 @@ const (
 	eInvalidValue             // 102
 	eInvalidHelpOption        // 103
 	eInvalidVersionOption     // 104
-	eEmptyAppName             // 105
-	eEmptyVarName             // 106
-	eUnrecognizedLongOption   // 107
-	eUnrecognizedShortOption1 // 108
-	eUnrecognizedShortOption2 // 109
-	eUnexpectedValue          // 110
-	eWrongPositionalCount     // 111
-	eInvalidOptionValue       // 112
+	eEmptyVarName             // 105
+	eUnrecognizedLongOption   // 106
+	eUnrecognizedShortOption1 // 107
+	eUnrecognizedShortOption2 // 108
+	eUnexpectedValue          // 109
+	eWrongPositionalCount     // 110
+	eInvalidOptionValue       // 111
 	// panic codes
 	pBug                 = iota + 900
 	pEmptySubCommandName // 901

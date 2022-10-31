@@ -14,21 +14,26 @@ type tokenState struct {
 	hadSubCommand      bool
 }
 
-type token struct {
-	text              string
-	option            optioner
-	positionalsFollow bool
-}
+type tokenKind uint8
 
-func (me *token) isValue() bool {
-	return me.option == nil
+const (
+	nameTokenKind tokenKind = iota
+	valueTokenKind
+	positionalsFollowTokenKind
+	helpTokenKind
+)
+
+type token struct {
+	text   string
+	option optioner
+	kind   tokenKind
 }
 
 func (me token) String() string {
-	if me.positionalsFollow {
+	if me.kind == positionalsFollowTokenKind {
 		return "--"
 	}
-	if me.isValue() {
+	if me.kind == valueTokenKind {
 		return fmt.Sprintf("%q", me.text)
 	}
 	if len(me.text) == 1 {
@@ -39,13 +44,17 @@ func (me token) String() string {
 
 func newNameToken(text string, option optioner) token {
 	option.setGiven()
-	return token{text: text, option: option}
+	return token{text: text, option: option, kind: nameTokenKind}
 }
 
 func newValueToken(text string) token {
-	return token{text: text}
+	return token{text: text, kind: valueTokenKind}
 }
 
 func newPositionalsFollowToken() token {
-	return token{positionalsFollow: true}
+	return token{kind: positionalsFollowTokenKind}
+}
+
+func newHelpToken() token {
+	return token{kind: helpTokenKind}
 }

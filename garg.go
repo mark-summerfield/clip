@@ -165,53 +165,42 @@ type Parser struct {
 	Positionals       []string
 	HelpName          string
 	VersionName       string
+	shortVersionName  rune
 	appName           string
 	appVersion        string
 	subCommands       map[string]*SubCommand
 	mainSubCommand    *SubCommand
 	positionalCount   PositionalCount
 	positionalVarName string
-	use_h_for_help    bool
-	use_v_for_version bool
-	use_V_for_version bool
+	useLowerhForHelp  bool
 }
 
-func NewParser() Parser {
-	appName := "<app>"
-	if len(os.Args) > 0 {
-		appName = path.Base(os.Args[0])
+// NewParser creates a new command line parser.
+// If appname == "" the executable's basename will be used.
+// If version == "" no version option will be available.
+func NewParser(appname, version string) Parser {
+	if appname == "" {
+		appname = "<app>"
+		if len(os.Args) > 0 {
+			appname = path.Base(os.Args[0])
+		}
 	}
 	mainSubCommand := newMainSubCommand()
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommandName] = mainSubCommand
-	return Parser{appName: appName, appVersion: "",
+	return Parser{appName: appname, appVersion: version,
 		subCommands: subcommands, positionalCount: ZeroOrMorePositionals,
 		positionalVarName: "FILENAME", HelpName: "help",
-		use_h_for_help: true, mainSubCommand: mainSubCommand}
+		VersionName: "version", useLowerhForHelp: true,
+		mainSubCommand: mainSubCommand}
 }
 
 func (me *Parser) AppName() string {
 	return me.appName
 }
 
-func (me *Parser) SetAppName(name string) error {
-	if name == "" {
-		return me.handleError(eEmptyAppName, "can't have empty appname")
-	}
-	me.appName = name
-	return nil
-}
-
 func (me *Parser) Version() string {
 	return me.appVersion
-}
-
-func (me *Parser) SetVersion(version string) {
-	me.appVersion = version
-	if me.VersionName == "" {
-		me.VersionName = "version"
-		me.use_v_for_version = true
-	}
 }
 
 func (me *Parser) SetPositionalCount(valueCount PositionalCount) {
@@ -288,12 +277,17 @@ func (me *Parser) ParseArgs(args []string) error {
 	var currentOption optioner
 	inPositionals := false
 	for _, token := range tokens {
-		if token.positionalsFollow {
+		if token.kind == positionalsFollowTokenKind {
 			inPositionals = true
 		} else if inPositionals {
 			me.addPositional(token.text)
-		} else if !token.isValue() { // Option
+		} else if token.kind == helpTokenKind {
+			me.onHelp(subcommand) // doesn't return
+		} else if token.kind == nameTokenKind { // Option
 			currentOption = token.option
+			if me.isVersion(subcommand, currentOption) {
+				return nil
+			}
 			if option, ok := currentOption.(*FlagOption); ok {
 				option.value = true
 			}
@@ -313,16 +307,10 @@ func (me *Parser) ParseArgs(args []string) error {
 	return me.checkValues(subcommand.options)
 }
 
-func (me *Parser) addPositional(value string) bool {
-	if me.Positionals == nil {
-		me.Positionals = make([]string, 0, 1)
-	}
-	me.Positionals = append(me.Positionals, value)
-	return true
-}
-
 func (me *Parser) prepareHelpAndVersionOptions() error {
-	seen_V := false
+	usevForVersion := true
+	useVForVersion := false
+	seenV := false
 	main := me.subCommands[mainSubCommandName]
 	for _, option := range main.options {
 		if option.LongName() == me.HelpName {
@@ -332,29 +320,58 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 			return me.handleError(eInvalidVersionOption,
 				"only auto-generated version is supported")
 		}
-		if me.use_h_for_help && option.ShortName() == 'h' {
-			me.use_h_for_help = false
+		if me.useLowerhForHelp && option.ShortName() == 'h' {
+			me.useLowerhForHelp = false
 		}
 		if option.ShortName() == 'v' {
-			me.use_v_for_version = false
+			usevForVersion = false
 		} else if option.ShortName() == 'V' {
-			seen_V = true
+			seenV = true
 		}
 	}
-	if me.VersionName != "" && !me.use_v_for_version && !seen_V {
-		me.use_V_for_version = true
+	if me.VersionName != "" && !usevForVersion && !seenV {
+		useVForVersion = true
+	}
+	if me.VersionName != "" && me.appVersion != "" {
+		versionOpt := main.Flag(me.VersionName, "Show version and quit")
+		if usevForVersion {
+			versionOpt.SetShortName('v')
+		} else if useVForVersion {
+			versionOpt.SetShortName('V')
+		}
+		me.shortVersionName = versionOpt.ShortName()
 	}
 	return nil
 }
 
+func (me *Parser) addPositional(value string) bool {
+	if me.Positionals == nil {
+		me.Positionals = make([]string, 0, 1)
+	}
+	me.Positionals = append(me.Positionals, value)
+	return true
+}
+
+func (me *Parser) isVersion(subcommand *SubCommand, option optioner) bool {
+	if subcommand.longName == mainSubCommandName &&
+		(option.LongName() == me.VersionName ||
+			(me.shortVersionName != 0 && me.shortVersionName ==
+				option.ShortName())) {
+		me.onVersion() // doesn't return
+		return true
+	}
+	return false
+}
+
 func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 	var err error
+	helpName := fmt.Sprintf("--%s", me.HelpName)
 	state := me.initializeTokenState()
-	helpName, versionName := me.getHelpAndVerboseNames()
 	tokens := make([]token, 0, len(args))
 	for i, arg := range args {
-		if me.handledHelpOrVerbose(arg, helpName, versionName) {
-			return nil, nil, nil
+		if me.isHelp(arg, helpName) {
+			tokens = append(tokens, newHelpToken())
+			continue
 		}
 		if arg == "--" { // --
 			tokens = append(tokens, newPositionalsFollowToken())
@@ -398,25 +415,8 @@ func (me *Parser) initializeTokenState() tokenState {
 	return state
 }
 
-func (me *Parser) getHelpAndVerboseNames() (string, string) {
-	helpName := fmt.Sprintf("--%s", me.HelpName)
-	versionName := ""
-	if me.VersionName != "" {
-		versionName = fmt.Sprintf("--%s", me.VersionName)
-	}
-	return helpName, versionName
-}
-
-func (me *Parser) handledHelpOrVerbose(arg, helpName,
-	versionName string) bool {
-	if arg == helpName || (me.use_h_for_help && arg == "-h") {
-		me.onHelp() // doesn't return
-		return true
-	}
-	if arg == versionName || (me.VersionName != "" &&
-		(me.use_v_for_version && arg == "-v") ||
-		(me.use_V_for_version && arg == "-V")) {
-		me.onVersion() // doesn't return
+func (me *Parser) isHelp(arg, helpName string) bool {
+	if arg == helpName || (me.useLowerhForHelp && arg == "-h") {
 		return true
 	}
 	return false
@@ -515,8 +515,19 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 	return cmdForName
 }
 
-func (me *Parser) onHelp() {
-	fmt.Printf("usage: %s TODO", me.appName) // TODO
+func (me *Parser) onHelp(subcommand *SubCommand) {
+	if len(me.subCommands) == 1 { // No subcommands
+		// show main help
+		fmt.Printf("usage: %s TODO", me.appName) // TODO
+	} else { // Has subcommands
+		if subcommand.longName == mainSubCommandName {
+			// show main help with list of subcommands
+			fmt.Printf("usage: %s TODO", me.appName) // TODO
+		} else {
+			// show this subcommand's help
+			fmt.Printf("usage: %s TODO", me.appName) // TODO
+		}
+	}
 	if !me.DontExit {
 		os.Exit(0)
 	}

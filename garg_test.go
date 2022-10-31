@@ -41,7 +41,7 @@ func expectError(code int, err error) string {
 }
 
 func Test001(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("garg.test", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -58,7 +58,7 @@ func Test001(t *testing.T) {
 }
 
 func Test002(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -72,7 +72,7 @@ func Test002(t *testing.T) {
 }
 
 func Test003(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -86,7 +86,7 @@ func Test003(t *testing.T) {
 }
 
 func Test004(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("", "")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -110,9 +110,7 @@ func Test004(t *testing.T) {
 }
 
 func Test005(t *testing.T) {
-	parser := NewParser()
-	_ = parser.SetAppName("myapp")
-	parser.SetVersion("1.0.0")
+	parser := NewParser("", "0.1.0")
 	parser.DontExit = true // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
@@ -127,16 +125,16 @@ func Test005(t *testing.T) {
 	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	if parser.AppName() != "myapp" {
+	if parser.AppName() != "garg.test" {
 		t.Errorf("expected appname=myapp, got %s", parser.AppName())
 	}
-	if parser.Version() != "1.0.0" {
-		t.Errorf("expected version=1.0.0, got %s", parser.Version())
+	if parser.Version() != "0.1.0" {
+		t.Errorf("expected version=0.1.0, got %s", parser.Version())
 	}
 }
 
 func Test006(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
@@ -160,7 +158,7 @@ func Test006(t *testing.T) {
 }
 
 func Test007(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
@@ -188,7 +186,7 @@ func Test007(t *testing.T) {
 }
 
 func Test008(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
@@ -212,7 +210,7 @@ func Test008(t *testing.T) {
 }
 
 func Test009(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
@@ -245,7 +243,7 @@ func Test009(t *testing.T) {
 }
 
 func Test010(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
@@ -260,7 +258,7 @@ func Test010(t *testing.T) {
 }
 
 func Test011(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
@@ -275,7 +273,7 @@ func Test011(t *testing.T) {
 }
 
 func Test012(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
@@ -290,7 +288,7 @@ func Test012(t *testing.T) {
 }
 
 func Test013(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
@@ -305,7 +303,7 @@ func Test013(t *testing.T) {
 }
 
 func Test014(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
@@ -329,7 +327,7 @@ func Test014(t *testing.T) {
 }
 
 func Test015(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	line := "-l=cpp -- file1.txt file2.dat file3.uxf path/to/file4.xml"
@@ -347,7 +345,7 @@ func Test015(t *testing.T) {
 }
 
 func Test016(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	line := "-l cpp -- file1.txt file2.dat"
@@ -365,7 +363,7 @@ func Test016(t *testing.T) {
 }
 
 func Test017(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	line := "-l cpp pas xml -- file1.txt"
@@ -383,7 +381,7 @@ func Test017(t *testing.T) {
 }
 
 func Test018(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
@@ -433,7 +431,7 @@ func Test018(t *testing.T) {
 }
 
 func Test019(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
@@ -482,7 +480,7 @@ func Test019(t *testing.T) {
 }
 
 func Test020(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
@@ -531,7 +529,7 @@ func Test020(t *testing.T) {
 }
 
 func Test021(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
@@ -580,7 +578,7 @@ func Test021(t *testing.T) {
 }
 
 func Test022(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	languageOpt := parser.Strs("language", "lang help")
 	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
@@ -628,7 +626,7 @@ func Test022(t *testing.T) {
 }
 
 func Test023(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
@@ -643,7 +641,7 @@ func Test023(t *testing.T) {
 }
 
 func Test024(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 45)
@@ -658,7 +656,7 @@ func Test024(t *testing.T) {
 }
 
 func Test025(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -678,7 +676,7 @@ func Test025(t *testing.T) {
 }
 
 func Test026(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -698,7 +696,7 @@ func Test026(t *testing.T) {
 }
 
 func Test027(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -718,7 +716,7 @@ func Test027(t *testing.T) {
 }
 
 func Test028(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -738,7 +736,7 @@ func Test028(t *testing.T) {
 }
 
 func Test029(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -757,7 +755,7 @@ func Test029(t *testing.T) {
 }
 
 func Test030(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -776,7 +774,7 @@ func Test030(t *testing.T) {
 }
 
 func Test031(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -795,7 +793,7 @@ func Test031(t *testing.T) {
 }
 
 func Test032(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -814,7 +812,7 @@ func Test032(t *testing.T) {
 }
 
 func Test033(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -833,7 +831,7 @@ func Test033(t *testing.T) {
 }
 
 func Test034(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -852,7 +850,7 @@ func Test034(t *testing.T) {
 }
 
 func Test035(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -871,7 +869,7 @@ func Test035(t *testing.T) {
 }
 
 func Test036(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -891,7 +889,7 @@ func Test036(t *testing.T) {
 }
 
 func Test037(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -909,7 +907,7 @@ func Test037(t *testing.T) {
 }
 
 func Test038(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -932,7 +930,7 @@ func Test038(t *testing.T) {
 }
 
 func Test039(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -954,12 +952,37 @@ func Test039(t *testing.T) {
 	}
 }
 
+func Test040(t *testing.T) {
+	version := "0.8.7-alpha"
+	parser := NewParser("myapp", version)
+	parser.DontExit = true // for testing
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	parser.Int("verbose", "verbosity -v or -vN", 1)
+	if v := parser.Version(); v != version {
+		t.Errorf("Parser.Version is wrong, expected %q, got %q", version, v)
+	}
+	// TODO if I can capture output
+	// _ := parser.ParseLine("-V")
+
+	parser = NewParser("myapp", version)
+	parser.DontExit = true // for testing
+	summaryOpt = parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	parser.Int("verbose", "verbosity -v or -vN", 1)
+	if v := parser.Version(); v != version {
+		t.Errorf("Parser.Version is wrong, expected %q, got %q", version, v)
+	}
+	// TODO if I can capture output
+	// _ := parser.ParseLine("--version")
+}
+
 func TestPackageDocFlag1(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt := parser.Flag("verbose", "whether to show more output")
 	if err := parser.ParseLine(""); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	verbose := verboseOpt.Value() // verbose == false
 	if verbose {
@@ -969,8 +992,12 @@ func TestPackageDocFlag1(t *testing.T) {
 	if verbose {
 		t.Error("expected verbose=false, got true")
 	}
+
+	parser = NewParser("myapp", "1.0.0")
+	parser.DontExit = true // for testing
+	verboseOpt = parser.Flag("verbose", "whether to show more output")
 	if err := parser.ParseLine("-v"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	verbose = verboseOpt.Value() // verbose == true
 	if !verbose {
@@ -983,14 +1010,14 @@ func TestPackageDocFlag1(t *testing.T) {
 }
 
 func TestPackageDocFlag2(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine(""); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if outfileOpt.Given() {
 		t.Error("expected outfile=!Given")
@@ -1002,14 +1029,14 @@ func TestPackageDocFlag2(t *testing.T) {
 }
 
 func TestPackageDocFlag3(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-v -x -c -o outfile.dat"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1021,14 +1048,14 @@ func TestPackageDocFlag3(t *testing.T) {
 }
 
 func TestPackageDocFlag4(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-v -x -c -o=outfile.dat"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1040,14 +1067,14 @@ func TestPackageDocFlag4(t *testing.T) {
 }
 
 func TestPackageDocFlag5(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-vxcooutfile.dat"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1059,14 +1086,14 @@ func TestPackageDocFlag5(t *testing.T) {
 }
 
 func TestPackageDocFlag6(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-vxco outfile.dat"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1078,14 +1105,14 @@ func TestPackageDocFlag6(t *testing.T) {
 }
 
 func TestPackageDocFlag7(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-vxco=outfile.dat"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1097,14 +1124,14 @@ func TestPackageDocFlag7(t *testing.T) {
 }
 
 func TestPackageDocFlag8(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	if err := parser.ParseLine("-vxc"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if outfileOpt.Given() {
 		t.Error("expected outfile=!Given")
@@ -1116,7 +1143,7 @@ func TestPackageDocFlag8(t *testing.T) {
 }
 
 func TestPackageDocFlag9(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
@@ -1124,7 +1151,7 @@ func TestPackageDocFlag9(t *testing.T) {
 	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	outfileOpt.AllowImplicit()
 	if err := parser.ParseLine("-vxco"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1136,14 +1163,14 @@ func TestPackageDocFlag9(t *testing.T) {
 }
 
 func TestPackageDocFlag10(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
 	parser.Flag("cat", "")
 	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	if err := parser.ParseLine("-vxcooutfile.txt"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1155,7 +1182,7 @@ func TestPackageDocFlag10(t *testing.T) {
 }
 
 func TestPackageDocFlag11(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	parser.Flag("verbose", "whether to show more output")
 	parser.Flag("xray", "")
@@ -1163,7 +1190,7 @@ func TestPackageDocFlag11(t *testing.T) {
 	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	outfileOpt.AllowImplicit()
 	if err := parser.ParseLine("-vxcooutfile.txt"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	if !outfileOpt.Given() {
 		t.Error("expected outfile=Given")
@@ -1175,11 +1202,11 @@ func TestPackageDocFlag11(t *testing.T) {
 }
 
 func TestPackageDocSingleValue(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt := parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine(""); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	verbose := 0
 	expected := 1
@@ -1191,12 +1218,12 @@ func TestPackageDocSingleValue(t *testing.T) {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 
-	parser = NewParser()
+	parser = NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	verboseOpt.AllowImplicit()
 	if err := parser.ParseLine("-v"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	expected = 1
 	verbose = verboseOpt.Value()
@@ -1204,12 +1231,12 @@ func TestPackageDocSingleValue(t *testing.T) {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 
-	parser = NewParser()
+	parser = NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	verboseOpt.AllowImplicit()
 	if err := parser.ParseLine("--verbose"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	expected = 1
 	verbose = verboseOpt.Value()
@@ -1217,11 +1244,11 @@ func TestPackageDocSingleValue(t *testing.T) {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 
-	parser = NewParser()
+	parser = NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("-v1"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	expected = 1
 	verbose = verboseOpt.Value()
@@ -1229,11 +1256,11 @@ func TestPackageDocSingleValue(t *testing.T) {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 
-	parser = NewParser()
+	parser = NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("-v=2"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	expected = 2
 	verbose = verboseOpt.Value()
@@ -1241,11 +1268,11 @@ func TestPackageDocSingleValue(t *testing.T) {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 
-	parser = NewParser()
+	parser = NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("-v 3"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	expected = 3
 	verbose = verboseOpt.Value()
@@ -1253,11 +1280,11 @@ func TestPackageDocSingleValue(t *testing.T) {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 
-	parser = NewParser()
+	parser = NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("--verbose=4"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	expected = 4
 	verbose = verboseOpt.Value()
@@ -1265,11 +1292,11 @@ func TestPackageDocSingleValue(t *testing.T) {
 		t.Errorf("expected verbose=%d, got %d", expected, verbose)
 	}
 
-	parser = NewParser()
+	parser = NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("--verbose 5"); err != nil {
-		t.Error("expected successful parse")
+		t.Errorf("expected successful parse, %s", err)
 	}
 	expected = 5
 	verbose = verboseOpt.Value()
@@ -1279,8 +1306,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 }
 
 func TestE001(t *testing.T) {
-	parser := NewParser()
-	_ = parser.SetAppName("myapp")
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -1299,7 +1325,7 @@ func TestE001(t *testing.T) {
 }
 
 func TestE002(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -1316,7 +1342,7 @@ func TestE002(t *testing.T) {
 }
 
 func TestE003(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -1334,7 +1360,7 @@ func TestE003(t *testing.T) {
 }
 
 func TestE004(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.Int("maxwidth", "help", 43)
 	summaryOpt := parser.Flag("summary", "summary help TODO")
@@ -1351,7 +1377,7 @@ func TestE004(t *testing.T) {
 }
 
 func TestE005(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	maxWidthOpt := parser.Int("maxwidth", "help", 44)
 	summaryOpt := parser.Flag("summary", "summary help TODO")
@@ -1368,7 +1394,7 @@ func TestE005(t *testing.T) {
 }
 
 func TestE006(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -1386,7 +1412,7 @@ func TestE006(t *testing.T) {
 }
 
 func TestE007(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
@@ -1403,7 +1429,7 @@ func TestE007(t *testing.T) {
 }
 
 func TestE008(t *testing.T) {
-	parser := NewParser()
+	parser := NewParser("myapp", "1.0.0")
 	parser.DontExit = true // for testing
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')

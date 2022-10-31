@@ -3,7 +3,7 @@
 
 package garg
 
-const mainSubCommand = ""
+const mainSubCommandName = ""
 const noShortName = 0
 
 type Validator func(string) error

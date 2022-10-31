@@ -168,6 +168,7 @@ type Parser struct {
 	appName           string
 	appVersion        string
 	subCommands       map[string]*SubCommand
+	mainSubCommand    *SubCommand
 	positionalCount   PositionalCount
 	positionalVarName string
 	use_h_for_help    bool
@@ -180,13 +181,13 @@ func NewParser() Parser {
 	if len(os.Args) > 0 {
 		appName = path.Base(os.Args[0])
 	}
+	mainSubCommand := newMainSubCommand()
 	subcommands := make(map[string]*SubCommand)
-	subcommands[mainSubCommand] = newMainSubCommand()
+	subcommands[mainSubCommandName] = mainSubCommand
 	return Parser{appName: appName, appVersion: "",
 		subCommands: subcommands, positionalCount: ZeroOrMorePositionals,
 		positionalVarName: "FILENAME", HelpName: "help",
-		use_h_for_help: true,
-	}
+		use_h_for_help: true, mainSubCommand: mainSubCommand}
 }
 
 func (me *Parser) AppName() string {
@@ -230,62 +231,40 @@ func (me *Parser) SubCommand(name, help string) *SubCommand {
 }
 
 func (me *Parser) Flag(name, help string) *FlagOption {
-	option := newFlagOption(name, help)
-	me.registerNewOption(option)
-	return option
+	return me.mainSubCommand.Flag(name, help)
 }
 
 func (me *Parser) Int(name, help string, defaultValue int) *IntOption {
-	option := newIntOption(name, help, defaultValue)
-	me.registerNewOption(option)
-	return option
+	return me.mainSubCommand.Int(name, help, defaultValue)
 }
 
 func (me *Parser) IntInRange(name, help string,
 	minimum, maximum, defaultValue int) *IntOption {
-	option := newIntOption(name, help, defaultValue)
-	option.validator = makeIntRangeValidator(minimum, maximum)
-	me.registerNewOption(option)
-	return option
+	return me.mainSubCommand.IntInRange(name, help, minimum, maximum,
+		defaultValue)
 }
 
 func (me *Parser) Real(name, help string, defaultValue float64) *RealOption {
-	option := newRealOption(name, help, defaultValue)
-	me.registerNewOption(option)
-	return option
+	return me.mainSubCommand.Real(name, help, defaultValue)
 }
 
 func (me *Parser) RealInRange(name, help string,
 	minimum, maximum, defaultValue float64) *RealOption {
-	option := newRealOption(name, help, defaultValue)
-	option.validator = makeRealRangeValidator(minimum, maximum)
-	me.registerNewOption(option)
-	return option
+	return me.mainSubCommand.RealInRange(name, help, minimum, maximum,
+		defaultValue)
 }
 
 func (me *Parser) Str(name, help, defaultValue string) *StrOption {
-	option := newStrOption(name, help, defaultValue)
-	me.registerNewOption(option)
-	return option
+	return me.mainSubCommand.Str(name, help, defaultValue)
 }
 
 func (me *Parser) Choice(name, help string, choices []string,
 	defaultValue string) *StrOption {
-	option := newStrOption(name, help, defaultValue)
-	option.validator = makeChoiceValidator(choices)
-	me.registerNewOption(option)
-	return option
+	return me.mainSubCommand.Choice(name, help, choices, defaultValue)
 }
 
 func (me *Parser) Strs(name, help string) *StrsOption {
-	option := newStrsOption(name, help)
-	me.registerNewOption(option)
-	return option
-}
-
-func (me *Parser) registerNewOption(option optioner) {
-	me.subCommands[mainSubCommand].options = append(
-		me.subCommands[mainSubCommand].options, option)
+	return me.mainSubCommand.Strs(name, help)
 }
 
 func (me *Parser) Parse() error {
@@ -340,7 +319,7 @@ func (me *Parser) addPositional(value string) bool {
 
 func (me *Parser) prepareHelpAndVersionOptions() {
 	seen_V := false
-	main := me.subCommands[mainSubCommand]
+	main := me.subCommands[mainSubCommandName]
 	for _, option := range main.options {
 		if option.LongName() == me.HelpName {
 			panic("#400: only auto-generated help is supported")
@@ -402,7 +381,7 @@ func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 
 func (me *Parser) initializeTokenState() tokenState {
 	state := tokenState{
-		subcommand:        me.subCommands[mainSubCommand],
+		subcommand:        me.subCommands[mainSubCommandName],
 		subCommandForName: me.getSubCommandsForNames(),
 		hasSubCommands:    len(me.subCommands) > 1,
 		hadSubCommand:     false,
@@ -519,7 +498,7 @@ func (me *Parser) handlePossibleSubcommand(arg string, tokens []token,
 func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 	cmdForName := make(map[string]*SubCommand, len(me.subCommands)*2)
 	for long, command := range me.subCommands {
-		if long != mainSubCommand {
+		if long != mainSubCommandName {
 			cmdForName[long] = command
 			if command.ShortName() != 0 {
 				cmdForName[string(command.ShortName())] = command

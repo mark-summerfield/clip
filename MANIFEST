@@ -7,7 +7,7 @@
 #   (both with ValueCount OneOrMore)
 #   - commensurate tests
 # TODO implement Help output (if tty: use terminal width & bold etc;
-# otherwise for redirected use 80 cols & CAPS for highlighting)
+# otherwise for tests & redirected use 80 cols & CAPS for highlighting)
 # TODO Add tests for all ValueCount's for Positionals
 # TODO document all option forms & the corresponding code & make sure
 #      all doc egs have corresponding tests

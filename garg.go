@@ -643,7 +643,7 @@ func (me *Parser) checkPositionals() error {
 func (me *Parser) checkValues(options []optioner) error {
 	for _, option := range options {
 		if msg := option.check(); msg != "" {
-			return me.handleError(eInvalidOptionValue, msg)
+			return me.handleError(eInvalidValue, msg)
 		}
 	}
 	return nil

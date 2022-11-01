@@ -1157,6 +1157,118 @@ func Test048(t *testing.T) {
 	}
 }
 
+func Test049(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, verboseOpt, _ := createTestParser1(t)
+	line := "-v5"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := verboseOpt.Value()
+	if v != 5 {
+		t.Errorf("expected verbose=5, got %d", v)
+	}
+}
+
+func Test050(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, verboseOpt, _ := createTestParser1(t)
+	verboseOpt.AllowImplicit = true
+	line := "-v5"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := verboseOpt.Value()
+	if v != 5 {
+		t.Errorf("expected verbose=5, got %d", v)
+	}
+}
+
+func Test051(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, verboseOpt, _ := createTestParser1(t)
+	verboseOpt.AllowImplicit = true
+	verboseOpt.TheDefault = 7
+	line := "-v"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := verboseOpt.Value()
+	if v != 7 {
+		t.Errorf("expected default verbose=7, got %d", v)
+	}
+}
+
+func Test052(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	sizeOpt, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
+	if err != nil {
+		t.Error(err)
+	}
+	line := ""
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := sizeOpt.Value()
+	if !realEqual(0.5, v) {
+		t.Errorf("expected default size=0.5, got %g", v)
+	}
+}
+
+func Test053(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	sizeOpt, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
+	if err != nil {
+		t.Error(err)
+	}
+	line := "--size=-0.19"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := sizeOpt.Value()
+	if !realEqual(-0.19, v) {
+		t.Errorf("expected size=-0.19, got %g", v)
+	}
+}
+
+func Test054(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	currencyOpt, err := parser.Choice("currency", "currency help",
+		[]string{"USD", "GBP", "EUR"}, "GBP")
+	if err != nil {
+		t.Error(err)
+	}
+	line := ""
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := currencyOpt.Value()
+	if v != "GBP" {
+		t.Errorf("expected default currency=GBP, got %s", v)
+	}
+}
+
+func Test055(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	currencyOpt, err := parser.Choice("currency", "currency help",
+		[]string{"USD", "GBP", "EUR"}, "GBP")
+	if err != nil {
+		t.Error(err)
+	}
+	line := "-c EUR"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := currencyOpt.Value()
+	if v != "EUR" {
+		t.Errorf("expected currency=EUR, got %s", v)
+	}
+}
+
 func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt, err := parser.Flag("verbose", "whether to show more output")
@@ -1590,7 +1702,7 @@ func TestE004(t *testing.T) {
 	}
 	summaryOpt.SetShortName('S')
 	line := "-m -S"
-	e := eInvalidOptionValue
+	e := eInvalidValue
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1610,7 +1722,7 @@ func TestE005(t *testing.T) {
 	}
 	summaryOpt.SetShortName('S')
 	line := "--maxwidth -S"
-	e := eInvalidOptionValue
+	e := eInvalidValue
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1630,7 +1742,7 @@ func TestE006(t *testing.T) {
 		t.Error(err)
 	}
 	line := "--maxwidth"
-	e := eInvalidOptionValue
+	e := eInvalidValue
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1650,7 +1762,7 @@ func TestE007(t *testing.T) {
 		t.Error(err)
 	}
 	line := "-Ss"
-	e := eInvalidOptionValue
+	e := eInvalidValue
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1771,7 +1883,7 @@ func TestE014(t *testing.T) {
 	}
 	includeOpt.ValueCount = ThreeValues
 	line := "-i a"
-	e := eInvalidOptionValue
+	e := eInvalidValue
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1787,7 +1899,97 @@ func TestE015(t *testing.T) {
 	}
 	includeOpt.ValueCount = ThreeValues
 	line := "--include x y"
-	e := eInvalidOptionValue
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE016(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _ := createTestParser1(t)
+	line := "-v"
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE017(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _ := createTestParser1(t)
+	line := "-m9"
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE018(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _ := createTestParser1(t)
+	line := "-m10001"
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE019(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _ := createTestParser1(t)
+	line := "-m19"
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE020(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	_, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
+	if err != nil {
+		t.Error(err)
+	}
+	line := "-s-1.1"
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE021(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	_, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
+	if err != nil {
+		t.Error(err)
+	}
+	line := "-s1.01"
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE022(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	_, err := parser.Choice("currency", "currency help",
+		[]string{"USD", "GBP", "EUR"}, "GBP")
+	if err != nil {
+		t.Error(err)
+	}
+	line := "-c OZY"
+	e := eInvalidValue
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)

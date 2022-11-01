@@ -110,11 +110,10 @@ const (
 	eUnrecognizedShortOption2 // 108
 	eUnexpectedValue          // 109
 	eWrongPositionalCount     // 110
-	eInvalidOptionValue       // 111
-	eEmptySubCommandName      // 112
-	eEmptyOptionName          // 113
-	eNumericOptionName        // 114
-	eInvalidSubCommandName    // 115
-	eEmptyPositionalVarName   // 116
+	eEmptySubCommandName      // 111
+	eEmptyOptionName          // 112
+	eNumericOptionName        // 113
+	eInvalidSubCommandName    // 114
+	eEmptyPositionalVarName   // 115
 	eBug                      = 999
 )

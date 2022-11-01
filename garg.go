@@ -662,6 +662,12 @@ func (me *Parser) handleError(code int, msg string) error {
 	return nil // never returns
 }
 
+// never returns
+func (me *Parser) OnError(err error) error {
+	exitFunc(2, err.Error())
+	return nil // never returns
+}
+
 func (me *Parser) OnMissing(option optioner) error {
 	if option.ShortName() != 0 {
 		return me.handleError(eMissing,
@@ -670,10 +676,6 @@ func (me *Parser) OnMissing(option optioner) error {
 	}
 	return me.handleError(eMissing, fmt.Sprintf("option --%s is required",
 		option.LongName()))
-}
-
-func (me *Parser) OnError(msg string) error {
-	return me.handleError(eUser, msg)
 }
 
 func defaultExitFunc(exitCode int, msg string) {

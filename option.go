@@ -94,10 +94,10 @@ func (me *FlagOption) addValue(value string) string {
 
 type IntOption struct {
 	*commonOption
-	theDefault    int
+	TheDefault    int
+	AllowImplicit bool
+	Validator     IntValidator
 	value         int
-	allowImplicit bool
-	validator     IntValidator
 }
 
 func newIntOption(name, help string, theDefault int) (*IntOption, error) {
@@ -108,31 +108,23 @@ func newIntOption(name, help string, theDefault int) (*IntOption, error) {
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		theDefault: theDefault, validator: makeDefaultIntValidator()}, nil
+		TheDefault: theDefault, Validator: makeDefaultIntValidator()}, nil
 }
 
 func (me IntOption) Value() int {
 	if me.state == HadValue {
 		return me.value
 	}
-	return me.theDefault
+	return me.TheDefault
 }
 
 func (me IntOption) wantsValue() bool {
 	return me.state == Given
 }
 
-func (me *IntOption) SetDefault(defaultValue int) {
-	me.theDefault = defaultValue
-}
-
-func (me *IntOption) SetValidator(validator IntValidator) {
-	me.validator = validator
-}
-
 func (me IntOption) check() string {
 	if me.state == Given {
-		if me.allowImplicit {
+		if me.AllowImplicit {
 			return ""
 		} else {
 			return fmt.Sprintf(
@@ -143,12 +135,8 @@ func (me IntOption) check() string {
 	return ""
 }
 
-func (me *IntOption) AllowImplicit() {
-	me.allowImplicit = true
-}
-
 func (me *IntOption) addValue(value string) string {
-	i, msg := me.validator(me.longName, value)
+	i, msg := me.Validator(me.longName, value)
 	if msg != "" {
 		return msg
 	}
@@ -159,10 +147,10 @@ func (me *IntOption) addValue(value string) string {
 
 type RealOption struct {
 	*commonOption
-	theDefault    float64
+	TheDefault    float64
+	AllowImplicit bool
+	Validator     RealValidator
 	value         float64
-	allowImplicit bool
-	validator     RealValidator
 }
 
 func newRealOption(name, help string, theDefault float64) (*RealOption,
@@ -174,22 +162,14 @@ func newRealOption(name, help string, theDefault float64) (*RealOption,
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		theDefault: theDefault, validator: makeDefaultRealValidator()}, nil
+		TheDefault: theDefault, Validator: makeDefaultRealValidator()}, nil
 }
 
 func (me RealOption) Value() float64 {
 	if me.state == HadValue {
 		return me.value
 	}
-	return me.theDefault
-}
-
-func (me *RealOption) SetDefault(defaultValue float64) {
-	me.theDefault = defaultValue
-}
-
-func (me *RealOption) SetValidator(validator RealValidator) {
-	me.validator = validator
+	return me.TheDefault
 }
 
 func (me RealOption) wantsValue() bool {
@@ -198,7 +178,7 @@ func (me RealOption) wantsValue() bool {
 
 func (me RealOption) check() string {
 	if me.state == Given {
-		if me.allowImplicit {
+		if me.AllowImplicit {
 			return ""
 		} else {
 			return fmt.Sprintf(
@@ -209,12 +189,8 @@ func (me RealOption) check() string {
 	return ""
 }
 
-func (me *RealOption) AllowImplicit() {
-	me.allowImplicit = true
-}
-
 func (me *RealOption) addValue(value string) string {
-	r, msg := me.validator(me.longName, value)
+	r, msg := me.Validator(me.longName, value)
 	if msg != "" {
 		return msg
 	}
@@ -225,10 +201,10 @@ func (me *RealOption) addValue(value string) string {
 
 type StrOption struct {
 	*commonOption
-	theDefault    string
+	TheDefault    string
+	AllowImplicit bool
+	Validator     StrValidator
 	value         string
-	allowImplicit bool
-	validator     StrValidator
 }
 
 func newStrOption(name, help, theDefault string) (*StrOption, error) {
@@ -239,31 +215,23 @@ func newStrOption(name, help, theDefault string) (*StrOption, error) {
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		theDefault: theDefault, validator: makeDefaultStrValidator()}, nil
+		TheDefault: theDefault, Validator: makeDefaultStrValidator()}, nil
 }
 
 func (me StrOption) Value() string {
 	if me.state == HadValue {
 		return me.value
 	}
-	return me.theDefault
+	return me.TheDefault
 }
 
 func (me StrOption) wantsValue() bool {
 	return me.state == Given
 }
 
-func (me *StrOption) SetDefault(defaultValue string) {
-	me.theDefault = defaultValue
-}
-
-func (me *StrOption) SetValidator(validator StrValidator) {
-	me.validator = validator
-}
-
 func (me StrOption) check() string {
 	if me.state == Given {
-		if me.allowImplicit {
+		if me.AllowImplicit {
 			return ""
 		} else {
 			return fmt.Sprintf(
@@ -274,12 +242,8 @@ func (me StrOption) check() string {
 	return ""
 }
 
-func (me *StrOption) AllowImplicit() {
-	me.allowImplicit = true
-}
-
 func (me *StrOption) addValue(value string) string {
-	s, msg := me.validator(me.longName, value)
+	s, msg := me.Validator(me.longName, value)
 	if msg != "" {
 		return msg
 	}
@@ -290,9 +254,9 @@ func (me *StrOption) addValue(value string) string {
 
 type StrsOption struct {
 	*commonOption
+	ValueCount ValueCount
+	Validator  StrValidator
 	value      []string
-	valueCount ValueCount
-	validator  StrValidator
 }
 
 func newStrsOption(name, help string) (*StrsOption, error) {
@@ -302,9 +266,9 @@ func newStrsOption(name, help string) (*StrsOption, error) {
 	}
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
-			shortName: shortName, help: help, state: NotGiven},
-			valueCount: OneOrMoreValues, validator: makeDefaultStrValidator()},
-		nil
+		shortName: shortName, help: help, state: NotGiven},
+		ValueCount: OneOrMoreValues,
+		Validator:  makeDefaultStrValidator()}, nil
 }
 
 func (me StrsOption) Value() []string {
@@ -315,23 +279,15 @@ func (me StrsOption) wantsValue() bool {
 	return me.state != NotGiven
 }
 
-func (me *StrsOption) SetValidator(validator StrValidator) {
-	me.validator = validator
-}
-
-func (me *StrsOption) SetValueCount(valueCount ValueCount) {
-	me.valueCount = valueCount
-}
-
 func (me StrsOption) check() string {
 	if me.state == Given {
 		return fmt.Sprintf(
-			"expected %s values for %s, got none", me.valueCount,
+			"expected %s values for %s, got none", me.ValueCount,
 			me.LongName())
 	} else if me.state == HadValue {
 		count := len(me.value)
 		ok := true
-		switch me.valueCount {
+		switch me.ValueCount {
 		case OneOrMoreValues:
 			if count < 1 {
 				ok = false
@@ -353,7 +309,7 @@ func (me StrsOption) check() string {
 		}
 		if !ok {
 			return fmt.Sprintf(
-				"expected %s values for %s, got %d", me.valueCount,
+				"expected %s values for %s, got %d", me.ValueCount,
 				me.LongName(), count)
 		}
 	}
@@ -361,7 +317,7 @@ func (me StrsOption) check() string {
 }
 
 func (me *StrsOption) addValue(value string) string {
-	s, msg := me.validator(me.longName, value)
+	s, msg := me.Validator(me.longName, value)
 	if msg != "" {
 		return msg
 	}

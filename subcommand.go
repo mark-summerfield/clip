@@ -57,7 +57,7 @@ func (me *SubCommand) IntInRange(name, help string,
 	if err != nil {
 		return nil, err
 	}
-	option.validator = makeIntRangeValidator(minimum, maximum)
+	option.Validator = makeIntRangeValidator(minimum, maximum)
 	me.registerNewOption(option)
 	return option, nil
 }
@@ -78,7 +78,7 @@ func (me *SubCommand) RealInRange(name, help string,
 	if err != nil {
 		return nil, err
 	}
-	option.validator = makeRealRangeValidator(minimum, maximum)
+	option.Validator = makeRealRangeValidator(minimum, maximum)
 	me.registerNewOption(option)
 	return option, nil
 }
@@ -99,7 +99,7 @@ func (me *SubCommand) Choice(name, help string, choices []string,
 	if err != nil {
 		return nil, err
 	}
-	option.validator = makeChoiceValidator(choices)
+	option.Validator = makeChoiceValidator(choices)
 	me.registerNewOption(option)
 	return option, nil
 }

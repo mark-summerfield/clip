@@ -87,14 +87,14 @@
 // (i.e., between the first two examples, assuming the default was set to
 // 1), then use [Option.Given].
 //
-//		parser := NewParser()
-//		verboseOpt := parser.Int("verbose", "how much output to show", 1)
-//	 verboseOpt.AllowImplicit() // implicitly use the default so -v → -v1
-//		parser.ParseLine("")
-//		verbose := 0 // assume no verbosity
-//		if verboseOpt.Given() {
-//			verbose = verboseOpt.Value()
-//		}
+//	parser := NewParser()
+//	verboseOpt := parser.Int("verbose", "how much output to show", 1)
+//	verboseOpt.AllowImplicit = true // implicitly use the default so -v → -v1
+//	parser.ParseLine("")
+//	verbose := 0 // assume no verbosity
+//	if verboseOpt.Given() {
+//		verbose = verboseOpt.Value()
+//	}
 //
 // Here, verbose == 0 (since we started at 0 and checked whether it was
 // given and it wasn't)
@@ -168,7 +168,7 @@ type Parser struct {
 	appVersion        string
 	subCommands       map[string]*SubCommand
 	mainSubCommand    *SubCommand
-	positionalCount   PositionalCount
+	PositionalCount   PositionalCount
 	positionalVarName string
 	useLowerhForHelp  bool
 }
@@ -208,7 +208,7 @@ func NewParserUser(appname, version string) Parser {
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommandName] = mainSubCommand
 	return Parser{appName: appname, appVersion: version,
-		subCommands: subcommands, positionalCount: ZeroOrMorePositionals,
+		subCommands: subcommands, PositionalCount: ZeroOrMorePositionals,
 		positionalVarName: "FILENAME", HelpName: "help",
 		VersionName: "version", useLowerhForHelp: true,
 		mainSubCommand: mainSubCommand}
@@ -222,12 +222,13 @@ func (me *Parser) Version() string {
 	return me.appVersion
 }
 
-func (me *Parser) SetPositionalCount(valueCount PositionalCount) {
-	me.positionalCount = valueCount
-}
-
-func (me *Parser) SetPositionalVarName(name string) {
+func (me *Parser) SetPositionalVarName(name string) error {
+	if name == "" {
+		return fmt.Errorf("#%d: can't have empty positional var name",
+			eEmptyPositionalVarName)
+	}
 	me.positionalVarName = name
+	return nil
 }
 
 func (me *Parser) SubCommand(name, help string) (*SubCommand, error) {
@@ -248,35 +249,35 @@ func (me *Parser) Flag(name, help string) (*FlagOption, error) {
 	return me.mainSubCommand.Flag(name, help)
 }
 
-func (me *Parser) Int(name, help string, defaultValue int) (*IntOption,
+func (me *Parser) Int(name, help string, theDefault int) (*IntOption,
 	error) {
-	return me.mainSubCommand.Int(name, help, defaultValue)
+	return me.mainSubCommand.Int(name, help, theDefault)
 }
 
 func (me *Parser) IntInRange(name, help string,
-	minimum, maximum, defaultValue int) (*IntOption, error) {
+	minimum, maximum, theDefault int) (*IntOption, error) {
 	return me.mainSubCommand.IntInRange(name, help, minimum, maximum,
-		defaultValue)
+		theDefault)
 }
 
-func (me *Parser) Real(name, help string, defaultValue float64) (
+func (me *Parser) Real(name, help string, theDefault float64) (
 	*RealOption, error) {
-	return me.mainSubCommand.Real(name, help, defaultValue)
+	return me.mainSubCommand.Real(name, help, theDefault)
 }
 
 func (me *Parser) RealInRange(name, help string,
-	minimum, maximum, defaultValue float64) (*RealOption, error) {
+	minimum, maximum, theDefault float64) (*RealOption, error) {
 	return me.mainSubCommand.RealInRange(name, help, minimum, maximum,
-		defaultValue)
+		theDefault)
 }
 
-func (me *Parser) Str(name, help, defaultValue string) (*StrOption, error) {
-	return me.mainSubCommand.Str(name, help, defaultValue)
+func (me *Parser) Str(name, help, theDefault string) (*StrOption, error) {
+	return me.mainSubCommand.Str(name, help, theDefault)
 }
 
 func (me *Parser) Choice(name, help string, choices []string,
-	defaultValue string) (*StrOption, error) {
-	return me.mainSubCommand.Choice(name, help, choices, defaultValue)
+	theDefault string) (*StrOption, error) {
+	return me.mainSubCommand.Choice(name, help, choices, theDefault)
 }
 
 func (me *Parser) Strs(name, help string) (*StrsOption, error) {
@@ -600,7 +601,7 @@ func (me *Parser) VersionText() string {
 func (me *Parser) checkPositionals() error {
 	count := len(me.Positionals)
 	ok := true
-	switch me.positionalCount {
+	switch me.PositionalCount {
 	case ZeroPositionals:
 		if count > 0 {
 			ok = false
@@ -634,7 +635,7 @@ func (me *Parser) checkPositionals() error {
 	if !ok {
 		return me.handleError(eWrongPositionalCount,
 			fmt.Sprintf("expected %s positional arguments, got %d",
-				me.positionalCount, count))
+				me.PositionalCount, count))
 	}
 	return nil
 }

@@ -33,6 +33,10 @@ func (me optionState) String() string {
 	}
 }
 
+// This specifies how many value *must* be present—if the option is given at
+// all. So even if the ValueCount is TwoValues, if the option isn't given
+// the option's Value will be empty. But if it _is_ given, then either it
+// will have exactly two values, or there will be a Parser error.
 type ValueCount uint8
 
 const (
@@ -57,6 +61,7 @@ func (me ValueCount) String() string {
 	}
 }
 
+// This specifies how many positionals *must* be present
 type PositionalCount uint8
 
 const (
@@ -109,6 +114,7 @@ const (
 	eEmptySubCommandName      // 112
 	eEmptyOptionName          // 113
 	eNumericOptionName        // 114
-	eInvalidSubCommandName
-	eBug = 999
+	eInvalidSubCommandName    // 115
+	eEmptyPositionalVarName   // 116
+	eBug                      = 999
 )

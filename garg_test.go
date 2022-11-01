@@ -475,7 +475,7 @@ func Test017(t *testing.T) {
 func Test018(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt, languageOpt, _, excludeOpt,
 		includeOpt, sortByLinesOpt := createTestParser2(t)
-	maxWidthOpt.SetDefault(56)
+	maxWidthOpt.TheDefault = 56
 	specialSubCommand, err := parser.SubCommand("special", "Special help")
 	if err != nil {
 		t.Error(err)
@@ -765,7 +765,7 @@ func Test027(t *testing.T) {
 
 func Test028(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt := createTestParser1(t)
-	maxWidthOpt.SetDefault(45)
+	maxWidthOpt.TheDefault = 45
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -914,7 +914,7 @@ func Test035(t *testing.T) {
 
 func Test036(t *testing.T) {
 	parser, summaryOpt, verboseOpt, _ := createTestParser1(t)
-	verboseOpt.AllowImplicit()
+	verboseOpt.AllowImplicit = true
 	line := "-Sv"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1017,7 +1017,7 @@ func Test040(t *testing.T) {
 
 func Test041(t *testing.T) {
 	parser, summaryOpt, verboseOpt, maxWidthOpt := createTestParser1(t)
-	maxWidthOpt.SetDefault(93)
+	maxWidthOpt.TheDefault = 93
 	line := "file1.txt file2.dat README.md"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1038,7 +1038,126 @@ func Test041(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag1(t *testing.T) {
+func Test042(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = ZeroPositionals
+	line := "-m20"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func Test043(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = ZeroOrOnePositionals
+	line := "-m20"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func Test044(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = ZeroOrOnePositionals
+	line := "-m20 file1.txt"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if e := expectEqualSlice([]string{"file1.txt"}, parser.Positionals,
+		"positionals"); e != "" {
+		t.Error(e)
+	}
+}
+
+func Test045(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = TwoPositionals
+	line := "-m20 a.dat beta.zip"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if e := expectEqualSlice([]string{"a.dat", "beta.zip"},
+		parser.Positionals, "positionals"); e != "" {
+		t.Error(e)
+	}
+}
+
+func Test046(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _, _, _, _, includeOpt, _ := createTestParser2(t)
+	if includeOpt.ValueCount != OneOrMoreValues {
+		t.Errorf("expected ValueCount=%s, got %s",
+			OneOrMoreValues, includeOpt.ValueCount)
+	}
+	line := ""
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if e := expectEmptySlice(includeOpt.Value(), "include"); e != "" {
+		t.Error(e)
+	}
+}
+
+func Test047(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _, _, _, _, includeOpt, _ := createTestParser2(t)
+	if includeOpt.ValueCount != OneOrMoreValues {
+		t.Errorf("expected ValueCount=%s, got %s",
+			OneOrMoreValues, includeOpt.ValueCount)
+	}
+	includeOpt.ValueCount = ThreeValues
+	line := "-i a bee ceee"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if e := expectEqualSlice([]string{"a", "bee", "ceee"},
+		includeOpt.Value(), "--include"); e != "" {
+		t.Error(e)
+	}
+}
+
+func Test048(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _, _, _, _, includeOpt, _ := createTestParser2(t)
+	if includeOpt.ValueCount != OneOrMoreValues {
+		t.Errorf("expected ValueCount=%s, got %s",
+			OneOrMoreValues, includeOpt.ValueCount)
+	}
+	includeOpt.ValueCount = ThreeValues
+	line := ""
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if e := expectEmptySlice(includeOpt.Value(), "include"); e != "" {
+		t.Error(e)
+	}
+}
+
+func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt, err := parser.Flag("verbose", "whether to show more output")
 	if err != nil {
@@ -1091,7 +1210,7 @@ func createPackageDocParser(t *testing.T) Parser {
 	return parser
 }
 
-func TestPackageDocFlag2(t *testing.T) {
+func TestPkgDoc002(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "")
 	if err != nil {
@@ -1109,7 +1228,7 @@ func TestPackageDocFlag2(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag3(t *testing.T) {
+func TestPkgDoc003(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "")
 	if err != nil {
@@ -1127,7 +1246,7 @@ func TestPackageDocFlag3(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag4(t *testing.T) {
+func TestPkgDoc004(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "")
 	if err != nil {
@@ -1145,7 +1264,7 @@ func TestPackageDocFlag4(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag5(t *testing.T) {
+func TestPkgDoc005(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "")
 	if err != nil {
@@ -1163,7 +1282,7 @@ func TestPackageDocFlag5(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag6(t *testing.T) {
+func TestPkgDoc006(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "")
 	if err != nil {
@@ -1181,7 +1300,7 @@ func TestPackageDocFlag6(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag7(t *testing.T) {
+func TestPkgDoc007(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "")
 	if err != nil {
@@ -1199,7 +1318,7 @@ func TestPackageDocFlag7(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag8(t *testing.T) {
+func TestPkgDoc008(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
 	if err != nil {
@@ -1217,13 +1336,13 @@ func TestPackageDocFlag8(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag9(t *testing.T) {
+func TestPkgDoc009(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
 	if err != nil {
 		t.Error(err)
 	}
-	outfileOpt.AllowImplicit()
+	outfileOpt.AllowImplicit = true
 	if err := parser.ParseLine("-vxco"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1236,7 +1355,7 @@ func TestPackageDocFlag9(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag10(t *testing.T) {
+func TestPkgDoc010(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
 	if err != nil {
@@ -1254,13 +1373,13 @@ func TestPackageDocFlag10(t *testing.T) {
 	}
 }
 
-func TestPackageDocFlag11(t *testing.T) {
+func TestPkgDoc011(t *testing.T) {
 	parser := createPackageDocParser(t)
 	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
 	if err != nil {
 		t.Error(err)
 	}
-	outfileOpt.AllowImplicit()
+	outfileOpt.AllowImplicit = true
 	if err := parser.ParseLine("-vxcooutfile.txt"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1273,7 +1392,7 @@ func TestPackageDocFlag11(t *testing.T) {
 	}
 }
 
-func TestPackageDocSingleValue(t *testing.T) {
+func TestPkgDoc012(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt, err := parser.Int("verbose",
 		"whether to show more output", 1)
@@ -1299,7 +1418,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	verboseOpt.AllowImplicit()
+	verboseOpt.AllowImplicit = true
 	if err := parser.ParseLine("-v"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1315,7 +1434,7 @@ func TestPackageDocSingleValue(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
-	verboseOpt.AllowImplicit()
+	verboseOpt.AllowImplicit = true
 	if err := parser.ParseLine("--verbose"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1552,6 +1671,123 @@ func TestE008(t *testing.T) {
 	}
 	line := "--maxwidth 11"
 	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE009(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = ZeroPositionals
+	line := "-m20 file1.txt file2.dat README.md"
+	e := eWrongPositionalCount
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE010(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = ZeroOrOnePositionals
+	line := "-m20 file1.txt file2.dat README.md"
+	e := eWrongPositionalCount
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE011(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = TwoPositionals
+	line := "-m20 file1.txt file2.dat README.md"
+	e := eWrongPositionalCount
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE012(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = TwoPositionals
+	line := ""
+	e := eWrongPositionalCount
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE013(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, maxWidthOpt, _, _, _, _, _ := createTestParser2(t)
+	maxWidthOpt.TheDefault = 93
+	if parser.PositionalCount != ZeroOrMorePositionals {
+		t.Errorf("expected PositionalCount=%s, got %s",
+			ZeroOrMorePositionals, parser.PositionalCount)
+	}
+	parser.PositionalCount = TwoPositionals
+	line := "-m20 README.md"
+	e := eWrongPositionalCount
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE014(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _, _, _, _, includeOpt, _ := createTestParser2(t)
+	if includeOpt.ValueCount != OneOrMoreValues {
+		t.Errorf("expected ValueCount=%s, got %s",
+			OneOrMoreValues, includeOpt.ValueCount)
+	}
+	includeOpt.ValueCount = ThreeValues
+	line := "-i a"
+	e := eInvalidOptionValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE015(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser, _, _, _, _, _, _, includeOpt, _ := createTestParser2(t)
+	if includeOpt.ValueCount != OneOrMoreValues {
+		t.Errorf("expected ValueCount=%s, got %s",
+			OneOrMoreValues, includeOpt.ValueCount)
+	}
+	includeOpt.ValueCount = ThreeValues
+	line := "--include x y"
+	e := eInvalidOptionValue
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)

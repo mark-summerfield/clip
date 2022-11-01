@@ -665,9 +665,8 @@ func (me *Parser) handleError(code int, msg string) error {
 }
 
 // never returns
-func (me *Parser) OnError(err error) error {
+func (me *Parser) OnError(err error) {
 	exitFunc(2, err.Error())
-	return nil // never returns
 }
 
 func (me *Parser) OnMissing(option optioner) error {

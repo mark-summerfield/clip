@@ -1769,7 +1769,7 @@ func TestE023(t *testing.T) {
 	parser.Choice("99", "currency help", []string{"USD", "GBP",
 		"EUR"}, "GBP")
 	line := ""
-	e := eInvalidValue
+	e := eNumericName
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)

@@ -234,12 +234,9 @@ func (me *Parser) SetPositionalVarName(name string) error {
 }
 
 func (me *Parser) SubCommand(name, help string) *SubCommand {
-	name, err := validatedName(name, "subcommand")
-	subcommand := newSubCommand(name, help)
-	fmt.Println("SubCommand", err) // TODO
-	if err != nil {
-		subcommand.delayedErrors = append(subcommand.delayedErrors,
-			err.Error())
+	subcommand, err := newSubCommand(name, help)
+	if err != nil && subcommand.firstDelayedError == "" {
+		subcommand.firstDelayedError = err.Error()
 	}
 	me.subCommands[name] = subcommand
 	return subcommand
@@ -299,7 +296,7 @@ func (me *Parser) ParseLine(line string) error {
 }
 
 func (me *Parser) ParseArgs(args []string) error {
-	if err := me.checkForDelayedErrors(); err != nil {
+	if err := me.checkForDelayedError(); err != nil {
 		return err
 	}
 	if err := me.prepareHelpAndVersionOptions(); err != nil {
@@ -382,16 +379,11 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 	return nil
 }
 
-func (me *Parser) checkForDelayedErrors() error {
-	fmt.Println("checkForDelayedErrors") // TODO
+func (me *Parser) checkForDelayedError() error {
 	for _, subcommand := range me.subCommands {
-		fmt.Printf("  %s %d\n", subcommand.LongName(), len(subcommand.delayedErrors))
-		if len(subcommand.delayedErrors) > 0 {
-			errs := make([]string, 0, len(subcommand.delayedErrors))
-			for _, err := range subcommand.delayedErrors {
-				errs = append(errs, fmt.Sprintf("error %s", err))
-			}
-			exitFunc(2, strings.Join(errs, "\n"))
+		if subcommand.firstDelayedError != "" {
+			exitFunc(2, fmt.Sprintf("error %s",
+				subcommand.firstDelayedError))
 		}
 	}
 	return nil

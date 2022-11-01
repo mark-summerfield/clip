@@ -4,21 +4,23 @@
 package garg
 
 type SubCommand struct {
-	longName      string
-	shortName     rune
-	help          string
-	options       []optioner
-	delayedErrors []string
+	longName          string
+	shortName         rune
+	help              string
+	options           []optioner
+	firstDelayedError string
 }
 
 func newMainSubCommand() *SubCommand {
 	return &SubCommand{longName: "", shortName: noShortName, help: "",
-		options: make([]optioner, 0), delayedErrors: make([]string, 0)}
+		options: make([]optioner, 0)}
 }
 
-func newSubCommand(name, help string) *SubCommand {
+// Always returns a *SubCommand; _and_ either nil or error
+func newSubCommand(name, help string) (*SubCommand, error) {
+	name, err := validatedName(name, "subcommand")
 	return &SubCommand{longName: name, shortName: noShortName, help: help,
-		options: make([]optioner, 0)}
+		options: make([]optioner, 0)}, err
 }
 
 func (me *SubCommand) LongName() string {
@@ -102,8 +104,8 @@ func (me *SubCommand) Reals(name, help string) *RealsOption {
 
 func (me *SubCommand) registerNewOption(option optioner, err error) {
 	me.options = append(me.options, option)
-	if err != nil {
-		me.delayedErrors = append(me.delayedErrors, err.Error())
+	if err != nil && me.firstDelayedError == "" {
+		me.firstDelayedError = err.Error()
 	}
 }
 

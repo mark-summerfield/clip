@@ -63,14 +63,12 @@ type FlagOption struct {
 	value bool
 }
 
+// Always returns a *FlagOption; _and_ either nil or error
 func newFlagOption(name, help string) (*FlagOption, error) {
 	name, err := validatedName(name, "option")
-	if err != nil {
-		return nil, err
-	}
 	shortName, longName := namesForName(name)
 	return &FlagOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven}}, nil
+		shortName: shortName, help: help, state: NotGiven}}, err
 }
 
 func (me FlagOption) Value() bool {
@@ -100,15 +98,13 @@ type IntOption struct {
 	value         int
 }
 
+// Always returns a *IntOption; _and_ either nil or error
 func newIntOption(name, help string, theDefault int) (*IntOption, error) {
 	name, err := validatedName(name, "option")
-	if err != nil {
-		return nil, err
-	}
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		TheDefault: theDefault, Validator: makeDefaultIntValidator()}, nil
+		TheDefault: theDefault, Validator: makeDefaultIntValidator()}, err
 }
 
 func (me IntOption) Value() int {
@@ -153,16 +149,14 @@ type RealOption struct {
 	value         float64
 }
 
+// Always returns a *RealOption; _and_ either nil or error
 func newRealOption(name, help string, theDefault float64) (*RealOption,
 	error) {
 	name, err := validatedName(name, "option")
-	if err != nil {
-		return nil, err
-	}
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		TheDefault: theDefault, Validator: makeDefaultRealValidator()}, nil
+		TheDefault: theDefault, Validator: makeDefaultRealValidator()}, err
 }
 
 func (me RealOption) Value() float64 {
@@ -207,15 +201,13 @@ type StrOption struct {
 	value         string
 }
 
+// Always returns a *StrOption; _and_ either nil or error
 func newStrOption(name, help, theDefault string) (*StrOption, error) {
 	name, err := validatedName(name, "option")
-	if err != nil {
-		return nil, err
-	}
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		TheDefault: theDefault, Validator: makeDefaultStrValidator()}, nil
+		TheDefault: theDefault, Validator: makeDefaultStrValidator()}, err
 }
 
 func (me StrOption) Value() string {
@@ -259,16 +251,14 @@ type StrsOption struct {
 	value      []string
 }
 
+// Always returns a *StrsOption; _and_ either nil or error
 func newStrsOption(name, help string) (*StrsOption, error) {
 	name, err := validatedName(name, "option")
-	if err != nil {
-		return nil, err
-	}
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
 		ValueCount: OneOrMoreValues,
-		Validator:  makeDefaultStrValidator()}, nil
+		Validator:  makeDefaultStrValidator()}, err
 }
 
 func (me StrsOption) Value() []string {
@@ -303,16 +293,14 @@ type IntsOption struct {
 	value      []int
 }
 
+// Always returns a *IntsOption; _and_ either nil or error
 func newIntsOption(name, help string) (*IntsOption, error) {
 	name, err := validatedName(name, "option")
-	if err != nil {
-		return nil, err
-	}
 	shortName, longName := namesForName(name)
 	return &IntsOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
 		ValueCount: OneOrMoreValues,
-		Validator:  makeDefaultIntValidator()}, nil
+		Validator:  makeDefaultIntValidator()}, err
 }
 
 func (me IntsOption) Value() []int {
@@ -347,16 +335,14 @@ type RealsOption struct {
 	value      []float64
 }
 
+// Always returns a *RealsOption; _and_ either nil or error
 func newRealsOption(name, help string) (*RealsOption, error) {
 	name, err := validatedName(name, "option")
-	if err != nil {
-		return nil, err
-	}
 	shortName, longName := namesForName(name)
 	return &RealsOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
 		ValueCount: OneOrMoreValues,
-		Validator:  makeDefaultRealValidator()}, nil
+		Validator:  makeDefaultRealValidator()}, err
 }
 
 func (me RealsOption) Value() []float64 {
@@ -386,15 +372,17 @@ func (me *RealsOption) addValue(value string) string {
 
 func validatedName(name, what string) (string, error) {
 	if name == "" {
-		return "", fmt.Errorf("#%d: can't have an empty %s name",
+		return "<unnamed>", fmt.Errorf("#%d: can't have an empty %s name",
 			eEmptyName, what)
 	}
 	if strings.HasPrefix(name, "-") {
 		name = strings.Trim(name, "-")
 	}
-	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
-		return "", fmt.Errorf("#%d: can't have a numeric %s name, got %s",
-			eNumericName, what, name)
+	rx := regexp.MustCompile(`^\d+`)
+	if rx.MatchString(name) {
+		return name,
+			fmt.Errorf("#%d: can't have a numeric %s name, got %s",
+				eNumericName, what, name)
 	}
 	return name, nil
 }

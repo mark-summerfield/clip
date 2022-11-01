@@ -23,13 +23,13 @@ const (
 func (me optionState) String() string {
 	switch me {
 	case NotGiven:
-		return "NotGiven"
+		return "not given"
 	case Given:
-		return "Given"
+		return "given"
 	case HadValue:
-		return "HadValue"
+		return "had value"
 	default:
-		panic("invalid optionState")
+		return "BUG: invalid optionState"
 	}
 }
 
@@ -53,7 +53,7 @@ func (me ValueCount) String() string {
 	case FourValues:
 		return "four"
 	default:
-		panic("#310: invalid ValueCount")
+		return "BUG: invalid ValueCount"
 	}
 }
 
@@ -89,7 +89,7 @@ func (me PositionalCount) String() string {
 	case OneOrMorePositionals:
 		return "one or more"
 	default:
-		panic("#320: invalid PositionalCount")
+		return "BUG: invalid PositionalCount"
 	}
 }
 

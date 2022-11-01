@@ -33,7 +33,9 @@ func makeIntRangeValidator(minimum, maximum int) func(string, string) (int,
 	return func(name, value string) (int, string) {
 		i, err := strconv.Atoi(value)
 		if err != nil {
-			return 0, err.Error()
+			return 0, fmt.Sprintf(
+				"option %s's value of %s isn't an int: %s",
+				name, value, err)
 		}
 		if minimum <= i && i <= maximum {
 			return i, ""
@@ -63,7 +65,9 @@ func makeRealRangeValidator(minimum, maximum float64) func(string,
 	return func(name, value string) (float64, string) {
 		r, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return 0, err.Error()
+			return 0, fmt.Sprintf(
+				"option %s's value of %s isn't a real: %s",
+				name, value, err)
 		}
 		if minimum <= r && r <= maximum {
 			return r, ""

@@ -174,14 +174,35 @@ type Parser struct {
 }
 
 // NewParser creates a new command line parser.
+// It uses the executable's basename for the AppName and has no version
+// option.
+// See also NewParserVersion and NewParserUser.
+func NewParser() Parser {
+	return NewParserUser(appName(), "")
+}
+
+func appName() string {
+	if len(os.Args) > 0 {
+		return path.Base(os.Args[0])
+	}
+	return "<app>"
+}
+
+// NewParserVersion creates a new command line parser.
+// It uses the executable's basename for the AppName and a version
+// option with the given version.
+// See also NewParser and NewParserUser.
+func NewParserVersion(version string) Parser {
+	return NewParserUser(appName(), version)
+}
+
+// NewParserUser creates a new command line parser.
 // If appname == "" the executable's basename will be used.
 // If version == "" no version option will be available.
-func NewParser(appname, version string) Parser {
+// See also NewParser and NewParserVersion.
+func NewParserUser(appname, version string) Parser {
 	if appname == "" {
-		appname = "<app>"
-		if len(os.Args) > 0 {
-			appname = path.Base(os.Args[0])
-		}
+		appname = appName()
 	}
 	mainSubCommand := newMainSubCommand()
 	subcommands := make(map[string]*SubCommand)
@@ -209,50 +230,56 @@ func (me *Parser) SetPositionalVarName(name string) {
 	me.positionalVarName = name
 }
 
-func (me *Parser) SubCommand(name, help string) *SubCommand {
+func (me *Parser) SubCommand(name, help string) (*SubCommand, error) {
 	if name == "" {
-		panic(fmt.Sprintf("#%d: can't have empty subcommand name",
-			pEmptySubCommandName))
+		return nil, fmt.Errorf("#%d: can't have empty subcommand name",
+			eEmptySubCommandName)
+	}
+	if name == me.HelpName {
+		return nil, fmt.Errorf("#%d: can't have a subcommand called %s",
+			eInvalidSubCommandName, me.HelpName)
 	}
 	subcommand := newSubCommand(name, help)
 	me.subCommands[name] = subcommand
-	return subcommand
+	return subcommand, nil
 }
 
-func (me *Parser) Flag(name, help string) *FlagOption {
+func (me *Parser) Flag(name, help string) (*FlagOption, error) {
 	return me.mainSubCommand.Flag(name, help)
 }
 
-func (me *Parser) Int(name, help string, defaultValue int) *IntOption {
+func (me *Parser) Int(name, help string, defaultValue int) (*IntOption,
+	error) {
 	return me.mainSubCommand.Int(name, help, defaultValue)
 }
 
 func (me *Parser) IntInRange(name, help string,
-	minimum, maximum, defaultValue int) *IntOption {
+	minimum, maximum, defaultValue int) (*IntOption, error) {
 	return me.mainSubCommand.IntInRange(name, help, minimum, maximum,
 		defaultValue)
 }
 
-func (me *Parser) Real(name, help string, defaultValue float64) *RealOption {
+func (me *Parser) Real(name, help string, defaultValue float64) (
+	*RealOption, error) {
 	return me.mainSubCommand.Real(name, help, defaultValue)
 }
 
 func (me *Parser) RealInRange(name, help string,
-	minimum, maximum, defaultValue float64) *RealOption {
+	minimum, maximum, defaultValue float64) (*RealOption, error) {
 	return me.mainSubCommand.RealInRange(name, help, minimum, maximum,
 		defaultValue)
 }
 
-func (me *Parser) Str(name, help, defaultValue string) *StrOption {
+func (me *Parser) Str(name, help, defaultValue string) (*StrOption, error) {
 	return me.mainSubCommand.Str(name, help, defaultValue)
 }
 
 func (me *Parser) Choice(name, help string, choices []string,
-	defaultValue string) *StrOption {
+	defaultValue string) (*StrOption, error) {
 	return me.mainSubCommand.Choice(name, help, choices, defaultValue)
 }
 
-func (me *Parser) Strs(name, help string) *StrsOption {
+func (me *Parser) Strs(name, help string) (*StrsOption, error) {
 	return me.mainSubCommand.Strs(name, help)
 }
 
@@ -283,6 +310,9 @@ func (me *Parser) ParseArgs(args []string) error {
 			me.onHelp(subcommand) // doesn't return
 		} else if token.kind == nameTokenKind { // Option
 			currentOption = token.option
+			if me.isSubcommandHelp(subcommand, currentOption) { // may not return
+				return nil
+			}
 			if me.isVersion(subcommand, currentOption) { // may not return
 				return nil
 			}
@@ -290,7 +320,7 @@ func (me *Parser) ParseArgs(args []string) error {
 				option.value = true
 			}
 		} else { // Value
-			if currentOption.wantsValue() {
+			if currentOption != nil && currentOption.wantsValue() {
 				if msg := currentOption.addValue(token.text); msg != "" {
 					return me.handleError(eInvalidValue, msg)
 				}
@@ -331,7 +361,11 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 		useVForVersion = true
 	}
 	if me.VersionName != "" && me.appVersion != "" {
-		versionOpt := main.Flag(me.VersionName, "Show version and quit")
+		versionOpt, err := main.Flag(me.VersionName,
+			"Show version and quit")
+		if err != nil { // should never happen
+			return err
+		}
 		if usevForVersion {
 			versionOpt.SetShortName('v')
 		} else if useVForVersion {
@@ -348,6 +382,17 @@ func (me *Parser) addPositional(value string) bool {
 	}
 	me.Positionals = append(me.Positionals, value)
 	return true
+}
+
+// This allows for user to write: `myapp asubcommand help` as well as
+// `myapp asubcommand -h|--help` (handled elsewhere)
+func (me *Parser) isSubcommandHelp(subcommand *SubCommand, option optioner) bool {
+	if subcommand.longName != mainSubCommandName &&
+		option.LongName() == me.HelpName {
+		me.onHelp(subcommand) // doesn't return
+		return true
+	}
+	return false
 }
 
 func (me *Parser) isVersion(subcommand *SubCommand, option optioner) bool {
@@ -514,11 +559,15 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 }
 
 func (me *Parser) onHelp(subcommand *SubCommand) {
-	exitFunc(0, me.HelpText(subcommand.LongName()))
+	text, err := me.HelpText(subcommand.LongName())
+	if err != nil {
+		exitFunc(1, err.Error())
+	}
+	exitFunc(0, text)
 }
 
-// HelpText is public only to aid testing
-func (me *Parser) HelpText(name string) string {
+// HelpText is public only to aid testing; error should always be nil.
+func (me *Parser) HelpText(name string) (string, error) {
 	var text string
 	if subcommand, ok := me.subCommands[name]; ok {
 		if len(me.subCommands) == 1 { // No subcommands
@@ -533,9 +582,9 @@ func (me *Parser) HelpText(name string) string {
 				text = fmt.Sprintf("usage: %s TODO sub %s", me.appName, name) // TODO
 			}
 		}
-		return text
+		return text, nil
 	}
-	panic(fmt.Sprintf("#%d: no main subcommand or subcommand", pBug))
+	return "", fmt.Errorf("#%d:BUG: no main subcommand or subcommand", eBug)
 }
 
 func (me *Parser) onVersion() {

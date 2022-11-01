@@ -32,59 +32,85 @@ func (me *SubCommand) SetShortName(c rune) {
 	me.shortName = c
 }
 
-func (me *SubCommand) Flag(name, help string) *FlagOption {
-	option := newFlagOption(name, help)
+func (me *SubCommand) Flag(name, help string) (*FlagOption, error) {
+	option, err := newFlagOption(name, help)
+	if err != nil {
+		return nil, err
+	}
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
-func (me *SubCommand) Int(name, help string, theDefault int) *IntOption {
-	option := newIntOption(name, help, theDefault)
+func (me *SubCommand) Int(name, help string, theDefault int) (*IntOption,
+	error) {
+	option, err := newIntOption(name, help, theDefault)
+	if err != nil {
+		return nil, err
+	}
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
 func (me *SubCommand) IntInRange(name, help string,
-	minimum, maximum, theDefault int) *IntOption {
-	option := newIntOption(name, help, theDefault)
+	minimum, maximum, theDefault int) (*IntOption, error) {
+	option, err := newIntOption(name, help, theDefault)
+	if err != nil {
+		return nil, err
+	}
 	option.validator = makeIntRangeValidator(minimum, maximum)
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
 func (me *SubCommand) Real(name, help string,
-	theDefault float64) *RealOption {
-	option := newRealOption(name, help, theDefault)
+	theDefault float64) (*RealOption, error) {
+	option, err := newRealOption(name, help, theDefault)
+	if err != nil {
+		return nil, err
+	}
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
 func (me *SubCommand) RealInRange(name, help string,
-	minimum, maximum, theDefault float64) *RealOption {
-	option := newRealOption(name, help, theDefault)
+	minimum, maximum, theDefault float64) (*RealOption, error) {
+	option, err := newRealOption(name, help, theDefault)
+	if err != nil {
+		return nil, err
+	}
 	option.validator = makeRealRangeValidator(minimum, maximum)
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
-func (me *SubCommand) Str(name, help, theDefault string) *StrOption {
-	option := newStrOption(name, help, theDefault)
+func (me *SubCommand) Str(name, help, theDefault string) (*StrOption,
+	error) {
+	option, err := newStrOption(name, help, theDefault)
+	if err != nil {
+		return nil, err
+	}
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
 func (me *SubCommand) Choice(name, help string, choices []string,
-	theDefault string) *StrOption {
-	option := newStrOption(name, help, theDefault)
+	theDefault string) (*StrOption, error) {
+	option, err := newStrOption(name, help, theDefault)
+	if err != nil {
+		return nil, err
+	}
 	option.validator = makeChoiceValidator(choices)
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
-func (me *SubCommand) Strs(name, help string) *StrsOption {
-	option := newStrsOption(name, help)
+func (me *SubCommand) Strs(name, help string) (*StrsOption, error) {
+	option, err := newStrsOption(name, help)
+	if err != nil {
+		return nil, err
+	}
 	me.registerNewOption(option)
-	return option
+	return option, nil
 }
 
 func (me *SubCommand) registerNewOption(option optioner) {

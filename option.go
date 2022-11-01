@@ -63,11 +63,14 @@ type FlagOption struct {
 	value bool
 }
 
-func newFlagOption(name, help string) *FlagOption {
-	name = validatedName(name)
+func newFlagOption(name, help string) (*FlagOption, error) {
+	name, err := validatedName(name)
+	if err != nil {
+		return nil, err
+	}
 	shortName, longName := namesForName(name)
 	return &FlagOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven}}
+		shortName: shortName, help: help, state: NotGiven}}, nil
 }
 
 func (me FlagOption) Value() bool {
@@ -80,7 +83,7 @@ func (me FlagOption) wantsValue() bool {
 
 func (me FlagOption) check() string {
 	if me.state == HadValue {
-		panic(fmt.Sprintf("#%d: a flag with a value", pBug))
+		return fmt.Sprintf("#%d:BUG: a flag with a value", eBug)
 	}
 	return ""
 }
@@ -97,12 +100,15 @@ type IntOption struct {
 	validator     IntValidator
 }
 
-func newIntOption(name, help string, theDefault int) *IntOption {
-	name = validatedName(name)
+func newIntOption(name, help string, theDefault int) (*IntOption, error) {
+	name, err := validatedName(name)
+	if err != nil {
+		return nil, err
+	}
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		theDefault: theDefault, validator: makeDefaultIntValidator()}
+		theDefault: theDefault, validator: makeDefaultIntValidator()}, nil
 }
 
 func (me IntOption) Value() int {
@@ -114,6 +120,10 @@ func (me IntOption) Value() int {
 
 func (me IntOption) wantsValue() bool {
 	return me.state == Given
+}
+
+func (me *IntOption) SetDefault(defaultValue int) {
+	me.theDefault = defaultValue
 }
 
 func (me *IntOption) SetValidator(validator IntValidator) {
@@ -155,12 +165,16 @@ type RealOption struct {
 	validator     RealValidator
 }
 
-func newRealOption(name, help string, theDefault float64) *RealOption {
-	name = validatedName(name)
+func newRealOption(name, help string, theDefault float64) (*RealOption,
+	error) {
+	name, err := validatedName(name)
+	if err != nil {
+		return nil, err
+	}
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		theDefault: theDefault, validator: makeDefaultRealValidator()}
+		theDefault: theDefault, validator: makeDefaultRealValidator()}, nil
 }
 
 func (me RealOption) Value() float64 {
@@ -168,6 +182,10 @@ func (me RealOption) Value() float64 {
 		return me.value
 	}
 	return me.theDefault
+}
+
+func (me *RealOption) SetDefault(defaultValue float64) {
+	me.theDefault = defaultValue
 }
 
 func (me *RealOption) SetValidator(validator RealValidator) {
@@ -213,12 +231,15 @@ type StrOption struct {
 	validator     StrValidator
 }
 
-func newStrOption(name, help, theDefault string) *StrOption {
-	name = validatedName(name)
+func newStrOption(name, help, theDefault string) (*StrOption, error) {
+	name, err := validatedName(name)
+	if err != nil {
+		return nil, err
+	}
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
-		theDefault: theDefault, validator: makeDefaultStrValidator()}
+		theDefault: theDefault, validator: makeDefaultStrValidator()}, nil
 }
 
 func (me StrOption) Value() string {
@@ -230,6 +251,10 @@ func (me StrOption) Value() string {
 
 func (me StrOption) wantsValue() bool {
 	return me.state == Given
+}
+
+func (me *StrOption) SetDefault(defaultValue string) {
+	me.theDefault = defaultValue
 }
 
 func (me *StrOption) SetValidator(validator StrValidator) {
@@ -270,12 +295,16 @@ type StrsOption struct {
 	validator  StrValidator
 }
 
-func newStrsOption(name, help string) *StrsOption {
-	name = validatedName(name)
+func newStrsOption(name, help string) (*StrsOption, error) {
+	name, err := validatedName(name)
+	if err != nil {
+		return nil, err
+	}
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven},
-		valueCount: OneOrMoreValues, validator: makeDefaultStrValidator()}
+			shortName: shortName, help: help, state: NotGiven},
+			valueCount: OneOrMoreValues, validator: makeDefaultStrValidator()},
+		nil
 }
 
 func (me StrsOption) Value() []string {
@@ -320,7 +349,7 @@ func (me StrsOption) check() string {
 				ok = false
 			}
 		default:
-			panic(fmt.Sprintf("#%d: impossible ValueCount", pBug))
+			return fmt.Sprintf("#%d:BUG:impossible ValueCount", eBug)
 		}
 		if !ok {
 			return fmt.Sprintf(
@@ -344,17 +373,18 @@ func (me *StrsOption) addValue(value string) string {
 	return ""
 }
 
-func validatedName(name string) string {
+func validatedName(name string) (string, error) {
 	if name == "" {
-		panic(fmt.Sprintf("#%d: can't have an empty option name",
-			pEmptyOptionName))
+		return "", fmt.Errorf("#%d: can't have an empty option name",
+			eEmptyOptionName)
 	}
 	if strings.HasPrefix(name, "-") {
 		name = strings.Trim(name, "-")
 	}
 	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
-		panic(fmt.Sprintf("#%d: can't have a numeric option name, got %s",
-			pNumericOptionName, name))
+		return "", fmt.Errorf(
+			"#%d: can't have a numeric option name, got %s",
+			eNumericOptionName, name)
 	}
-	return name
+	return name, nil
 }

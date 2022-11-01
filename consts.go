@@ -94,7 +94,6 @@ func (me PositionalCount) String() string {
 }
 
 const (
-	// error codes
 	eUser                     = iota + 100
 	eMissing                  // 101
 	eInvalidValue             // 102
@@ -107,9 +106,9 @@ const (
 	eUnexpectedValue          // 109
 	eWrongPositionalCount     // 110
 	eInvalidOptionValue       // 111
-	// panic codes
-	pBug                 = iota + 900
-	pEmptySubCommandName // 901
-	pEmptyOptionName     // 902
-	pNumericOptionName   // 903
+	eEmptySubCommandName      // 112
+	eEmptyOptionName          // 113
+	eNumericOptionName        // 114
+	eInvalidSubCommandName
+	eBug = 999
 )

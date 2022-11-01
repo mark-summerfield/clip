@@ -284,6 +284,14 @@ func (me *Parser) Strs(name, help string) (*StrsOption, error) {
 	return me.mainSubCommand.Strs(name, help)
 }
 
+func (me *Parser) Ints(name, help string) (*IntsOption, error) {
+	return me.mainSubCommand.Ints(name, help)
+}
+
+func (me *Parser) Reals(name, help string) (*RealsOption, error) {
+	return me.mainSubCommand.Reals(name, help)
+}
+
 func (me *Parser) Parse() error {
 	return me.ParseArgs(os.Args[1:])
 }

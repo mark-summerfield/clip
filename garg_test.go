@@ -16,17 +16,21 @@ func realEqual(x, y float64) bool {
 	return math.Abs(x-y) < 0.0001
 }
 
-func expectEqualSlice(expected, actuals []string, what string) string {
+type multi interface {
+	int | float64 | string
+}
+
+func expectEqualSlice[T multi](expected, actuals []T, what string) string {
 	if !reflect.DeepEqual(actuals, expected) {
-		return fmt.Sprintf("expected %s=%s, got %s", what, expected,
+		return fmt.Sprintf("expected %s=%v, got %v", what, expected,
 			actuals)
 	}
 	return ""
 }
 
-func expectEmptySlice(slice []string, what string) string {
+func expectEmptySlice[T multi](slice []T, what string) string {
 	if slice != nil {
-		return fmt.Sprintf("expected %s=nil, got %s", what, slice)
+		return fmt.Sprintf("expected %s=nil, got %v", what, slice)
 	}
 	return ""
 }
@@ -1266,6 +1270,62 @@ func Test055(t *testing.T) {
 	v := currencyOpt.Value()
 	if v != "EUR" {
 		t.Errorf("expected currency=EUR, got %s", v)
+	}
+}
+
+func Test056(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	marginsOpt, err := parser.Ints("margins", "")
+	if err != nil {
+		t.Error(err)
+	}
+	line := ""
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if e := expectEmptySlice(marginsOpt.Value(), "margins"); e != "" {
+		t.Error(e)
+	}
+}
+
+func Test057(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	marginsOpt, err := parser.Ints("margins", "")
+	if err != nil {
+		t.Error(err)
+	}
+	line := "-m 88 0 19 27 42"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if e := expectEqualSlice([]int{88, 0, 19, 27, 42}, marginsOpt.Value(),
+		"margins"); e != "" {
+		t.Error(e)
+	}
+}
+
+func Test058(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	marginsOpt, err := parser.Reals("margins", "")
+	if err != nil {
+		t.Error(err)
+	}
+	line := "-m 0.1 -17.5 63"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	v := marginsOpt.Value()
+	if len(v) != 3 {
+		t.Errorf("expected 3 float64s got %d: %v", len(v), v)
+	}
+	expected := []float64{0.1, -17.5, 63}
+	for i, r := range v {
+		if !realEqual(r, expected[i]) {
+			t.Errorf("actual %g != %g expected", r, expected[i])
+		}
 	}
 }
 

@@ -280,14 +280,134 @@ func (me StrsOption) wantsValue() bool {
 }
 
 func (me StrsOption) check() string {
-	if me.state == Given {
+	return checkMulti(me.LongName(), me.state, me.ValueCount, len(me.value))
+}
+
+func (me *StrsOption) addValue(value string) string {
+	s, msg := me.Validator(me.longName, value)
+	if msg != "" {
+		return msg
+	}
+	if me.value == nil {
+		me.value = make([]string, 0, 1)
+	}
+	me.value = append(me.value, s)
+	me.state = HadValue
+	return ""
+}
+
+type IntsOption struct {
+	*commonOption
+	ValueCount ValueCount
+	Validator  IntValidator
+	value      []int
+}
+
+func newIntsOption(name, help string) (*IntsOption, error) {
+	name, err := validatedName(name)
+	if err != nil {
+		return nil, err
+	}
+	shortName, longName := namesForName(name)
+	return &IntsOption{commonOption: &commonOption{longName: longName,
+		shortName: shortName, help: help, state: NotGiven},
+		ValueCount: OneOrMoreValues,
+		Validator:  makeDefaultIntValidator()}, nil
+}
+
+func (me IntsOption) Value() []int {
+	return me.value
+}
+
+func (me IntsOption) wantsValue() bool {
+	return me.state != NotGiven
+}
+
+func (me IntsOption) check() string {
+	return checkMulti(me.LongName(), me.state, me.ValueCount, len(me.value))
+}
+
+func (me *IntsOption) addValue(value string) string {
+	s, msg := me.Validator(me.longName, value)
+	if msg != "" {
+		return msg
+	}
+	if me.value == nil {
+		me.value = make([]int, 0, 1)
+	}
+	me.value = append(me.value, s)
+	me.state = HadValue
+	return ""
+}
+
+type RealsOption struct {
+	*commonOption
+	ValueCount ValueCount
+	Validator  RealValidator
+	value      []float64
+}
+
+func newRealsOption(name, help string) (*RealsOption, error) {
+	name, err := validatedName(name)
+	if err != nil {
+		return nil, err
+	}
+	shortName, longName := namesForName(name)
+	return &RealsOption{commonOption: &commonOption{longName: longName,
+		shortName: shortName, help: help, state: NotGiven},
+		ValueCount: OneOrMoreValues,
+		Validator:  makeDefaultRealValidator()}, nil
+}
+
+func (me RealsOption) Value() []float64 {
+	return me.value
+}
+
+func (me RealsOption) wantsValue() bool {
+	return me.state != NotGiven
+}
+
+func (me RealsOption) check() string {
+	return checkMulti(me.LongName(), me.state, me.ValueCount, len(me.value))
+}
+
+func (me *RealsOption) addValue(value string) string {
+	s, msg := me.Validator(me.longName, value)
+	if msg != "" {
+		return msg
+	}
+	if me.value == nil {
+		me.value = make([]float64, 0, 1)
+	}
+	me.value = append(me.value, s)
+	me.state = HadValue
+	return ""
+}
+
+func validatedName(name string) (string, error) {
+	if name == "" {
+		return "", fmt.Errorf("#%d: can't have an empty option name",
+			eEmptyOptionName)
+	}
+	if strings.HasPrefix(name, "-") {
+		name = strings.Trim(name, "-")
+	}
+	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
+		return "", fmt.Errorf(
+			"#%d: can't have a numeric option name, got %s",
+			eNumericOptionName, name)
+	}
+	return name, nil
+}
+
+func checkMulti(name string, state optionState, valueCount ValueCount,
+	count int) string {
+	if state == Given {
 		return fmt.Sprintf(
-			"expected %s values for %s, got none", me.ValueCount,
-			me.LongName())
-	} else if me.state == HadValue {
-		count := len(me.value)
+			"expected %s values for %s, got none", valueCount, name)
+	} else if state == HadValue {
 		ok := true
-		switch me.ValueCount {
+		switch valueCount {
 		case OneOrMoreValues:
 			if count < 1 {
 				ok = false
@@ -309,38 +429,9 @@ func (me StrsOption) check() string {
 		}
 		if !ok {
 			return fmt.Sprintf(
-				"expected %s values for %s, got %d", me.ValueCount,
-				me.LongName(), count)
+				"expected %s values for %s, got %d", valueCount, name,
+				count)
 		}
 	}
 	return ""
-}
-
-func (me *StrsOption) addValue(value string) string {
-	s, msg := me.Validator(me.longName, value)
-	if msg != "" {
-		return msg
-	}
-	if me.value == nil {
-		me.value = make([]string, 0, 1)
-	}
-	me.value = append(me.value, s)
-	me.state = HadValue
-	return ""
-}
-
-func validatedName(name string) (string, error) {
-	if name == "" {
-		return "", fmt.Errorf("#%d: can't have an empty option name",
-			eEmptyOptionName)
-	}
-	if strings.HasPrefix(name, "-") {
-		name = strings.Trim(name, "-")
-	}
-	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
-		return "", fmt.Errorf(
-			"#%d: can't have a numeric option name, got %s",
-			eNumericOptionName, name)
-	}
-	return name, nil
 }

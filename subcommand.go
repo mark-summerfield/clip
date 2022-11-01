@@ -113,6 +113,24 @@ func (me *SubCommand) Strs(name, help string) (*StrsOption, error) {
 	return option, nil
 }
 
+func (me *SubCommand) Ints(name, help string) (*IntsOption, error) {
+	option, err := newIntsOption(name, help)
+	if err != nil {
+		return nil, err
+	}
+	me.registerNewOption(option)
+	return option, nil
+}
+
+func (me *SubCommand) Reals(name, help string) (*RealsOption, error) {
+	option, err := newRealsOption(name, help)
+	if err != nil {
+		return nil, err
+	}
+	me.registerNewOption(option)
+	return option, nil
+}
+
 func (me *SubCommand) registerNewOption(option optioner) {
 	me.options = append(me.options, option)
 }

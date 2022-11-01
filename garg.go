@@ -163,6 +163,8 @@ type Parser struct {
 	Positionals       []string
 	HelpName          string
 	VersionName       string
+	Description       string
+	EndNotes          string
 	shortVersionName  rune
 	appName           string
 	appVersion        string

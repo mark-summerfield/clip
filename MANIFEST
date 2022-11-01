@@ -1,15 +1,8 @@
-# TODO Additional ValueTypes:
-#   - Ints
-#   - Reals
-#   (both with ValueCount OneOrMore)
-#   - commensurate tests
 # TODO implement Help output (if tty: use terminal width & bold etc;
 # otherwise for tests & redirected use 80 cols & CAPS for highlighting)
-# TODO Add tests for all ValueCount's for Positionals
 # TODO document all option forms & the corresponding code & make sure
 #      all doc egs have corresponding tests
 # TODO add tests for every error code
-# TODO add tests for every panic code
 # TODO add more tests for subcommands
 
 garg.go
@@ -25,5 +18,9 @@ st.sh
 
 # TODO xara & suzy
 # curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
+
+# NOTE IDEAS
+# Add support for []int with IntsOption and for []float64 with
+# RealsOption, both essentially copies of the StrsOption.
 
 # vim: syn=yaml

@@ -60,20 +60,11 @@ func expectPanic(code int, t *testing.T) {
 func createTestParser1(t *testing.T) (Parser, *FlagOption, *IntOption,
 	*IntOption) {
 	parser := NewParser()
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	verboseOpt, err := parser.Int("verbose", "verbosity -v or -vN", 1)
-	if err != nil {
-		t.Error(err)
-	}
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	return parser, summaryOpt, verboseOpt, maxWidthOpt
 }
 
@@ -81,37 +72,19 @@ func createTestParser2(t *testing.T) (Parser, *FlagOption, *IntOption,
 	*IntOption, *StrsOption, *StrsOption, *StrsOption, *StrsOption,
 	*FlagOption) {
 	parser, summaryOpt, verboseOpt, maxWidthOpt := createTestParser1(t)
-	languageOpt, err := parser.Strs("language", "lang help")
-	if err != nil {
-		t.Error(err)
-	}
-	skipLanguageOpt, err := parser.Strs("skiplanguage", "skip lang help")
-	if err != nil {
-		t.Error(err)
-	}
+	languageOpt := parser.Strs("language", "lang help")
+	skipLanguageOpt := parser.Strs("skiplanguage", "skip lang help")
 	skipLanguageOpt.SetShortName('L')
-	excludeOpt, err := parser.Strs("exclude", "exclude help")
-	if err != nil {
-		t.Error(err)
-	}
-	includeOpt, err := parser.Strs("include", "include help")
-	if err != nil {
-		t.Error(err)
-	}
-	sortByLinesOpt, err := parser.Flag("sortbylines", "Sort by lines")
-	if err != nil {
-		t.Error(err)
-	}
+	excludeOpt := parser.Strs("exclude", "exclude help")
+	includeOpt := parser.Strs("include", "include help")
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	return parser, summaryOpt, verboseOpt, maxWidthOpt, languageOpt,
 		skipLanguageOpt, excludeOpt, includeOpt, sortByLinesOpt
 }
 
 func Test001(t *testing.T) {
 	parser := NewParserUser("garg.test", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
@@ -127,10 +100,7 @@ func Test001(t *testing.T) {
 
 func Test002(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-S"
 	if err := parser.ParseLine(line); err != nil {
@@ -143,10 +113,7 @@ func Test002(t *testing.T) {
 
 func Test003(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "--summary"
 	if err := parser.ParseLine(line); err != nil {
@@ -159,15 +126,9 @@ func Test003(t *testing.T) {
 
 func Test004(t *testing.T) {
 	parser := NewParserUser("", "")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	verboseOpt, err := parser.Int("verbose", "verbosity -v or -vN", 1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
 	verboseOpt.SetShortName(0)
 	line := "-S --verbose 3 filename.txt"
 	if err := parser.ParseLine(line); err != nil {
@@ -188,14 +149,8 @@ func Test004(t *testing.T) {
 
 func Test005(t *testing.T) {
 	parser := NewParserUser("", "0.1.0")
-	sortByLinesOpt, err := parser.Flag("sortbylines", "Sort by lines")
-	if err != nil {
-		t.Error(err)
-	}
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-sS"
 	if err := parser.ParseLine(line); err != nil {
@@ -217,10 +172,7 @@ func Test005(t *testing.T) {
 
 func Test006(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt := createTestParser1(t)
-	sortByLinesOpt, err := parser.Flag("sortbylines", "Sort by lines")
-	if err != nil {
-		t.Error(err)
-	}
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	line := "-sSm60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -239,10 +191,7 @@ func Test006(t *testing.T) {
 
 func Test007(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt := createTestParser1(t)
-	sortByLinesOpt, err := parser.Flag("sortbylines", "Sort by lines")
-	if err != nil {
-		t.Error(err)
-	}
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	line := "-sSm=60 file1.txt file2.dat file3.uxf"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -265,10 +214,7 @@ func Test007(t *testing.T) {
 
 func Test008(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt := createTestParser1(t)
-	sortByLinesOpt, err := parser.Flag("sortbylines", "Sort by lines")
-	if err != nil {
-		t.Error(err)
-	}
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
 	line := "-sSm 60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -287,14 +233,8 @@ func Test008(t *testing.T) {
 
 func Test009(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt := createTestParser1(t)
-	sortByLinesOpt, err := parser.Flag("sortbylines", "Sort by lines")
-	if err != nil {
-		t.Error(err)
-	}
-	languageOpt, err := parser.Strs("language", "lang help")
-	if err != nil {
-		t.Error(err)
-	}
+	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	languageOpt := parser.Strs("language", "lang help")
 	line := "-sSm=60 -l cpp pas xml -- file1.txt file2.dat file3.uxf"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -321,11 +261,8 @@ func Test009(t *testing.T) {
 
 func Test010(t *testing.T) {
 	parser := NewParserVersion("1.2.3")
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "-m60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -338,11 +275,8 @@ func Test010(t *testing.T) {
 
 func Test011(t *testing.T) {
 	parser := NewParserVersion("1.2.4")
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "-m=60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -355,11 +289,8 @@ func Test011(t *testing.T) {
 
 func Test012(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "--maxwidth 60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -372,11 +303,8 @@ func Test012(t *testing.T) {
 
 func Test013(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "--maxwidth=60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -389,15 +317,9 @@ func Test013(t *testing.T) {
 
 func Test014(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	languageOpt, err := parser.Strs("language", "lang help")
-	if err != nil {
-		t.Error(err)
-	}
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	languageOpt := parser.Strs("language", "lang help")
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "-lcpp -- file1.txt file2.dat file3.uxf"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -418,10 +340,7 @@ func Test014(t *testing.T) {
 
 func Test015(t *testing.T) {
 	parser := NewParser()
-	languageOpt, err := parser.Strs("language", "lang help")
-	if err != nil {
-		t.Error(err)
-	}
+	languageOpt := parser.Strs("language", "lang help")
 	line := "-l=cpp -- file1.txt file2.dat file3.uxf path/to/file4.xml"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -438,10 +357,7 @@ func Test015(t *testing.T) {
 
 func Test016(t *testing.T) {
 	parser := NewParser()
-	languageOpt, err := parser.Strs("language", "lang help")
-	if err != nil {
-		t.Error(err)
-	}
+	languageOpt := parser.Strs("language", "lang help")
 	line := "-l cpp -- file1.txt file2.dat"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -458,10 +374,7 @@ func Test016(t *testing.T) {
 
 func Test017(t *testing.T) {
 	parser := NewParser()
-	languageOpt, err := parser.Strs("language", "lang help")
-	if err != nil {
-		t.Error(err)
-	}
+	languageOpt := parser.Strs("language", "lang help")
 	line := "-l cpp pas xml -- file1.txt"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -480,14 +393,8 @@ func Test018(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt, languageOpt, _, excludeOpt,
 		includeOpt, sortByLinesOpt := createTestParser2(t)
 	maxWidthOpt.TheDefault = 56
-	specialSubCommand, err := parser.SubCommand("special", "Special help")
-	if err != nil {
-		t.Error(err)
-	}
-	extraOpt, err := specialSubCommand.Flag("extra", "extra help")
-	if err != nil {
-		t.Error(err)
-	}
+	specialSubCommand := parser.SubCommand("special", "Special help")
+	extraOpt := specialSubCommand.Flag("extra", "extra help")
 	line := "-sS -l h red -e zOld t -L d -i peek -- file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -526,19 +433,10 @@ func Test018(t *testing.T) {
 func Test019(t *testing.T) {
 	parser, summaryOpt, _, _, _, skipLanguageOpt, excludeOpt, includeOpt,
 		sortByLinesOpt := createTestParser2(t)
-	specialSubCommand, err := parser.SubCommand("special", "Special help")
-	if err != nil {
-		t.Error(err)
-	}
-	extraOpt, err := specialSubCommand.Flag("extra", "extra help")
-	if err != nil {
-		t.Error(err)
-	}
-	maxWidthOpt, err := specialSubCommand.IntInRange("maxwidth",
+	specialSubCommand := parser.SubCommand("special", "Special help")
+	extraOpt := specialSubCommand.Flag("extra", "extra help")
+	maxWidthOpt := specialSubCommand.IntInRange("maxwidth",
 		"special max width help", 20, 10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "special -e -m98 file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -690,11 +588,8 @@ func Test022(t *testing.T) {
 
 func Test023(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 80)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "-m60"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -707,11 +602,8 @@ func Test023(t *testing.T) {
 
 func Test024(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	maxWidthOpt, err := parser.IntInRange("maxwidth", "max width help", 20,
+	maxWidthOpt := parser.IntInRange("maxwidth", "max width help", 20,
 		10000, 45)
-	if err != nil {
-		t.Error(err)
-	}
 	line := "-m70"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -785,10 +677,7 @@ func Test028(t *testing.T) {
 
 func Test029(t *testing.T) {
 	parser, summaryOpt, _, _ := createTestParser1(t)
-	scaleOpt, err := parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -804,10 +693,7 @@ func Test029(t *testing.T) {
 
 func Test030(t *testing.T) {
 	parser, summaryOpt, _, _ := createTestParser1(t)
-	scaleOpt, err := parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss-3.9"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -823,10 +709,7 @@ func Test030(t *testing.T) {
 
 func Test031(t *testing.T) {
 	parser, summaryOpt, _, _ := createTestParser1(t)
-	scaleOpt, err := parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss3.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -842,10 +725,7 @@ func Test031(t *testing.T) {
 
 func Test032(t *testing.T) {
 	parser, summaryOpt, _, _ := createTestParser1(t)
-	scaleOpt, err := parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss 3.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -861,10 +741,7 @@ func Test032(t *testing.T) {
 
 func Test033(t *testing.T) {
 	parser, summaryOpt, _, _ := createTestParser1(t)
-	scaleOpt, err := parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss -2.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -880,10 +757,7 @@ func Test033(t *testing.T) {
 
 func Test034(t *testing.T) {
 	parser, summaryOpt, _, _ := createTestParser1(t)
-	scaleOpt, err := parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss-1.5"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -899,10 +773,7 @@ func Test034(t *testing.T) {
 
 func Test035(t *testing.T) {
 	parser, summaryOpt, _, _ := createTestParser1(t)
-	scaleOpt, err := parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	scaleOpt := parser.Real("scale", "max width help", 4.5)
 	line := "-Ss88"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -987,15 +858,9 @@ func Test039(t *testing.T) {
 func Test040(t *testing.T) {
 	version := "0.8.7-alpha"
 	parser := NewParserUser("myapp", version)
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	_, err = parser.Int("verbose", "verbosity -v or -vN", 1)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Int("verbose", "verbosity -v or -vN", 1)
 	if v := parser.Version(); v != version {
 		t.Errorf("Parser.Version is wrong, expected %q, got %q", version, v)
 	}
@@ -1003,15 +868,9 @@ func Test040(t *testing.T) {
 	// _ := parser.ParseLine("-V")
 
 	parser = NewParserUser("myapp", version)
-	summaryOpt, err = parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt = parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	_, err = parser.Int("verbose", "verbosity -v or -vN", 1)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Int("verbose", "verbosity -v or -vN", 1)
 	if v := parser.Version(); v != version {
 		t.Errorf("Parser.Version is wrong, expected %q, got %q", version, v)
 	}
@@ -1206,10 +1065,7 @@ func Test051(t *testing.T) {
 func Test052(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	sizeOpt, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
-	if err != nil {
-		t.Error(err)
-	}
+	sizeOpt := parser.RealInRange("size", "size help", -1, 1, 0.5)
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1223,10 +1079,7 @@ func Test052(t *testing.T) {
 func Test053(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	sizeOpt, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
-	if err != nil {
-		t.Error(err)
-	}
+	sizeOpt := parser.RealInRange("size", "size help", -1, 1, 0.5)
 	line := "--size=-0.19"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1240,11 +1093,8 @@ func Test053(t *testing.T) {
 func Test054(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	currencyOpt, err := parser.Choice("currency", "currency help",
+	currencyOpt := parser.Choice("currency", "currency help",
 		[]string{"USD", "GBP", "EUR"}, "GBP")
-	if err != nil {
-		t.Error(err)
-	}
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1258,11 +1108,8 @@ func Test054(t *testing.T) {
 func Test055(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	currencyOpt, err := parser.Choice("currency", "currency help",
+	currencyOpt := parser.Choice("currency", "currency help",
 		[]string{"USD", "GBP", "EUR"}, "GBP")
-	if err != nil {
-		t.Error(err)
-	}
 	line := "-c EUR"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1276,10 +1123,7 @@ func Test055(t *testing.T) {
 func Test056(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	marginsOpt, err := parser.Ints("margins", "")
-	if err != nil {
-		t.Error(err)
-	}
+	marginsOpt := parser.Ints("margins", "")
 	line := ""
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1292,10 +1136,7 @@ func Test056(t *testing.T) {
 func Test057(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	marginsOpt, err := parser.Ints("margins", "")
-	if err != nil {
-		t.Error(err)
-	}
+	marginsOpt := parser.Ints("margins", "")
 	line := "-m 88 0 19 27 42"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1309,10 +1150,7 @@ func Test057(t *testing.T) {
 func Test058(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	marginsOpt, err := parser.Reals("margins", "")
-	if err != nil {
-		t.Error(err)
-	}
+	marginsOpt := parser.Reals("margins", "")
 	line := "-m 0.1 -17.5 63"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1331,10 +1169,7 @@ func Test058(t *testing.T) {
 
 func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	verboseOpt, err := parser.Flag("verbose", "whether to show more output")
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt := parser.Flag("verbose", "whether to show more output")
 	if err := parser.ParseLine(""); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1348,10 +1183,7 @@ func TestPkgDoc001(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Flag("verbose", "whether to show more output")
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Flag("verbose", "whether to show more output")
 	if err := parser.ParseLine("-v"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1367,27 +1199,15 @@ func TestPkgDoc001(t *testing.T) {
 
 func createPackageDocParser(t *testing.T) Parser {
 	parser := NewParser()
-	_, err := parser.Flag("verbose", "whether to show more output")
-	if err != nil {
-		t.Error(err)
-	}
-	_, err = parser.Flag("xray", "")
-	if err != nil {
-		t.Error(err)
-	}
-	_, err = parser.Flag("cat", "")
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Flag("verbose", "whether to show more output")
+	parser.Flag("xray", "")
+	parser.Flag("cat", "")
 	return parser
 }
 
 func TestPkgDoc002(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine(""); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1402,10 +1222,7 @@ func TestPkgDoc002(t *testing.T) {
 
 func TestPkgDoc003(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-v -x -c -o outfile.dat"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1420,10 +1237,7 @@ func TestPkgDoc003(t *testing.T) {
 
 func TestPkgDoc004(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-v -x -c -o=outfile.dat"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1438,10 +1252,7 @@ func TestPkgDoc004(t *testing.T) {
 
 func TestPkgDoc005(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-vxcooutfile.dat"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1456,10 +1267,7 @@ func TestPkgDoc005(t *testing.T) {
 
 func TestPkgDoc006(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-vxco outfile.dat"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1474,10 +1282,7 @@ func TestPkgDoc006(t *testing.T) {
 
 func TestPkgDoc007(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "")
 	if err := parser.ParseLine("-vxco=outfile.dat"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1492,10 +1297,7 @@ func TestPkgDoc007(t *testing.T) {
 
 func TestPkgDoc008(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	if err := parser.ParseLine("-vxc"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1510,10 +1312,7 @@ func TestPkgDoc008(t *testing.T) {
 
 func TestPkgDoc009(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	outfileOpt.AllowImplicit = true
 	if err := parser.ParseLine("-vxco"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
@@ -1529,10 +1328,7 @@ func TestPkgDoc009(t *testing.T) {
 
 func TestPkgDoc010(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	if err := parser.ParseLine("-vxcooutfile.txt"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1547,10 +1343,7 @@ func TestPkgDoc010(t *testing.T) {
 
 func TestPkgDoc011(t *testing.T) {
 	parser := createPackageDocParser(t)
-	outfileOpt, err := parser.Str("outfile", "outfile", "test.dat")
-	if err != nil {
-		t.Error(err)
-	}
+	outfileOpt := parser.Str("outfile", "outfile", "test.dat")
 	outfileOpt.AllowImplicit = true
 	if err := parser.ParseLine("-vxcooutfile.txt"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
@@ -1566,11 +1359,7 @@ func TestPkgDoc011(t *testing.T) {
 
 func TestPkgDoc012(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
-	verboseOpt, err := parser.Int("verbose",
-		"whether to show more output", 1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt := parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine(""); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1585,11 +1374,7 @@ func TestPkgDoc012(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Int("verbose", "whether to show more output",
-		1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	verboseOpt.AllowImplicit = true
 	if err := parser.ParseLine("-v"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
@@ -1601,11 +1386,7 @@ func TestPkgDoc012(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Int("verbose", "whether to show more output",
-		1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	verboseOpt.AllowImplicit = true
 	if err := parser.ParseLine("--verbose"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
@@ -1617,11 +1398,7 @@ func TestPkgDoc012(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Int("verbose", "whether to show more output",
-		1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("-v1"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1632,11 +1409,7 @@ func TestPkgDoc012(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Int("verbose", "whether to show more output",
-		1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("-v=2"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1647,11 +1420,7 @@ func TestPkgDoc012(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Int("verbose", "whether to show more output",
-		1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("-v 3"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1662,11 +1431,7 @@ func TestPkgDoc012(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Int("verbose", "whether to show more output",
-		1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("--verbose=4"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1677,11 +1442,7 @@ func TestPkgDoc012(t *testing.T) {
 	}
 
 	parser = NewParserUser("myapp", "1.0.0")
-	verboseOpt, err = parser.Int("verbose", "whether to show more output",
-		1)
-	if err != nil {
-		t.Error(err)
-	}
+	verboseOpt = parser.Int("verbose", "whether to show more output", 1)
 	if err := parser.ParseLine("--verbose 5"); err != nil {
 		t.Errorf("expected successful parse, %s", err)
 	}
@@ -1695,10 +1456,7 @@ func TestPkgDoc012(t *testing.T) {
 func TestE001(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-S4"
 	e := eUnexpectedValue
@@ -1711,15 +1469,9 @@ func TestE001(t *testing.T) {
 func TestE002(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	_, err = parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
 	line := "--maxwidth -s"
 	e := eUnexpectedValue
 	defer expectPanic(e, t)
@@ -1731,15 +1483,9 @@ func TestE002(t *testing.T) {
 func TestE003(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	_, err = parser.Int("verbose", "verbosity -v or -vN", 1)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Int("verbose", "verbosity -v or -vN", 1)
 	// -v expects either nothing (will use the default of 1) or an int
 	line := "-vS"
 	e := eInvalidValue
@@ -1752,14 +1498,8 @@ func TestE003(t *testing.T) {
 func TestE004(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	_, err := parser.Int("maxwidth", "help", 43)
-	if err != nil {
-		t.Error(err)
-	}
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Int("maxwidth", "help", 43)
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-m -S"
 	e := eInvalidValue
@@ -1772,14 +1512,8 @@ func TestE004(t *testing.T) {
 func TestE005(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	_, err := parser.Int("maxwidth", "help", 44)
-	if err != nil {
-		t.Error(err)
-	}
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Int("maxwidth", "help", 44)
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "--maxwidth -S"
 	e := eInvalidValue
@@ -1792,15 +1526,9 @@ func TestE005(t *testing.T) {
 func TestE006(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	_, err = parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
 	line := "--maxwidth"
 	e := eInvalidValue
 	defer expectPanic(e, t)
@@ -1812,15 +1540,9 @@ func TestE006(t *testing.T) {
 func TestE007(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	_, err = parser.Real("scale", "max width help", 4.5)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Real("scale", "max width help", 4.5)
 	line := "-Ss"
 	e := eInvalidValue
 	defer expectPanic(e, t)
@@ -1832,15 +1554,9 @@ func TestE007(t *testing.T) {
 func TestE008(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParserUser("myapp", "1.0.0")
-	summaryOpt, err := parser.Flag("summary", "summary help TODO")
-	if err != nil {
-		t.Error(err)
-	}
+	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
-	_, err = parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
 	line := "--maxwidth 11"
 	e := eInvalidValue
 	defer expectPanic(e, t)
@@ -2013,10 +1729,7 @@ func TestE019(t *testing.T) {
 func TestE020(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	_, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.RealInRange("size", "size help", -1, 1, 0.5)
 	line := "-s-1.1"
 	e := eInvalidValue
 	defer expectPanic(e, t)
@@ -2028,10 +1741,7 @@ func TestE020(t *testing.T) {
 func TestE021(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	_, err := parser.RealInRange("size", "size help", -1, 1, 0.5)
-	if err != nil {
-		t.Error(err)
-	}
+	parser.RealInRange("size", "size help", -1, 1, 0.5)
 	line := "-s1.01"
 	e := eInvalidValue
 	defer expectPanic(e, t)
@@ -2043,13 +1753,35 @@ func TestE021(t *testing.T) {
 func TestE022(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	_, err := parser.Choice("currency", "currency help",
-		[]string{"USD", "GBP", "EUR"}, "GBP")
-	if err != nil {
-		t.Error(err)
-	}
+	parser.Choice("currency", "currency help", []string{"USD", "GBP",
+		"EUR"}, "GBP")
 	line := "-c OZY"
 	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE023(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	parser.Choice("99", "currency help", []string{"USD", "GBP",
+		"EUR"}, "GBP")
+	line := ""
+	e := eInvalidValue
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE024(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	parser.SubCommand("", "bad")
+	line := ""
+	e := eEmptyName
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)

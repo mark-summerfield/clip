@@ -4,15 +4,16 @@
 package garg
 
 type SubCommand struct {
-	longName  string
-	shortName rune
-	help      string
-	options   []optioner
+	longName      string
+	shortName     rune
+	help          string
+	options       []optioner
+	delayedErrors []string
 }
 
 func newMainSubCommand() *SubCommand {
 	return &SubCommand{longName: "", shortName: noShortName, help: "",
-		options: make([]optioner, 0)}
+		options: make([]optioner, 0), delayedErrors: make([]string, 0)}
 }
 
 func newSubCommand(name, help string) *SubCommand {
@@ -32,107 +33,78 @@ func (me *SubCommand) SetShortName(c rune) {
 	me.shortName = c
 }
 
-func (me *SubCommand) Flag(name, help string) (*FlagOption, error) {
+func (me *SubCommand) Flag(name, help string) *FlagOption {
 	option, err := newFlagOption(name, help)
-	if err != nil {
-		return nil, err
-	}
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) Int(name, help string, theDefault int) (*IntOption,
-	error) {
+func (me *SubCommand) Int(name, help string, theDefault int) *IntOption {
 	option, err := newIntOption(name, help, theDefault)
-	if err != nil {
-		return nil, err
-	}
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) IntInRange(name, help string,
-	minimum, maximum, theDefault int) (*IntOption, error) {
+func (me *SubCommand) IntInRange(name, help string, minimum, maximum,
+	theDefault int) *IntOption {
 	option, err := newIntOption(name, help, theDefault)
-	if err != nil {
-		return nil, err
-	}
 	option.Validator = makeIntRangeValidator(minimum, maximum)
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *SubCommand) Real(name, help string,
-	theDefault float64) (*RealOption, error) {
+	theDefault float64) *RealOption {
 	option, err := newRealOption(name, help, theDefault)
-	if err != nil {
-		return nil, err
-	}
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) RealInRange(name, help string,
-	minimum, maximum, theDefault float64) (*RealOption, error) {
+func (me *SubCommand) RealInRange(name, help string, minimum, maximum,
+	theDefault float64) *RealOption {
 	option, err := newRealOption(name, help, theDefault)
-	if err != nil {
-		return nil, err
-	}
 	option.Validator = makeRealRangeValidator(minimum, maximum)
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) Str(name, help, theDefault string) (*StrOption,
-	error) {
+func (me *SubCommand) Str(name, help, theDefault string) *StrOption {
 	option, err := newStrOption(name, help, theDefault)
-	if err != nil {
-		return nil, err
-	}
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *SubCommand) Choice(name, help string, choices []string,
-	theDefault string) (*StrOption, error) {
+	theDefault string) *StrOption {
 	option, err := newStrOption(name, help, theDefault)
-	if err != nil {
-		return nil, err
-	}
 	option.Validator = makeChoiceValidator(choices)
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) Strs(name, help string) (*StrsOption, error) {
+func (me *SubCommand) Strs(name, help string) *StrsOption {
 	option, err := newStrsOption(name, help)
-	if err != nil {
-		return nil, err
-	}
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) Ints(name, help string) (*IntsOption, error) {
+func (me *SubCommand) Ints(name, help string) *IntsOption {
 	option, err := newIntsOption(name, help)
-	if err != nil {
-		return nil, err
-	}
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) Reals(name, help string) (*RealsOption, error) {
+func (me *SubCommand) Reals(name, help string) *RealsOption {
 	option, err := newRealsOption(name, help)
-	if err != nil {
-		return nil, err
-	}
-	me.registerNewOption(option)
-	return option, nil
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *SubCommand) registerNewOption(option optioner) {
+func (me *SubCommand) registerNewOption(option optioner, err error) {
 	me.options = append(me.options, option)
+	if err != nil {
+		me.delayedErrors = append(me.delayedErrors, err.Error())
+	}
 }
 
 func (me *SubCommand) optionsForNames() (map[string]optioner,

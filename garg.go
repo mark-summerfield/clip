@@ -233,64 +233,60 @@ func (me *Parser) SetPositionalVarName(name string) error {
 	return nil
 }
 
-func (me *Parser) SubCommand(name, help string) (*SubCommand, error) {
-	if name == "" {
-		return nil, fmt.Errorf("#%d: can't have empty subcommand name",
-			eEmptySubCommandName)
-	}
-	if name == me.HelpName {
-		return nil, fmt.Errorf("#%d: can't have a subcommand called %s",
-			eInvalidSubCommandName, me.HelpName)
-	}
+func (me *Parser) SubCommand(name, help string) *SubCommand {
+	name, err := validatedName(name, "subcommand")
 	subcommand := newSubCommand(name, help)
+	fmt.Println("SubCommand", err) // TODO
+	if err != nil {
+		subcommand.delayedErrors = append(subcommand.delayedErrors,
+			err.Error())
+	}
 	me.subCommands[name] = subcommand
-	return subcommand, nil
+	return subcommand
 }
 
-func (me *Parser) Flag(name, help string) (*FlagOption, error) {
+func (me *Parser) Flag(name, help string) *FlagOption {
 	return me.mainSubCommand.Flag(name, help)
 }
 
-func (me *Parser) Int(name, help string, theDefault int) (*IntOption,
-	error) {
+func (me *Parser) Int(name, help string, theDefault int) *IntOption {
 	return me.mainSubCommand.Int(name, help, theDefault)
 }
 
-func (me *Parser) IntInRange(name, help string,
-	minimum, maximum, theDefault int) (*IntOption, error) {
+func (me *Parser) IntInRange(name, help string, minimum, maximum,
+	theDefault int) *IntOption {
 	return me.mainSubCommand.IntInRange(name, help, minimum, maximum,
 		theDefault)
 }
 
-func (me *Parser) Real(name, help string, theDefault float64) (
-	*RealOption, error) {
+func (me *Parser) Real(name, help string, theDefault float64) *RealOption {
 	return me.mainSubCommand.Real(name, help, theDefault)
 }
 
-func (me *Parser) RealInRange(name, help string,
-	minimum, maximum, theDefault float64) (*RealOption, error) {
+func (me *Parser) RealInRange(name, help string, minimum, maximum,
+	theDefault float64) *RealOption {
 	return me.mainSubCommand.RealInRange(name, help, minimum, maximum,
 		theDefault)
 }
 
-func (me *Parser) Str(name, help, theDefault string) (*StrOption, error) {
+func (me *Parser) Str(name, help, theDefault string) *StrOption {
 	return me.mainSubCommand.Str(name, help, theDefault)
 }
 
 func (me *Parser) Choice(name, help string, choices []string,
-	theDefault string) (*StrOption, error) {
+	theDefault string) *StrOption {
 	return me.mainSubCommand.Choice(name, help, choices, theDefault)
 }
 
-func (me *Parser) Strs(name, help string) (*StrsOption, error) {
+func (me *Parser) Strs(name, help string) *StrsOption {
 	return me.mainSubCommand.Strs(name, help)
 }
 
-func (me *Parser) Ints(name, help string) (*IntsOption, error) {
+func (me *Parser) Ints(name, help string) *IntsOption {
 	return me.mainSubCommand.Ints(name, help)
 }
 
-func (me *Parser) Reals(name, help string) (*RealsOption, error) {
+func (me *Parser) Reals(name, help string) *RealsOption {
 	return me.mainSubCommand.Reals(name, help)
 }
 
@@ -303,6 +299,9 @@ func (me *Parser) ParseLine(line string) error {
 }
 
 func (me *Parser) ParseArgs(args []string) error {
+	if err := me.checkForDelayedErrors(); err != nil {
+		return err
+	}
 	if err := me.prepareHelpAndVersionOptions(); err != nil {
 		return err
 	}
@@ -372,17 +371,28 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 		useVForVersion = true
 	}
 	if me.VersionName != "" && me.appVersion != "" {
-		versionOpt, err := main.Flag(me.VersionName,
-			"Show version and quit")
-		if err != nil { // should never happen
-			return err
-		}
+		versionOpt := main.Flag(me.VersionName, "Show version and quit")
 		if usevForVersion {
 			versionOpt.SetShortName('v')
 		} else if useVForVersion {
 			versionOpt.SetShortName('V')
 		}
 		me.shortVersionName = versionOpt.ShortName()
+	}
+	return nil
+}
+
+func (me *Parser) checkForDelayedErrors() error {
+	fmt.Println("checkForDelayedErrors") // TODO
+	for _, subcommand := range me.subCommands {
+		fmt.Printf("  %s %d\n", subcommand.LongName(), len(subcommand.delayedErrors))
+		if len(subcommand.delayedErrors) > 0 {
+			errs := make([]string, 0, len(subcommand.delayedErrors))
+			for _, err := range subcommand.delayedErrors {
+				errs = append(errs, fmt.Sprintf("error %s", err))
+			}
+			exitFunc(2, strings.Join(errs, "\n"))
+		}
 	}
 	return nil
 }

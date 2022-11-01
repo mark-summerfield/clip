@@ -64,7 +64,7 @@ type FlagOption struct {
 }
 
 func newFlagOption(name, help string) (*FlagOption, error) {
-	name, err := validatedName(name)
+	name, err := validatedName(name, "option")
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ type IntOption struct {
 }
 
 func newIntOption(name, help string, theDefault int) (*IntOption, error) {
-	name, err := validatedName(name)
+	name, err := validatedName(name, "option")
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ type RealOption struct {
 
 func newRealOption(name, help string, theDefault float64) (*RealOption,
 	error) {
-	name, err := validatedName(name)
+	name, err := validatedName(name, "option")
 	if err != nil {
 		return nil, err
 	}
@@ -208,7 +208,7 @@ type StrOption struct {
 }
 
 func newStrOption(name, help, theDefault string) (*StrOption, error) {
-	name, err := validatedName(name)
+	name, err := validatedName(name, "option")
 	if err != nil {
 		return nil, err
 	}
@@ -260,7 +260,7 @@ type StrsOption struct {
 }
 
 func newStrsOption(name, help string) (*StrsOption, error) {
-	name, err := validatedName(name)
+	name, err := validatedName(name, "option")
 	if err != nil {
 		return nil, err
 	}
@@ -304,7 +304,7 @@ type IntsOption struct {
 }
 
 func newIntsOption(name, help string) (*IntsOption, error) {
-	name, err := validatedName(name)
+	name, err := validatedName(name, "option")
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +348,7 @@ type RealsOption struct {
 }
 
 func newRealsOption(name, help string) (*RealsOption, error) {
-	name, err := validatedName(name)
+	name, err := validatedName(name, "option")
 	if err != nil {
 		return nil, err
 	}
@@ -384,18 +384,17 @@ func (me *RealsOption) addValue(value string) string {
 	return ""
 }
 
-func validatedName(name string) (string, error) {
+func validatedName(name, what string) (string, error) {
 	if name == "" {
-		return "", fmt.Errorf("#%d: can't have an empty option name",
-			eEmptyOptionName)
+		return "", fmt.Errorf("#%d: can't have an empty %s name",
+			eEmptyName, what)
 	}
 	if strings.HasPrefix(name, "-") {
 		name = strings.Trim(name, "-")
 	}
 	if matched, _ := regexp.MatchString(`^\d+`, name); matched {
-		return "", fmt.Errorf(
-			"#%d: can't have a numeric option name, got %s",
-			eNumericOptionName, name)
+		return "", fmt.Errorf("#%d: can't have a numeric %s name, got %s",
+			eNumericName, what, name)
 	}
 	return name, nil
 }

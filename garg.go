@@ -1,5 +1,5 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
-// License: GPLv3
+// License: Apache-2.0
 
 // Package garg “gee arg” provides yet another Go command line argument
 // parser.

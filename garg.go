@@ -12,19 +12,21 @@ import (
 )
 
 type Parser struct {
-	Positionals       []string
-	HelpName          string
-	VersionName       string
-	Description       string
-	EndNotes          string
-	shortVersionName  rune
-	appName           string
-	appVersion        string
-	subCommands       map[string]*SubCommand
-	mainSubCommand    *SubCommand
-	PositionalCount   PositionalCount
-	positionalVarName string
-	useLowerhForHelp  bool
+	Positionals           []string
+	HelpName              string
+	VersionName           string
+	Description           string
+	EndNotes              string
+	shortVersionName      rune
+	appName               string
+	appVersion            string
+	subCommands           map[string]*SubCommand
+	subCommandNames       []string // so that help is in creation order
+	mainSubCommand        *SubCommand
+	PositionalCount       PositionalCount
+	PositionalDescription string
+	positionalVarName     string
+	useLowerhForHelp      bool
 }
 
 // NewParser creates a new command line parser.
@@ -62,7 +64,8 @@ func NewParserUser(appname, version string) Parser {
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommandName] = mainSubCommand
 	return Parser{appName: appname, appVersion: version,
-		subCommands: subcommands, PositionalCount: ZeroOrMorePositionals,
+		subCommands: subcommands, subCommandNames: make([]string, 0),
+		PositionalCount:   ZeroOrMorePositionals,
 		positionalVarName: "FILENAME", HelpName: "help",
 		VersionName: "version", useLowerhForHelp: true,
 		mainSubCommand: mainSubCommand}
@@ -90,6 +93,7 @@ func (me *Parser) SubCommand(name, help string) *SubCommand {
 		subcommand.firstDelayedError = err.Error()
 	}
 	me.subCommands[name] = subcommand
+	me.subCommandNames = append(me.subCommandNames, name)
 	return subcommand
 }
 
@@ -423,32 +427,152 @@ func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
 }
 
 func (me *Parser) onHelp(subcommand *SubCommand) {
-	text, err := me.HelpText(subcommand.LongName())
+	text, err := me.helpText(subcommand.LongName())
 	if err != nil {
 		exitFunc(1, err.Error())
 	}
 	exitFunc(0, text)
 }
 
-// HelpText is public only to aid testing; error should always be nil.
-func (me *Parser) HelpText(name string) (string, error) {
+// error should always be nil.
+// The name should be "" for help on the main options (and list of
+// subcommands if any), or the name of a subcommand.
+func (me *Parser) helpText(name string) (string, error) {
 	var text string
 	if subcommand, ok := me.subCommands[name]; ok {
 		if len(me.subCommands) == 1 { // No subcommands
-			// show main help
-			text = fmt.Sprintf("usage: %s TODO main", me.appName) // TODO
+			text = me.mainHelpText(subcommand)
 		} else { // Has subcommands
 			if subcommand.longName == mainSubCommandName {
-				// show main help with list of subcommands
-				text = fmt.Sprintf("usage: %s TODO main + subs", me.appName) // TODO
+				text = me.mainHelpTextWithSubCommands(subcommand)
 			} else {
-				// show this subcommand's help
-				text = fmt.Sprintf("usage: %s TODO sub %s", me.appName, name) // TODO
+				text = me.subcommandHelpText(subcommand)
 			}
 		}
 		return text, nil
 	}
 	return "", fmt.Errorf("#%d:BUG: no main subcommand or subcommand", eBug)
+}
+
+func (me *Parser) mainHelpText(subcommand *SubCommand) string {
+	hasOptions := len(subcommand.options) > 0
+	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
+	text = me.maybeWithDescriptionAndPositionals(text)
+	if hasOptions {
+		text = me.optionsHelp(text, subcommand)
+	}
+	return text
+}
+
+func (me *Parser) mainHelpTextWithSubCommands(subcommand *SubCommand) string {
+	hasOptions := len(subcommand.options) > 0
+	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
+	text = me.maybeWithDescriptionAndPositionals(text)
+	if hasOptions {
+		text = me.optionsHelp(text, subcommand)
+	}
+	// TODO list subcommands
+	return text
+}
+
+func (me *Parser) subcommandHelpText(subcommand *SubCommand) string {
+	hasOptions := len(subcommand.options) > 0
+	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
+	if hasOptions {
+		text = me.optionsHelp(text, subcommand)
+	}
+	// TODO
+	return text
+}
+
+func (me *Parser) usageLine(hasOptions, hasSubCommands bool,
+	subcommandName string) string {
+	text := fmt.Sprintf("usage: %s", me.appName)
+	if hasSubCommands {
+		text = fmt.Sprintf("%s [SUBCOMMAND]", text)
+	}
+	if hasOptions {
+		text = fmt.Sprintf("%s [OPTIONS]", text)
+	}
+	if subcommandName != "" {
+		text = fmt.Sprintf("%s %s", text, subcommandName)
+	}
+	switch me.PositionalCount {
+	case ZeroPositionals: // do nothing
+	case ZeroOrOnePositionals:
+		text = fmt.Sprintf("%s [%s]", text, me.positionalVarName)
+	case ZeroOrMorePositionals: // any count is valid
+		text = fmt.Sprintf("%s [%s [%s ...]]", text, me.positionalVarName,
+			me.positionalVarName)
+	case OnePositional:
+		text = fmt.Sprintf("%s <%s>", text, me.positionalVarName)
+	case OneOrMorePositionals:
+		text = fmt.Sprintf("%s <%s> [%s [%s ...]]", text,
+			me.positionalVarName, me.positionalVarName,
+			me.positionalVarName)
+	case TwoPositionals:
+		text = fmt.Sprintf("%s <%s> <%s>", text, me.positionalVarName,
+			me.positionalVarName)
+	case ThreePositionals:
+		text = fmt.Sprintf("%s <%s> <%s> <%s>", text, me.positionalVarName,
+			me.positionalVarName, me.positionalVarName)
+	case FourPositionals:
+		text = fmt.Sprintf("%s <%s> <%s> <%s> <%s>", text,
+			me.positionalVarName, me.positionalVarName,
+			me.positionalVarName, me.positionalVarName)
+	}
+	return text + "\n"
+}
+
+func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
+	if me.Description != "" {
+		text = fmt.Sprintf("%s\n\n%s\n", text, me.Description)
+	}
+	if me.PositionalCount != ZeroPositionals {
+		text = fmt.Sprintf("%s\narguments:\n  ", text)
+	}
+	switch me.PositionalCount {
+	case ZeroPositionals: // do nothing
+	case ZeroOrOnePositionals:
+		text = fmt.Sprintf("%s [%s]", text, me.positionalVarName)
+	case ZeroOrMorePositionals: // any count is valid
+		text = fmt.Sprintf("%s [%s [%s ...]]", text, me.positionalVarName,
+			me.positionalVarName)
+	case OnePositional:
+		text = fmt.Sprintf("%s <%s>", text, me.positionalVarName)
+	case OneOrMorePositionals:
+		text = fmt.Sprintf("%s <%s> [%s [%s ...]]", text,
+			me.positionalVarName, me.positionalVarName,
+			me.positionalVarName)
+	case TwoPositionals:
+		text = fmt.Sprintf("%s <%s> <%s>", text, me.positionalVarName,
+			me.positionalVarName)
+	case ThreePositionals:
+		text = fmt.Sprintf("%s <%s> <%s> <%s>", text, me.positionalVarName,
+			me.positionalVarName, me.positionalVarName)
+	case FourPositionals:
+		text = fmt.Sprintf("%s <%s> <%s> <%s> <%s>", text,
+			me.positionalVarName, me.positionalVarName,
+			me.positionalVarName, me.positionalVarName)
+	}
+	if me.PositionalCount != ZeroPositionals {
+		text = fmt.Sprintf("%s  %s\n", text, me.PositionalDescription)
+	}
+	return text
+}
+
+func (me *Parser) optionsHelp(text string, subcommand *SubCommand) string {
+	/*
+		maxFirst := 0
+		maxSecond := 0
+		pairs := make([]pair, 0, len(subcommand.options))
+		for _, option := range subcommand.options {
+			// TODO first is short (if present) long (args depending on
+			// valuecount)
+			// second is desc
+		}
+	*/
+	return text
 }
 
 func (me *Parser) onVersion() {

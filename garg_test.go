@@ -9,6 +9,7 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 )
 
@@ -53,6 +54,28 @@ func expectPanic(code int, t *testing.T) {
 			}
 		} else {
 			t.Errorf("internal error got %v", perr)
+		}
+	}
+}
+
+func handleTextExitFunc(_ int, msg string) {
+	panic(fmt.Errorf(msg))
+}
+
+func handleTextAndQuit(expected string, t *testing.T) {
+	exitFunc = defaultExitFunc // restore original
+	perr := recover()
+	if perr == nil {
+		t.Error("expected some text")
+	} else {
+		if err, ok := perr.(error); ok {
+			actual := err.Error()
+			if strings.TrimSpace(actual) != strings.TrimSpace(expected) {
+				t.Errorf("expected != actual:\nEXP: %s\nACT: %s", expected,
+					actual)
+			}
+		} else {
+			t.Errorf("internal error got %T %v", perr, perr)
 		}
 	}
 }
@@ -1196,6 +1219,25 @@ func Test059(t *testing.T) {
 	}
 	if len(parser.Positionals) > 0 {
 		t.Errorf("expected no positionals got %d", len(parser.Positionals))
+	}
+}
+
+func Test060(t *testing.T) {
+	exitFunc = handleTextExitFunc
+	parser, _, _, _, _, _, _, _, _ := createTestParser2(t)
+	parser.Description = "This is Test060"
+	parser.PositionalDescription = "Files to process"
+	line := "-h"
+	expected := `usage: garg.test [OPTIONS] [FILENAME [FILENAME ...]]
+
+This is Test060
+
+arguments:
+   [FILENAME [FILENAME ...]]  Files to process
+`
+	defer handleTextAndQuit(expected, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
 	}
 }
 

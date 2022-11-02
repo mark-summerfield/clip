@@ -98,6 +98,11 @@ func (me PositionalCount) String() string {
 	}
 }
 
+type pair struct {
+	first  string
+	second string
+}
+
 const (
 	eUser                     = iota + 100
 	eMissing                  // 101

@@ -18,7 +18,7 @@ func newMainSubCommand() *SubCommand {
 
 // Always returns a *SubCommand; _and_ either nil or error
 func newSubCommand(name, help string) (*SubCommand, error) {
-	name, err := validatedName(name, "subcommand")
+	err := checkName(name, "subcommand")
 	return &SubCommand{longName: name, shortName: noShortName, help: help,
 		options: make([]optioner, 0)}, err
 }

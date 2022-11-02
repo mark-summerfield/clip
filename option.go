@@ -40,8 +40,8 @@ func (me *commonOption) SetShortName(c rune) {
 }
 
 func (me *commonOption) SetVarName(name string) error {
-	if name == "" {
-		return fmt.Errorf("#%d: can't have an empty varname", eEmptyVarName)
+	if err := checkName(name, "option var"); err != nil {
+		return err
 	}
 	me.varName = name
 	return nil
@@ -64,7 +64,7 @@ type FlagOption struct {
 
 // Always returns a *FlagOption; _and_ either nil or error
 func newFlagOption(name, help string) (*FlagOption, error) {
-	name, err := validatedName(name, "option")
+	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &FlagOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven}}, err
@@ -99,7 +99,7 @@ type IntOption struct {
 
 // Always returns a *IntOption; _and_ either nil or error
 func newIntOption(name, help string, theDefault int) (*IntOption, error) {
-	name, err := validatedName(name, "option")
+	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
@@ -151,7 +151,7 @@ type RealOption struct {
 // Always returns a *RealOption; _and_ either nil or error
 func newRealOption(name, help string, theDefault float64) (*RealOption,
 	error) {
-	name, err := validatedName(name, "option")
+	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
@@ -202,7 +202,7 @@ type StrOption struct {
 
 // Always returns a *StrOption; _and_ either nil or error
 func newStrOption(name, help, theDefault string) (*StrOption, error) {
-	name, err := validatedName(name, "option")
+	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
@@ -252,7 +252,7 @@ type StrsOption struct {
 
 // Always returns a *StrsOption; _and_ either nil or error
 func newStrsOption(name, help string) (*StrsOption, error) {
-	name, err := validatedName(name, "option")
+	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
@@ -294,7 +294,7 @@ type IntsOption struct {
 
 // Always returns a *IntsOption; _and_ either nil or error
 func newIntsOption(name, help string) (*IntsOption, error) {
-	name, err := validatedName(name, "option")
+	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &IntsOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
@@ -336,7 +336,7 @@ type RealsOption struct {
 
 // Always returns a *RealsOption; _and_ either nil or error
 func newRealsOption(name, help string) (*RealsOption, error) {
-	name, err := validatedName(name, "option")
+	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &RealsOption{commonOption: &commonOption{longName: longName,
 		shortName: shortName, help: help, state: NotGiven},
@@ -369,14 +369,13 @@ func (me *RealsOption) addValue(value string) string {
 	return ""
 }
 
-func validatedName(name, what string) (string, error) {
+func checkName(name, what string) error {
 	rx := regexp.MustCompile(`^\pL[\pL\pNd_]*$`)
-	if !rx.MatchString(name) {
-		return name,
-			fmt.Errorf("#%d: expected identifier name for %s, got %s",
-				eInvalidName, what, name)
+	if rx.MatchString(name) {
+		return nil
 	}
-	return name, nil
+	return fmt.Errorf("#%d: expected identifier name for %s, got %s",
+		eInvalidName, what, name)
 }
 
 func checkMulti(name string, state optionState, valueCount ValueCount,

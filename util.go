@@ -6,6 +6,7 @@ package garg
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 func namesForName(name string) (rune, string) {
@@ -99,7 +100,13 @@ func makeChoiceValidator(choices []string) func(string, string) (string,
 				return value, ""
 			}
 		}
-		return "", fmt.Sprintf("option %s's value of %q is not one of "+
-			"the valid choices", name, value)
+		colon := ""
+		end := fmt.Sprintf("the %d valid choices", len(choices))
+		if len(choices) < 9 {
+			colon = ":"
+			end = strings.Join(choices, " ")
+		}
+		return "", fmt.Sprintf("option %s's value of %q is not one of%s %s",
+			name, value, colon, end)
 	}
 }

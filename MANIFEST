@@ -11,6 +11,7 @@ option.go
 subcommand.go
 util.go
 consts.go
+doc.go
 
 garg_test.go
 

@@ -4,7 +4,7 @@
 package main
 
 import (
-	"garg"
+	"github.com/mark-summerfield/garg"
 )
 
 func main() {

@@ -458,9 +458,9 @@ func (me *Parser) mainHelpText(subcommand *SubCommand) string {
 	hasOptions := len(subcommand.options) > 0
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
 	text = me.maybeWithDescriptionAndPositionals(text)
-	if hasOptions {
-		text = me.optionsHelp(text, subcommand)
-	}
+	//if hasOptions {
+	//	text = me.optionsHelp(text, subcommand)
+	//}
 	return text
 }
 
@@ -526,7 +526,7 @@ func (me *Parser) usageLine(hasOptions, hasSubCommands bool,
 
 func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 	if me.Description != "" {
-		text = fmt.Sprintf("%s\n\n%s\n", text, me.Description)
+		text = fmt.Sprintf("%s\n%s\n", text, me.Description)
 	}
 	if me.PositionalCount != ZeroPositionals {
 		text = fmt.Sprintf("%s\narguments:\n  ", text)

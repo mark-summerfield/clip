@@ -1241,6 +1241,22 @@ arguments:
 	}
 }
 
+func Test061(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
+	line := "-Sv2"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	verbose := verboseOpt.Value() // verbose == false
+	if verbose != 2 {
+		t.Errorf("expected verbose=2, got %d", verbose)
+	}
+}
+
 func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt := parser.Flag("verbose", "whether to show more output")
@@ -1533,7 +1549,7 @@ func TestE001(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-S4"
-	e := eUnexpectedValue
+	e := eUnrecognizedOption
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1547,7 +1563,7 @@ func TestE002(t *testing.T) {
 	summaryOpt.SetShortName('S')
 	parser.IntInRange("maxwidth", "max width help", 20, 10000, 45)
 	line := "--maxwidth -s"
-	e := eUnexpectedValue
+	e := eUnrecognizedOption
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1856,6 +1872,56 @@ func TestE024(t *testing.T) {
 	parser.SubCommand("", "bad")
 	line := ""
 	e := eInvalidName
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE025(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	line := "--why"
+	e := eUnrecognizedOption
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE026(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	line := "-x"
+	e := eUnrecognizedOption
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE027(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	parser.Int("verbose", "verbosity -v or -vN", 1)
+	line := "-xv2"
+	e := eUnrecognizedOption
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestE028(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	summaryOpt := parser.Flag("summary", "summary help TODO")
+	summaryOpt.SetShortName('S')
+	parser.Int("verbose", "verbosity -v or -vN", 1)
+	line := "-Sxv2"
+	e := eUnrecognizedOption
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)

@@ -344,7 +344,7 @@ func (me *Parser) handleLongOption(arg string, tokens []token,
 			tokens = append(tokens, newNameToken(name, option))
 			tokens = append(tokens, newValueToken(parts[1]))
 		} else {
-			return tokens, me.handleError(eUnrecognizedLongOption,
+			return tokens, me.handleError(eUnrecognizedOption,
 				fmt.Sprintf("unrecognized option --%s", name))
 		}
 	} else { // --option
@@ -352,7 +352,7 @@ func (me *Parser) handleLongOption(arg string, tokens []token,
 		if ok {
 			tokens = append(tokens, newNameToken(name, option))
 		} else {
-			return tokens, me.handleError(eUnrecognizedShortOption1,
+			return tokens, me.handleError(eUnrecognizedOption,
 				fmt.Sprintf("unrecognized option --%s", name))
 		}
 	}
@@ -369,17 +369,18 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 		text = parts[0]
 		pendingValue = parts[1]
 	}
+	isFlag := true
 	for i, c := range text {
 		name := string(c)
 		option, ok := state.optionForShortName[name]
 		if ok {
 			tokens = append(tokens, newNameToken(name, option))
-			if _, isFlag := option.(*FlagOption); !isFlag &&
-				i+1 < len(text) {
+			_, isFlag = option.(*FlagOption)
+			if !isFlag && i+1 < len(text) {
 				value := text[i+1:] // -aValue -abcValue
 				tokens = append(tokens, newValueToken(value))
 			}
-		} else if pendingValue == "" {
+		} else if pendingValue == "" && !isFlag {
 			last := len(tokens) - 1
 			rest := text[i:]
 			if last >= 0 && rest != tokens[last].text {
@@ -388,7 +389,7 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 			}
 			break
 		} else {
-			return tokens, me.handleError(eUnrecognizedShortOption2,
+			return tokens, me.handleError(eUnrecognizedOption,
 				fmt.Sprintf("unrecognized option -%s", name))
 		}
 	}

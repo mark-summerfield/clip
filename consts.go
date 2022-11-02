@@ -104,18 +104,16 @@ type pair struct {
 }
 
 const (
-	eUser                     = iota + 100
-	eMissing                  // 101
-	eInvalidValue             // 102
-	eInvalidHelpOption        // 103
-	eInvalidVersionOption     // 104
-	eEmptyVarName             // 105
-	eUnrecognizedLongOption   // 106
-	eUnrecognizedShortOption1 // 107
-	eUnrecognizedShortOption2 // 108
-	eUnexpectedValue          // 109
-	eWrongPositionalCount     // 110
-	eInvalidName              // 111
-	eEmptyPositionalVarName   // 112
-	eBug                      = 999
+	eUser                   = iota + 100
+	eMissing                // 101
+	eInvalidValue           // 102
+	eInvalidHelpOption      // 103
+	eInvalidVersionOption   // 104
+	eEmptyVarName           // 105
+	eUnrecognizedOption     // 106
+	eUnexpectedValue        // 107
+	eWrongPositionalCount   // 108
+	eInvalidName            // 109
+	eEmptyPositionalVarName // 110
+	eBug                    = 999
 )

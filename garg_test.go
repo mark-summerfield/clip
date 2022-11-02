@@ -1167,6 +1167,38 @@ func Test058(t *testing.T) {
 	}
 }
 
+func Test059(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	aOpt := parser.Flag("a", "")
+	bOpt := parser.Int("b2", "", 5)
+	cOpt := parser.Real("c_3", "", -7.2)
+	dOpt := parser.Str("D", "", "x1")
+	line := ""
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	a := aOpt.Value()
+	if a {
+		t.Error("expected a false got true")
+	}
+	b := bOpt.Value()
+	if b != 5 {
+		t.Errorf("expected b 5 got %d", b)
+	}
+	c := cOpt.Value()
+	if !realEqual(c, -7.2) {
+		t.Errorf("expected c -7.2 got %g", c)
+	}
+	d := dOpt.Value()
+	if d != "x1" {
+		t.Errorf("expected d x1 got %s", d)
+	}
+	if len(parser.Positionals) > 0 {
+		t.Errorf("expected no positionals got %d", len(parser.Positionals))
+	}
+}
+
 func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt := parser.Flag("verbose", "whether to show more output")
@@ -1769,7 +1801,7 @@ func TestE023(t *testing.T) {
 	parser.Choice("99", "currency help", []string{"USD", "GBP",
 		"EUR"}, "GBP")
 	line := ""
-	e := eNumericName
+	e := eInvalidName
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1781,7 +1813,7 @@ func TestE024(t *testing.T) {
 	parser := NewParser()
 	parser.SubCommand("", "bad")
 	line := ""
-	e := eEmptyName
+	e := eInvalidName
 	defer expectPanic(e, t)
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)

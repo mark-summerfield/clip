@@ -6,7 +6,6 @@ package garg
 import (
 	"fmt"
 	"regexp"
-	"strings"
 )
 
 type optioner interface {
@@ -371,18 +370,11 @@ func (me *RealsOption) addValue(value string) string {
 }
 
 func validatedName(name, what string) (string, error) {
-	if name == "" {
-		return "<unnamed>", fmt.Errorf("#%d: can't have an empty %s name",
-			eEmptyName, what)
-	}
-	if strings.HasPrefix(name, "-") {
-		name = strings.Trim(name, "-")
-	}
-	rx := regexp.MustCompile(`^\d+`)
-	if rx.MatchString(name) {
+	rx := regexp.MustCompile(`^\pL[\pL\pNd_]*$`)
+	if !rx.MatchString(name) {
 		return name,
-			fmt.Errorf("#%d: can't have a numeric %s name, got %s",
-				eNumericName, what, name)
+			fmt.Errorf("#%d: expected identifier name for %s, got %s",
+				eInvalidName, what, name)
 	}
 	return name, nil
 }

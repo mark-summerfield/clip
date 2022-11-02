@@ -25,7 +25,7 @@
 // can be set with `--version` or `-v`. If you don't want a short name, or
 // want a different one (e.g., `-V`), use [Option.SetShortName].
 //
-//	parser := NewParser()
+//	parser := NewParserVersion("1.0.0") # AppName is os.Base(os.Args[0]))
 //	verboseOpt := parser.Flag("verbose", "whether to show more output")
 //	parser.ParseLine("")
 //	verbose := verboseOpt.Value() // verbose == false

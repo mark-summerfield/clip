@@ -1,5 +1,5 @@
 #!/bin/bash
-clc -s -e zOld garg_test.go
+clc -s -e zOld garg_test.go tester
 go mod tidy
 go fmt .
 staticcheck .

@@ -4,6 +4,6 @@ Yet another Go command line argument parser.
 
 ## License
 
-GPLv3
+Apache-2.0
 
 ---

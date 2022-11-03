@@ -29,6 +29,7 @@ func getConfig(version string) config {
 	initializeDataForLang(dataForLang)
 	readConfigFiles(dataForLang)
 	allLangs := mapKeys(dataForLang)
+	sort.Strings(allLangs)
 	parser := garg.NewParserVersion(version)
 	parser.Description = fmt.Sprintf("Counts the lines in the code "+
 		"files for the languages processed (ignoring . folders). "+

@@ -4,6 +4,7 @@
 #      all doc egs have corresponding tests
 # TODO add tests for every error code
 # TODO add more tests for subcommands
+# TODO add bold/color support
 
 garg.go
 token.go

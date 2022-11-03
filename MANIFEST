@@ -14,13 +14,11 @@ consts.go
 
 garg_test.go
 
-regression/test1.go # TODO
+bin/test1.go
+bin/test2.go # TODO subcommands
 
 doc.go
 
 st.sh
-
-# TODO suzy
-# curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.50.1
 
 # vim: syn=yaml

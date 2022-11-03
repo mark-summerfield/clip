@@ -4,12 +4,16 @@
 package garg
 
 import (
+	_ "embed"
 	"fmt"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 )
+
+//go:embed Version.dat
+var Version string
 
 type Parser struct {
 	Positionals           []string
@@ -63,7 +67,7 @@ func NewParserUser(appname, version string) Parser {
 	mainSubCommand := newMainSubCommand()
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommandName] = mainSubCommand
-	return Parser{appName: appname, appVersion: version,
+	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
 		subCommands: subcommands, subCommandNames: make([]string, 0),
 		PositionalCount:   ZeroOrMorePositionals,
 		positionalVarName: "FILENAME", HelpName: "help",

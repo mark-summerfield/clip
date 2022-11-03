@@ -6,6 +6,8 @@ package garg
 import (
 	_ "embed"
 	"fmt"
+	tsize "github.com/kopoli/go-terminal-size"
+	"github.com/mark-summerfield/gong"
 	"os"
 	"path"
 	"strconv"
@@ -31,6 +33,7 @@ type Parser struct {
 	PositionalDescription string
 	positionalVarName     string
 	useLowerhForHelp      bool
+	width                 int
 }
 
 // NewParser creates a new command line parser.
@@ -64,6 +67,11 @@ func NewParserUser(appname, version string) Parser {
 	if appname == "" {
 		appname = appName()
 	}
+	width := 80
+	size, err := tsize.GetSize()
+	if err == nil && size.Width >= 38 {
+		width = size.Width
+	}
 	mainSubCommand := newMainSubCommand()
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommandName] = mainSubCommand
@@ -72,7 +80,7 @@ func NewParserUser(appname, version string) Parser {
 		PositionalCount:   ZeroOrMorePositionals,
 		positionalVarName: "FILENAME", HelpName: "help",
 		VersionName: "version", useLowerhForHelp: true,
-		mainSubCommand: mainSubCommand}
+		mainSubCommand: mainSubCommand, width: width}
 }
 
 func (me *Parser) AppName() string {
@@ -531,7 +539,8 @@ func (me *Parser) usageLine(hasOptions, hasSubCommands bool,
 
 func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 	if me.Description != "" {
-		text = fmt.Sprintf("%s\n%s\n", text, me.Description)
+		desc := gong.TextWrap(me.Description, me.width)
+		text = fmt.Sprintf("%s\n%s\n", text, strings.Join(desc, "\n"))
 	}
 	if me.PositionalCount != ZeroPositionals {
 		text = fmt.Sprintf("%s\narguments:\n  ", text)

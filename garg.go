@@ -525,7 +525,7 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 			columnGap, posCountText)
 		if me.PositionalDescription != "" {
 			text += argHelp(utf8.RuneCountInString(posCountText),
-				me.width, false, me.PositionalDescription, false)
+				me.width, false, me.PositionalDescription)
 		}
 	}
 	return text
@@ -561,14 +561,6 @@ func (me *Parser) optionsHelp(subcommand *SubCommand) string {
 			help: option.Help()})
 
 	}
-	gapWidth := utf8.RuneCountInString(columnGap)
-	forceNewline := false
-	for _, datum := range data {
-		if datum.lenArg+gapWidth+utf8.RuneCountInString(datum.help) >
-			me.width {
-			forceNewline = true
-		}
-	}
 	text := "\noptional arguments\n"
 	for _, datum := range data {
 		text += datum.arg
@@ -576,8 +568,7 @@ func (me *Parser) optionsHelp(subcommand *SubCommand) string {
 			if datum.lenArg < maxLeft {
 				text += strings.Repeat(" ", maxLeft-datum.lenArg)
 			}
-			text += columnGap + argHelp(maxLeft, me.width, true,
-				datum.help, forceNewline)
+			text += columnGap + argHelp(maxLeft, me.width, true, datum.help)
 		}
 	}
 	return text
@@ -711,13 +702,12 @@ func valueCountText(count ValueCount, varName string) string {
 	panic("BUG: missing ValueCount case")
 }
 
-func argHelp(argWidth, width int, isOption bool, desc string,
-	forceNewline bool) string {
+func argHelp(argWidth, width int, isOption bool, desc string) string {
 	text := ""
 	gapWidth := utf8.RuneCountInString(columnGap)
 	argWidth += gapWidth
 	descLen := utf8.RuneCountInString(desc)
-	if argWidth+gapWidth+descLen <= width && !forceNewline { // desc fits
+	if argWidth+gapWidth+descLen <= width { // desc fits
 		text += columnGap + desc
 	} else {
 		gaps := 4

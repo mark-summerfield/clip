@@ -1,7 +1,10 @@
 # TODO FIXME
 # optional arguments:
+#   - in narrow terms (e.g., 60) short descs fit line but too far over
+#     e.g., sortbylines & version
 #   - too big a gap between left & right columns
 #   - spurious newline at the end
+#   - add -h, --help manually
 # TODO implement Help output (if tty: use terminal width & bold etc;
 # otherwise for tests & redirected use 80 cols & CAPS for highlighting)
 # TODO document all option forms & the corresponding code & make sure

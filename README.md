@@ -1,6 +1,6 @@
 # clop
 
-Yet another Go command line argument parser.
+Yet another Go “Command Line Option Parser”.
 
 ## License
 

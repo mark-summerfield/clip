@@ -1216,12 +1216,23 @@ func Test060(t *testing.T) {
 	parser.Description = "This is Test060"
 	parser.PositionalDescription = "Files to process"
 	line := "-h"
-	expected := `usage: clop.test [OPTIONS] [FILENAME [FILENAME ...]]
+	expected := `usage: clop.test [OPTIONS] [FILE [FILE ...]]
 
 This is Test060
 
 positional arguments:
-  [FILENAME [FILENAME ...]]  Files to process
+  [FILE [FILE ...]]Files to process
+
+optional arguments
+  -S, --summary                                         summary help TODO
+  -v, --verbose                                         verbosity -v or -vN
+  -m, --maxwidth                                        max width help
+  -l, --language <LANGUAGE> [LANGUAGE ...]              lang help
+  -L, --skiplanguage <SKIPLANGUAGE> [SKIPLANGUAGE ...]  skip lang help
+  -e, --exclude <EXCLUDE> [EXCLUDE ...]                 exclude help
+  -i, --include <INCLUDE> [INCLUDE ...]                 include help
+  -s, --sortbylines                                     Sort by lines
+  -h, --help                                            Show help and quit
 `
 	defer handleTextAndQuit(expected, t)
 	if err := parser.ParseLine(line); err != nil {

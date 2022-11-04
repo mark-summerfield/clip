@@ -467,9 +467,7 @@ func (me *Parser) mainHelpText(subcommand *SubCommand) string {
 	hasOptions := len(subcommand.options) > 0
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
 	text = me.maybeWithDescriptionAndPositionals(text)
-	if hasOptions {
-		text += me.optionsHelp(subcommand)
-	}
+	text += me.optionsHelp(subcommand)
 	return text
 }
 
@@ -477,9 +475,7 @@ func (me *Parser) mainHelpTextWithSubCommands(subcommand *SubCommand) string {
 	hasOptions := len(subcommand.options) > 0
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
 	text = me.maybeWithDescriptionAndPositionals(text)
-	if hasOptions {
-		text += me.optionsHelp(subcommand)
-	}
+	text += me.optionsHelp(subcommand)
 	// TODO list subcommands
 	return text
 }
@@ -487,9 +483,7 @@ func (me *Parser) mainHelpTextWithSubCommands(subcommand *SubCommand) string {
 func (me *Parser) subcommandHelpText(subcommand *SubCommand) string {
 	hasOptions := len(subcommand.options) > 0
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
-	if hasOptions {
-		text += me.optionsHelp(subcommand)
-	}
+	text += me.optionsHelp(subcommand)
 	// TODO
 	return text
 }
@@ -525,7 +519,7 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 			columnGap, posCountText)
 		if me.PositionalDescription != "" {
 			text += argHelp(utf8.RuneCountInString(posCountText),
-				me.width, false, me.PositionalDescription)
+				me.width, me.PositionalDescription)
 		}
 	}
 	return text
@@ -561,14 +555,20 @@ func (me *Parser) optionsHelp(subcommand *SubCommand) string {
 			help: option.Help()})
 
 	}
+	help := columnGap + "-h, --help"
+	// TODO the literal help text needs to change if this is a subcommand
+	data = append(data, datum{arg: help,
+		lenArg: utf8.RuneCountInString(help), help: "Show help and quit"})
+	gapWidth := utf8.RuneCountInString(columnGap)
 	text := "\noptional arguments\n"
 	for _, datum := range data {
 		text += datum.arg
 		if datum.help != "" {
-			if datum.lenArg < maxLeft {
+			if datum.lenArg+gapWidth+utf8.RuneCountInString(datum.help) >
+				me.width && datum.lenArg < maxLeft {
 				text += strings.Repeat(" ", maxLeft-datum.lenArg)
 			}
-			text += columnGap + argHelp(maxLeft, me.width, true, datum.help)
+			text += columnGap + argHelp(maxLeft, me.width, datum.help)
 		}
 	}
 	return text
@@ -702,19 +702,15 @@ func valueCountText(count ValueCount, varName string) string {
 	panic("BUG: missing ValueCount case")
 }
 
-func argHelp(argWidth, width int, isOption bool, desc string) string {
+func argHelp(argWidth, width int, desc string) string {
 	text := ""
 	gapWidth := utf8.RuneCountInString(columnGap)
 	argWidth += gapWidth
 	descLen := utf8.RuneCountInString(desc)
 	if argWidth+gapWidth+descLen <= width { // desc fits
-		text += columnGap + desc
+		text += desc
 	} else {
-		gaps := 4
-		if !isOption {
-			gaps = 2
-		}
-		indent := strings.Repeat(columnGap, gaps)
+		indent := strings.Repeat(columnGap, 4)
 		theWidth := width - utf8.RuneCountInString(indent)
 		desc := gong.TextWrapIndent(desc, theWidth, indent)
 		text += "\n" + strings.Join(desc, "\n")

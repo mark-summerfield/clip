@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/kopoli/go-terminal-size v0.0.0-20170219200355-5c97524c8b54
-	github.com/mark-summerfield/gong v0.1.6
+	github.com/mark-summerfield/gong v0.1.7
 )
 
 require (

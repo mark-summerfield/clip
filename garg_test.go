@@ -1232,8 +1232,8 @@ func Test060(t *testing.T) {
 
 This is Test060
 
-arguments:
-   [FILENAME [FILENAME ...]]  Files to process
+positional arguments:
+  [FILENAME [FILENAME ...]]  Files to process
 `
 	defer handleTextAndQuit(expected, t)
 	if err := parser.ParseLine(line); err != nil {

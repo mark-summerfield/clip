@@ -12,6 +12,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 //go:embed Version.dat
@@ -471,9 +472,9 @@ func (me *Parser) mainHelpText(subcommand *SubCommand) string {
 	hasOptions := len(subcommand.options) > 0
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
 	text = me.maybeWithDescriptionAndPositionals(text)
-	//if hasOptions {
-	//	text = me.optionsHelp(text, subcommand)
-	//}
+	if hasOptions {
+		text = me.optionsHelp(text, subcommand)
+	}
 	return text
 }
 
@@ -510,29 +511,9 @@ func (me *Parser) usageLine(hasOptions, hasSubCommands bool,
 	if subcommandName != "" {
 		text = fmt.Sprintf("%s %s", text, subcommandName)
 	}
-	switch me.PositionalCount {
-	case ZeroPositionals: // do nothing
-	case ZeroOrOnePositionals:
-		text = fmt.Sprintf("%s [%s]", text, me.positionalVarName)
-	case ZeroOrMorePositionals: // any count is valid
-		text = fmt.Sprintf("%s [%s [%s ...]]", text, me.positionalVarName,
-			me.positionalVarName)
-	case OnePositional:
-		text = fmt.Sprintf("%s <%s>", text, me.positionalVarName)
-	case OneOrMorePositionals:
-		text = fmt.Sprintf("%s <%s> [%s [%s ...]]", text,
-			me.positionalVarName, me.positionalVarName,
-			me.positionalVarName)
-	case TwoPositionals:
-		text = fmt.Sprintf("%s <%s> <%s>", text, me.positionalVarName,
-			me.positionalVarName)
-	case ThreePositionals:
-		text = fmt.Sprintf("%s <%s> <%s> <%s>", text, me.positionalVarName,
-			me.positionalVarName, me.positionalVarName)
-	case FourPositionals:
-		text = fmt.Sprintf("%s <%s> <%s> <%s> <%s>", text,
-			me.positionalVarName, me.positionalVarName,
-			me.positionalVarName, me.positionalVarName)
+	if me.PositionalCount != ZeroPositionals {
+		text = fmt.Sprintf("%s %s", text,
+			positionalCountText(me.PositionalCount, me.positionalVarName))
 	}
 	return text + "\n"
 }
@@ -543,34 +524,14 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 		text = fmt.Sprintf("%s\n%s\n", text, strings.Join(desc, "\n"))
 	}
 	if me.PositionalCount != ZeroPositionals {
-		text = fmt.Sprintf("%s\narguments:\n  ", text)
-	}
-	switch me.PositionalCount {
-	case ZeroPositionals: // do nothing
-	case ZeroOrOnePositionals:
-		text = fmt.Sprintf("%s [%s]", text, me.positionalVarName)
-	case ZeroOrMorePositionals: // any count is valid
-		text = fmt.Sprintf("%s [%s [%s ...]]", text, me.positionalVarName,
+		posCountText := positionalCountText(me.PositionalCount,
 			me.positionalVarName)
-	case OnePositional:
-		text = fmt.Sprintf("%s <%s>", text, me.positionalVarName)
-	case OneOrMorePositionals:
-		text = fmt.Sprintf("%s <%s> [%s [%s ...]]", text,
-			me.positionalVarName, me.positionalVarName,
-			me.positionalVarName)
-	case TwoPositionals:
-		text = fmt.Sprintf("%s <%s> <%s>", text, me.positionalVarName,
-			me.positionalVarName)
-	case ThreePositionals:
-		text = fmt.Sprintf("%s <%s> <%s> <%s>", text, me.positionalVarName,
-			me.positionalVarName, me.positionalVarName)
-	case FourPositionals:
-		text = fmt.Sprintf("%s <%s> <%s> <%s> <%s>", text,
-			me.positionalVarName, me.positionalVarName,
-			me.positionalVarName, me.positionalVarName)
-	}
-	if me.PositionalCount != ZeroPositionals {
-		text = fmt.Sprintf("%s  %s\n", text, me.PositionalDescription)
+		text = fmt.Sprintf("%s\npositional arguments:\n%s%s", text,
+			columnGap, posCountText)
+		if me.PositionalDescription != "" {
+			text += argumentText(utf8.RuneCountInString(posCountText),
+				me.width, me.PositionalDescription)
+		}
 	}
 	return text
 }
@@ -678,3 +639,58 @@ func defaultExitFunc(exitCode int, msg string) {
 }
 
 var exitFunc = defaultExitFunc
+
+func positionalCountText(count PositionalCount, varName string) string {
+	switch count {
+	case ZeroPositionals:
+		return ""
+	case ZeroOrOnePositionals:
+		return fmt.Sprintf("[%s]", varName)
+	case ZeroOrMorePositionals: // any count is valid
+		return fmt.Sprintf("[%s [%s ...]]", varName, varName)
+	case OnePositional:
+		return fmt.Sprintf("<%s>", varName)
+	case OneOrMorePositionals:
+		return fmt.Sprintf("<%s> [%s [%s ...]]", varName, varName, varName)
+	case TwoPositionals:
+		return fmt.Sprintf("<%s> <%s>", varName, varName)
+	case ThreePositionals:
+		return fmt.Sprintf("<%s> <%s> <%s>", varName, varName, varName)
+	case FourPositionals:
+		return fmt.Sprintf("<%s> <%s> <%s> <%s>", varName, varName, varName,
+			varName)
+	}
+	panic("BUG: missing PositionalCount case")
+}
+
+func argumentText(argWidth, width int, desc string) string {
+	text := ""
+	gapWidth := utf8.RuneCountInString(columnGap)
+	argWidth += gapWidth
+	descLen := utf8.RuneCountInString(desc)
+	if argWidth+gapWidth+descLen <= width { // desc fits
+		text += columnGap + desc
+	} else {
+		leftWidth := (width / 2) - gapWidth
+		if argWidth > leftWidth { // argWidth too wide to fit desc
+			indent := strings.Repeat(columnGap, 2)
+			theWidth := width - utf8.RuneCountInString(indent)
+			desc := gong.TextWrapIndent(desc, theWidth, indent)
+			text += "\n" + strings.Join(desc, "\n")
+
+		} else { // argWidth narrow enough to fit desc
+			leftWidth = argWidth + gapWidth
+			rightWidth := width - leftWidth
+			indent := columnGap
+			fullIndent := strings.Repeat(" ", leftWidth)
+			for _, line := range gong.TextWrap(desc, rightWidth) {
+				text += indent + line + "\n"
+				indent = fullIndent
+			}
+		}
+	}
+	if text[len(text)-1] != '\n' {
+		text += "\n"
+	}
+	return text
+}

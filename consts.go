@@ -5,6 +5,7 @@ package garg
 
 const mainSubCommandName = ""
 const noShortName = 0
+const columnGap = "  "
 
 // These take an option's name and the given string value and return a
 // valid value and "" or the type's zero value and an error message

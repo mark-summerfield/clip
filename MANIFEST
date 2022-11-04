@@ -8,14 +8,14 @@
 #      all doc egs have corresponding tests
 # TODO add tests for every error code
 
-clop.go
+clip.go
 parser.go
 token.go
 option.go
 util.go
 consts.go
 
-clop_test.go
+clip_test.go
 
 bin/test1.go
 

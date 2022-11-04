@@ -1,4 +1,4 @@
-module github.com/mark-summerfield/clop
+module github.com/mark-summerfield/clip
 
 go 1.19
 

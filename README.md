@@ -1,6 +1,6 @@
-# clop
+# clip
 
-Yet another Go “Command Line Option Parser”.
+Yet another Go “Command Line Interface Parser”.
 
 ## License
 

@@ -6,7 +6,7 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/mark-summerfield/clop"
+	"github.com/mark-summerfield/clip"
 	"os"
 	"path"
 	"path/filepath"
@@ -17,7 +17,7 @@ import (
 const lineCountWidth = 11
 
 func main() {
-	fmt.Printf("clop v%s", clop.Version)
+	fmt.Printf("clip v%s", clip.Version)
 	config := getConfig("0.1.0")
 	fmt.Println(config)
 }
@@ -30,7 +30,7 @@ func getConfig(version string) config {
 	readConfigFiles(dataForLang)
 	allLangs := mapKeys(dataForLang)
 	sort.Strings(allLangs)
-	parser := clop.NewParserVersion(version)
+	parser := clip.NewParserVersion(version)
 	parser.Description = fmt.Sprintf("Counts the lines in the code "+
 		"files for the languages processed (ignoring . folders). "+
 		"Supported language names: %s.", strings.Join(allLangs, " "))

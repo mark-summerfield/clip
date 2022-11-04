@@ -1,7 +1,7 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-package clop
+package clip
 
 const noShortName = 0
 const columnGap = "  "

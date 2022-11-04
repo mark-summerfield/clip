@@ -1,7 +1,7 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-package clop
+package clip
 
 import (
 	"fmt"
@@ -106,7 +106,7 @@ func createTestParser2(t *testing.T) (Parser, *FlagOption, *IntOption,
 }
 
 func Test001(t *testing.T) {
-	parser := NewParserUser("clop.test", "1.0.0")
+	parser := NewParserUser("clip.test", "1.0.0")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := ""
@@ -116,8 +116,8 @@ func Test001(t *testing.T) {
 	if summaryOpt.Value() {
 		t.Error("expected false, got true")
 	}
-	if parser.AppName() != "clop.test" {
-		t.Errorf("expected appname=clop.test, got %s", parser.AppName())
+	if parser.AppName() != "clip.test" {
+		t.Errorf("expected appname=clip.test, got %s", parser.AppName())
 	}
 }
 
@@ -185,7 +185,7 @@ func Test005(t *testing.T) {
 	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	if parser.AppName() != "clop.test" {
+	if parser.AppName() != "clip.test" {
 		t.Errorf("expected appname=myapp, got %s", parser.AppName())
 	}
 	if parser.Version() != "0.1.0" {
@@ -1216,7 +1216,7 @@ func Test060(t *testing.T) {
 	parser.Description = "This is Test060"
 	parser.PositionalDescription = "Files to process"
 	line := "-h"
-	expected := `usage: clop.test [OPTIONS] [FILE [FILE ...]]
+	expected := `usage: clip.test [OPTIONS] [FILE [FILE ...]]
 
 This is Test060
 

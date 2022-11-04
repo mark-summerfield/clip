@@ -1,7 +1,7 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-package garg
+package clop
 
 import (
 	"fmt"
@@ -106,7 +106,7 @@ func createTestParser2(t *testing.T) (Parser, *FlagOption, *IntOption,
 }
 
 func Test001(t *testing.T) {
-	parser := NewParserUser("garg.test", "1.0.0")
+	parser := NewParserUser("clop.test", "1.0.0")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := ""
@@ -116,8 +116,8 @@ func Test001(t *testing.T) {
 	if summaryOpt.Value() {
 		t.Error("expected false, got true")
 	}
-	if parser.AppName() != "garg.test" {
-		t.Errorf("expected appname=garg.test, got %s", parser.AppName())
+	if parser.AppName() != "clop.test" {
+		t.Errorf("expected appname=clop.test, got %s", parser.AppName())
 	}
 }
 
@@ -185,7 +185,7 @@ func Test005(t *testing.T) {
 	if !sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=true, got false")
 	}
-	if parser.AppName() != "garg.test" {
+	if parser.AppName() != "clop.test" {
 		t.Errorf("expected appname=myapp, got %s", parser.AppName())
 	}
 	if parser.Version() != "0.1.0" {
@@ -416,8 +416,6 @@ func Test018(t *testing.T) {
 	parser, summaryOpt, _, maxWidthOpt, languageOpt, _, excludeOpt,
 		includeOpt, sortByLinesOpt := createTestParser2(t)
 	maxWidthOpt.TheDefault = 56
-	specialSubCommand := parser.SubCommand("special", "Special help")
-	extraOpt := specialSubCommand.Flag("extra", "extra help")
 	line := "-sS -l h red -e zOld t -L d -i peek -- file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -448,19 +446,12 @@ func Test018(t *testing.T) {
 	if m != 56 {
 		t.Errorf("expected maxwidth=56, got %d", m)
 	}
-	if extraOpt.Value() {
-		t.Error("expected extra=false, got true")
-	}
 }
 
 func Test019(t *testing.T) {
-	parser, summaryOpt, _, _, _, skipLanguageOpt, excludeOpt, includeOpt,
-		sortByLinesOpt := createTestParser2(t)
-	specialSubCommand := parser.SubCommand("special", "Special help")
-	extraOpt := specialSubCommand.Flag("extra", "extra help")
-	maxWidthOpt := specialSubCommand.IntInRange("maxwidth",
-		"special max width help", 20, 10000, 80)
-	line := "special -e -m98 file1.cpp file2.d"
+	parser, summaryOpt, _, maxWidthOpt, _, skipLanguageOpt, excludeOpt,
+		includeOpt, sortByLinesOpt := createTestParser2(t)
+	line := "-m98 file1.cpp file2.d"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
 	}
@@ -483,9 +474,6 @@ func Test019(t *testing.T) {
 	}
 	if sortByLinesOpt.Value() {
 		t.Error("expected sortbylines=false, got true")
-	}
-	if !extraOpt.Value() {
-		t.Error("expected extra=true, got false")
 	}
 	m := maxWidthOpt.Value()
 	if m != 98 {
@@ -1228,7 +1216,7 @@ func Test060(t *testing.T) {
 	parser.Description = "This is Test060"
 	parser.PositionalDescription = "Files to process"
 	line := "-h"
-	expected := `usage: garg.test [OPTIONS] [FILENAME [FILENAME ...]]
+	expected := `usage: clop.test [OPTIONS] [FILENAME [FILENAME ...]]
 
 This is Test060
 
@@ -1869,7 +1857,7 @@ func TestE023(t *testing.T) {
 func TestE024(t *testing.T) {
 	exitFunc = testingExitFunc
 	parser := NewParser()
-	parser.SubCommand("", "bad")
+	parser.Int("", "bad", 5)
 	line := ""
 	e := eInvalidName
 	defer expectPanic(e, t)

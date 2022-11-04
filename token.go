@@ -1,17 +1,13 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-package garg
+package clop
 
 import "fmt"
 
 type tokenState struct {
-	subcommand         *SubCommand
-	subCommandForName  map[string]*SubCommand
 	optionForLongName  map[string]optioner
 	optionForShortName map[string]optioner
-	hasSubCommands     bool
-	hadSubCommand      bool
 }
 
 type tokenKind uint8

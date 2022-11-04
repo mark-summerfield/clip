@@ -1,7 +1,7 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-package garg
+package clop
 
 import (
 	"fmt"
@@ -21,9 +21,8 @@ type Parser struct {
 	shortVersionName      rune
 	appName               string
 	appVersion            string
-	subCommands           map[string]*SubCommand
-	subCommandNames       []string // so that help is in creation order
-	mainSubCommand        *SubCommand
+	options               []optioner
+	firstDelayedError     string
 	PositionalCount       PositionalCount
 	PositionalDescription string
 	positionalVarName     string
@@ -55,15 +54,10 @@ func NewParserUser(appname, version string) Parser {
 	if appname == "" {
 		appname = appName()
 	}
-	mainSubCommand := newMainSubCommand()
-	subcommands := make(map[string]*SubCommand)
-	subcommands[mainSubCommandName] = mainSubCommand
 	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
-		subCommands: subcommands, subCommandNames: make([]string, 0),
-		PositionalCount:   ZeroOrMorePositionals,
-		positionalVarName: "FILE", HelpName: "help",
-		VersionName: "version", useLowerhForHelp: true,
-		mainSubCommand: mainSubCommand, width: getWidth()}
+		options: make([]optioner, 0), PositionalCount: ZeroOrMorePositionals,
+		positionalVarName: "FILE", HelpName: "help", VersionName: "version",
+		useLowerhForHelp: true, width: getWidth()}
 }
 
 func (me *Parser) AppName() string {
@@ -82,59 +76,93 @@ func (me *Parser) SetPositionalVarName(name string) error {
 	return nil
 }
 
-func (me *Parser) SubCommand(name, help string) *SubCommand {
-	subcommand, err := newSubCommand(name, help)
-	if err != nil && subcommand.firstDelayedError == "" {
-		subcommand.firstDelayedError = err.Error()
-	}
-	me.subCommands[name] = subcommand
-	me.subCommandNames = append(me.subCommandNames, name)
-	return subcommand
-}
-
 func (me *Parser) Flag(name, help string) *FlagOption {
-	return me.mainSubCommand.Flag(name, help)
+	option, err := newFlagOption(name, help)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) Int(name, help string, theDefault int) *IntOption {
-	return me.mainSubCommand.Int(name, help, theDefault)
+	option, err := newIntOption(name, help, theDefault)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) IntInRange(name, help string, minimum, maximum,
 	theDefault int) *IntOption {
-	return me.mainSubCommand.IntInRange(name, help, minimum, maximum,
-		theDefault)
+	option, err := newIntOption(name, help, theDefault)
+	option.Validator = makeIntRangeValidator(minimum, maximum)
+	me.registerNewOption(option, err)
+	return option
 }
 
-func (me *Parser) Real(name, help string, theDefault float64) *RealOption {
-	return me.mainSubCommand.Real(name, help, theDefault)
+func (me *Parser) Real(name, help string,
+	theDefault float64) *RealOption {
+	option, err := newRealOption(name, help, theDefault)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) RealInRange(name, help string, minimum, maximum,
 	theDefault float64) *RealOption {
-	return me.mainSubCommand.RealInRange(name, help, minimum, maximum,
-		theDefault)
+	option, err := newRealOption(name, help, theDefault)
+	option.Validator = makeRealRangeValidator(minimum, maximum)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) Str(name, help, theDefault string) *StrOption {
-	return me.mainSubCommand.Str(name, help, theDefault)
+	option, err := newStrOption(name, help, theDefault)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) Choice(name, help string, choices []string,
 	theDefault string) *StrOption {
-	return me.mainSubCommand.Choice(name, help, choices, theDefault)
+	option, err := newStrOption(name, help, theDefault)
+	option.Validator = makeChoiceValidator(choices)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) Strs(name, help string) *StrsOption {
-	return me.mainSubCommand.Strs(name, help)
+	option, err := newStrsOption(name, help)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) Ints(name, help string) *IntsOption {
-	return me.mainSubCommand.Ints(name, help)
+	option, err := newIntsOption(name, help)
+	me.registerNewOption(option, err)
+	return option
 }
 
 func (me *Parser) Reals(name, help string) *RealsOption {
-	return me.mainSubCommand.Reals(name, help)
+	option, err := newRealsOption(name, help)
+	me.registerNewOption(option, err)
+	return option
+}
+
+func (me *Parser) registerNewOption(option optioner, err error) {
+	me.options = append(me.options, option)
+	if err != nil && me.firstDelayedError == "" {
+		me.firstDelayedError = err.Error()
+	}
+}
+
+func (me *Parser) optionsForNames() (map[string]optioner,
+	map[string]optioner) {
+	optionForLongName := make(map[string]optioner, len(me.options))
+	optionForShortName := make(map[string]optioner, len(me.options))
+	for _, option := range me.options {
+		if option.LongName() != "" {
+			optionForLongName[option.LongName()] = option
+		}
+		if option.ShortName() != noShortName {
+			optionForShortName[string(option.ShortName())] = option
+		}
+	}
+	return optionForLongName, optionForShortName
 }
 
 func (me *Parser) Parse() error {
@@ -152,7 +180,7 @@ func (me *Parser) ParseArgs(args []string) error {
 	if err := me.prepareHelpAndVersionOptions(); err != nil {
 		return err
 	}
-	subcommand, tokens, err := me.tokenize(args)
+	tokens, err := me.tokenize(args)
 	if err != nil {
 		return err
 	}
@@ -164,13 +192,10 @@ func (me *Parser) ParseArgs(args []string) error {
 		} else if inPositionals {
 			me.addPositional(token.text)
 		} else if token.kind == helpTokenKind {
-			me.onHelp(subcommand) // doesn't return
+			me.onHelp() // doesn't return
 		} else if token.kind == nameTokenKind { // Option
 			currentOption = token.option
-			if me.isSubcommandHelp(subcommand, currentOption) { // may not return
-				return nil
-			}
-			if me.isVersion(subcommand, currentOption) { // may not return
+			if me.isVersion(currentOption) { // may not return
 				return nil
 			}
 			if option, ok := currentOption.(*FlagOption); ok {
@@ -189,15 +214,14 @@ func (me *Parser) ParseArgs(args []string) error {
 	if err := me.checkPositionals(); err != nil {
 		return err
 	}
-	return me.checkValues(subcommand.options)
+	return me.checkValues()
 }
 
 func (me *Parser) prepareHelpAndVersionOptions() error {
 	usevForVersion := true
 	useVForVersion := false
 	seenV := false
-	main := me.subCommands[mainSubCommandName]
-	for _, option := range main.options {
+	for _, option := range me.options {
 		if option.LongName() == me.HelpName {
 			return me.handleError(eInvalidHelpOption,
 				"only auto-generated help is supported")
@@ -218,7 +242,7 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 		useVForVersion = true
 	}
 	if me.VersionName != "" && me.appVersion != "" {
-		versionOpt := main.Flag(me.VersionName, "Show version and quit")
+		versionOpt := me.Flag(me.VersionName, "Show version and quit")
 		if usevForVersion {
 			versionOpt.SetShortName('v')
 		} else if useVForVersion {
@@ -230,11 +254,8 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 }
 
 func (me *Parser) checkForDelayedError() error {
-	for _, subcommand := range me.subCommands {
-		if subcommand.firstDelayedError != "" {
-			exitFunc(2, fmt.Sprintf("error %s",
-				subcommand.firstDelayedError))
-		}
+	if me.firstDelayedError != "" {
+		exitFunc(2, fmt.Sprintf("error %s", me.firstDelayedError))
 	}
 	return nil
 }
@@ -247,29 +268,16 @@ func (me *Parser) addPositional(value string) bool {
 	return true
 }
 
-// This allows for user to write: `myapp asubcommand help` as well as
-// `myapp asubcommand -h|--help` (handled elsewhere)
-func (me *Parser) isSubcommandHelp(subcommand *SubCommand, option optioner) bool {
-	if subcommand.longName != mainSubCommandName &&
-		option.LongName() == me.HelpName {
-		me.onHelp(subcommand) // doesn't return
-		return true
-	}
-	return false
-}
-
-func (me *Parser) isVersion(subcommand *SubCommand, option optioner) bool {
-	if subcommand.longName == mainSubCommandName &&
-		(option.LongName() == me.VersionName ||
-			(me.shortVersionName != 0 && me.shortVersionName ==
-				option.ShortName())) {
+func (me *Parser) isVersion(option optioner) bool {
+	if option.LongName() == me.VersionName || (me.shortVersionName !=
+		noShortName && me.shortVersionName == option.ShortName()) {
 		me.onVersion() // doesn't return
 		return true
 	}
 	return false
 }
 
-func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
+func (me *Parser) tokenize(args []string) ([]token, error) {
 	var err error
 	helpName := fmt.Sprintf("--%s", me.HelpName)
 	state := me.initializeTokenState()
@@ -289,7 +297,7 @@ func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 		if strings.HasPrefix(arg, "--") { // --option --option=value
 			tokens, err = me.handleLongOption(arg, tokens, &state)
 			if err != nil {
-				return state.subcommand, tokens, err
+				return tokens, err
 			}
 		} else if strings.HasPrefix(arg, "-") {
 			if _, err := strconv.ParseFloat(arg, 64); err == nil {
@@ -297,27 +305,19 @@ func (me *Parser) tokenize(args []string) (*SubCommand, []token, error) {
 			} else {
 				tokens, err = me.handleShortOption(arg, tokens, &state)
 				if err != nil {
-					return state.subcommand, tokens, err
+					return tokens, err
 				}
 			}
-		} else if state.hasSubCommands && !state.hadSubCommand { // subcmd?
-			tokens = me.handlePossibleSubcommand(arg, tokens, &state)
 		} else {
 			tokens = append(tokens, newValueToken(arg))
 		}
 	}
-	return state.subcommand, tokens, nil
+	return tokens, nil
 }
 
 func (me *Parser) initializeTokenState() tokenState {
-	state := tokenState{
-		subcommand:        me.subCommands[mainSubCommandName],
-		subCommandForName: me.getSubCommandsForNames(),
-		hasSubCommands:    len(me.subCommands) > 1,
-		hadSubCommand:     false,
-	}
-	state.optionForLongName, state.optionForShortName =
-		state.subcommand.optionsForNames()
+	state := tokenState{}
+	state.optionForLongName, state.optionForShortName = me.optionsForNames()
 	return state
 }
 
@@ -394,99 +394,18 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 	return tokens, nil
 }
 
-// is it a subcommand? - only allow one subcommand (excl. main)
-func (me *Parser) handlePossibleSubcommand(arg string, tokens []token,
-	state *tokenState) []token {
-	state.hadSubCommand = true
-	cmd, ok := state.subCommandForName[arg]
-	if ok {
-		state.subcommand = cmd
-		state.optionForLongName, state.optionForShortName =
-			state.subcommand.optionsForNames()
-	} else { // value
-		tokens = append(tokens, newValueToken(arg))
-	}
-	return tokens
-}
-
-func (me *Parser) getSubCommandsForNames() map[string]*SubCommand {
-	cmdForName := make(map[string]*SubCommand, len(me.subCommands)*2)
-	for long, command := range me.subCommands {
-		if long != mainSubCommandName {
-			cmdForName[long] = command
-			if command.ShortName() != 0 {
-				cmdForName[string(command.ShortName())] = command
-			}
-		}
-	}
-	return cmdForName
-}
-
-func (me *Parser) onHelp(subcommand *SubCommand) {
-	text, err := me.helpText(subcommand.LongName())
-	if err != nil {
-		exitFunc(1, err.Error())
+func (me *Parser) onHelp() {
+	text := me.usageLine()
+	text = me.maybeWithDescriptionAndPositionals(text)
+	text += me.optionsHelp()
+	if me.EndNotes != "" {
+		text += strings.Join(gong.TextWrap(me.EndNotes, me.width), "\n")
 	}
 	exitFunc(0, text)
 }
 
-// error should always be nil.
-// The name should be "" for help on the main options (and list of
-// subcommands if any), or the name of a subcommand.
-func (me *Parser) helpText(name string) (string, error) {
-	var text string
-	if subcommand, ok := me.subCommands[name]; ok {
-		if len(me.subCommands) == 1 { // No subcommands
-			text = me.mainHelpText(subcommand)
-		} else { // Has subcommands
-			if subcommand.longName == mainSubCommandName {
-				text = me.mainHelpTextWithSubCommands(subcommand)
-			} else {
-				text = me.subcommandHelpText(subcommand)
-			}
-		}
-		return text, nil
-	}
-	return "", fmt.Errorf("#%d:BUG: no main subcommand or subcommand", eBug)
-}
-
-func (me *Parser) mainHelpText(subcommand *SubCommand) string {
-	hasOptions := len(subcommand.options) > 0
-	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
-	text = me.maybeWithDescriptionAndPositionals(text)
-	text += me.optionsHelp(subcommand)
-	return text
-}
-
-func (me *Parser) mainHelpTextWithSubCommands(subcommand *SubCommand) string {
-	hasOptions := len(subcommand.options) > 0
-	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
-	text = me.maybeWithDescriptionAndPositionals(text)
-	text += me.optionsHelp(subcommand)
-	// TODO list subcommands
-	return text
-}
-
-func (me *Parser) subcommandHelpText(subcommand *SubCommand) string {
-	hasOptions := len(subcommand.options) > 0
-	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
-	text += me.optionsHelp(subcommand)
-	// TODO
-	return text
-}
-
-func (me *Parser) usageLine(hasOptions, hasSubCommands bool,
-	subcommandName string) string {
-	text := fmt.Sprintf("usage: %s", me.appName)
-	if hasSubCommands {
-		text = fmt.Sprintf("%s [SUBCOMMAND]", text)
-	}
-	if hasOptions {
-		text = fmt.Sprintf("%s [OPTIONS]", text)
-	}
-	if subcommandName != "" {
-		text = fmt.Sprintf("%s %s", text, subcommandName)
-	}
+func (me *Parser) usageLine() string {
+	text := fmt.Sprintf("usage: %s [OPTIONS]", me.appName)
 	if me.PositionalCount != ZeroPositionals {
 		text = fmt.Sprintf("%s %s", text,
 			positionalCountText(me.PositionalCount, me.positionalVarName))
@@ -512,17 +431,18 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 	return text
 }
 
-func (me *Parser) optionsHelp(subcommand *SubCommand) string {
+// TODO refactor
+func (me *Parser) optionsHelp() string {
 	type datum struct {
 		arg    string
 		lenArg int
 		help   string
 	}
 	maxLeft := 0
-	data := make([]datum, 0, len(subcommand.options))
-	for _, option := range subcommand.options {
+	data := make([]datum, 0, len(me.options))
+	for _, option := range me.options {
 		arg := "--" + option.LongName()
-		if option.ShortName() != 0 {
+		if option.ShortName() != noShortName {
 			arg = fmt.Sprintf("%s-%c, %s", columnGap, option.ShortName(),
 				arg)
 		}
@@ -543,19 +463,31 @@ func (me *Parser) optionsHelp(subcommand *SubCommand) string {
 
 	}
 	help := columnGap + "-h, --help"
-	// TODO the literal help text needs to change if this is a subcommand
 	data = append(data, datum{arg: help,
 		lenArg: utf8.RuneCountInString(help), help: "Show help and quit"})
 	gapWidth := utf8.RuneCountInString(columnGap)
 	text := "\noptional arguments\n"
+	allFit := true
+	for _, datum := range data {
+		if datum.lenArg+gapWidth+utf8.RuneCountInString(datum.help) >
+			me.width {
+			allFit = false
+			break
+		}
+	}
 	for _, datum := range data {
 		text += datum.arg
 		if datum.help != "" {
-			if datum.lenArg+gapWidth+utf8.RuneCountInString(datum.help) >
-				me.width && datum.lenArg < maxLeft {
-				text += strings.Repeat(" ", maxLeft-datum.lenArg)
+			if allFit {
+				text += strings.Repeat(" ", maxLeft-datum.lenArg) +
+					columnGap + datum.help + "\n"
+			} else {
+				if datum.lenArg+gapWidth+utf8.RuneCountInString(
+					datum.help) > me.width && datum.lenArg < maxLeft {
+					text += strings.Repeat(" ", maxLeft-datum.lenArg)
+				}
+				text += columnGap + argHelp(maxLeft, me.width, datum.help)
 			}
-			text += columnGap + argHelp(maxLeft, me.width, datum.help)
 		}
 	}
 	return text
@@ -612,8 +544,8 @@ func (me *Parser) checkPositionals() error {
 	return nil
 }
 
-func (me *Parser) checkValues(options []optioner) error {
-	for _, option := range options {
+func (me *Parser) checkValues() error {
+	for _, option := range me.options {
 		if msg := option.check(); msg != "" {
 			return me.handleError(eInvalidValue, msg)
 		}
@@ -631,7 +563,7 @@ func (me *Parser) OnError(err error) {
 }
 
 func (me *Parser) OnMissing(option optioner) error {
-	if option.ShortName() != 0 {
+	if option.ShortName() != noShortName {
 		return me.handleError(eMissing,
 			fmt.Sprintf("option -%c (or --%s) is required",
 				option.ShortName(), option.LongName()))

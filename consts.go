@@ -1,9 +1,8 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-package garg
+package clop
 
-const mainSubCommandName = ""
 const noShortName = 0
 const columnGap = "  "
 

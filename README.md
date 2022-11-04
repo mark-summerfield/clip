@@ -1,4 +1,4 @@
-# garg
+# clop
 
 Yet another Go command line argument parser.
 

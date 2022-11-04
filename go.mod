@@ -1,4 +1,4 @@
-module github.com/mark-summerfield/garg
+module github.com/mark-summerfield/clop
 
 go 1.19
 

@@ -1,13 +1,13 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-// Package garg “gee arg” provides yet another Go command line argument
+// Package clop “gee arg” provides yet another Go command line argument
 // parser.
 //
 // # Overview
 //
-// garg can handle flags, single argument options, multiple argument
-// options, subcommands, and positional arguments.
+// clop can handle flags, single argument options, multiple argument
+// options, and positional arguments.
 //
 // # Flags
 //
@@ -149,4 +149,4 @@
 //		parser.OnMissing(countOpt) // won't return (calls os.Exit)
 //	}
 //	count := countOpt.Value() // if we got here the user set it
-package garg
+package clop

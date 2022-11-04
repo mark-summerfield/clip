@@ -1,27 +1,23 @@
 # TODO FIXME
 # optional arguments:
 #   - spurious newline at the end
-#   - add -h, --help manually
-# TODO implement Help output (if tty: use terminal width & bold etc;
-# otherwise for tests & redirected use 80 cols & CAPS for highlighting)
+# TODO output (if tty: use terminal width & bold etc;
+# otherwise for tests & redirected use 80 cols & no highlighting)
+#
 # TODO document all option forms & the corresponding code & make sure
 #      all doc egs have corresponding tests
 # TODO add tests for every error code
-# TODO add more tests for subcommands
-# TODO add bold/color support
 
-garg.go
+clop.go
 parser.go
 token.go
 option.go
-subcommand.go
 util.go
 consts.go
 
-garg_test.go
+clop_test.go
 
 bin/test1.go
-bin/test2.go # TODO subcommands
 
 doc.go
 

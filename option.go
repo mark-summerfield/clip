@@ -6,6 +6,7 @@ package garg
 import (
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 type optioner interface {
@@ -42,6 +43,13 @@ func (me *commonOption) SetShortName(c rune) {
 
 func (me *commonOption) Help() string {
 	return me.help
+}
+
+func (me *commonOption) VarName() string {
+	if me.varName == "" {
+		return strings.ToUpper(me.longName)
+	}
+	return me.varName
 }
 
 func (me *commonOption) SetVarName(name string) error {

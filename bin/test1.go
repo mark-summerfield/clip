@@ -38,15 +38,19 @@ func getConfig(version string) config {
 		"to recursively search [default: .]"
 	languageOpt := parser.Strs("language",
 		"The language(s) to count [default: all known]")
+	_ = languageOpt.SetVarName("LANG")
 	skipLanguageOpt := parser.Strs("skiplanguage",
 		"The languages not to count, e.g., '-L d cpp' with no '-l' "+
 			"means count all languages except D and C++. Default: none")
 	skipLanguageOpt.SetShortName('L')
+	_ = skipLanguageOpt.SetVarName("LANG")
 	excludeOpt := parser.Strs("exclude",
 		fmt.Sprintf("The files and folders to exclude [default: .hidden "+
 			"and %s]", strings.Join(excludes.elements(), " ")))
+	_ = excludeOpt.SetVarName("EXCL")
 	includeOpt := parser.Strs("include",
 		"The files to include (e.g., those without suffixes)")
+	_ = includeOpt.SetVarName("INCL")
 	width := 80
 	maxWidthOpt := parser.IntInRange("maxwidth",
 		"Max line width to use (e.g., for redirected output)", 0, 10000,

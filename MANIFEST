@@ -1,3 +1,7 @@
+# TODO FIXME
+# optional arguments:
+#   - too big a gap between left & right columns
+#   - spurious newline at the end
 # TODO implement Help output (if tty: use terminal width & bold etc;
 # otherwise for tests & redirected use 80 cols & CAPS for highlighting)
 # TODO document all option forms & the corresponding code & make sure

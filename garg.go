@@ -68,20 +68,15 @@ func NewParserUser(appname, version string) Parser {
 	if appname == "" {
 		appname = appName()
 	}
-	width := 80
-	size, err := tsize.GetSize()
-	if err == nil && size.Width >= 38 {
-		width = size.Width
-	}
 	mainSubCommand := newMainSubCommand()
 	subcommands := make(map[string]*SubCommand)
 	subcommands[mainSubCommandName] = mainSubCommand
 	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
 		subCommands: subcommands, subCommandNames: make([]string, 0),
 		PositionalCount:   ZeroOrMorePositionals,
-		positionalVarName: "FILENAME", HelpName: "help",
+		positionalVarName: "FILE", HelpName: "help",
 		VersionName: "version", useLowerhForHelp: true,
-		mainSubCommand: mainSubCommand, width: width}
+		mainSubCommand: mainSubCommand, width: getWidth()}
 }
 
 func (me *Parser) AppName() string {
@@ -473,7 +468,7 @@ func (me *Parser) mainHelpText(subcommand *SubCommand) string {
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
 	text = me.maybeWithDescriptionAndPositionals(text)
 	if hasOptions {
-		text = me.optionsHelp(text, subcommand)
+		text += me.optionsHelp(subcommand)
 	}
 	return text
 }
@@ -483,7 +478,7 @@ func (me *Parser) mainHelpTextWithSubCommands(subcommand *SubCommand) string {
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
 	text = me.maybeWithDescriptionAndPositionals(text)
 	if hasOptions {
-		text = me.optionsHelp(text, subcommand)
+		text += me.optionsHelp(subcommand)
 	}
 	// TODO list subcommands
 	return text
@@ -493,7 +488,7 @@ func (me *Parser) subcommandHelpText(subcommand *SubCommand) string {
 	hasOptions := len(subcommand.options) > 0
 	text := me.usageLine(hasOptions, len(me.subCommands) > 1, "")
 	if hasOptions {
-		text = me.optionsHelp(text, subcommand)
+		text += me.optionsHelp(subcommand)
 	}
 	// TODO
 	return text
@@ -529,44 +524,62 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 		text = fmt.Sprintf("%s\npositional arguments:\n%s%s", text,
 			columnGap, posCountText)
 		if me.PositionalDescription != "" {
-			text += argumentText(utf8.RuneCountInString(posCountText),
-				me.width, false, me.PositionalDescription)
+			text += argHelp(utf8.RuneCountInString(posCountText),
+				me.width, false, me.PositionalDescription, false)
 		}
 	}
 	return text
 }
 
-func (me *Parser) optionsHelp(text string, subcommand *SubCommand) string {
-	type pair struct {
+func (me *Parser) optionsHelp(subcommand *SubCommand) string {
+	type datum struct {
 		arg    string
-		option optioner
+		lenArg int
+		help   string
 	}
 	maxLeft := 0
-	pairs := make([]pair, 0, len(subcommand.options))
+	data := make([]datum, 0, len(subcommand.options))
 	for _, option := range subcommand.options {
-		// TODO
-		arg := ""
-		// TODO get the arg text:
-		// short (if present) & long (args depending on valuecount);
-		// use positionalCountText() as a basis for optionCountText()
-		// using valuecount
+		arg := "--" + option.LongName()
+		if option.ShortName() != 0 {
+			arg = fmt.Sprintf("%s-%c, %s", columnGap, option.ShortName(),
+				arg)
+		}
+		switch opt := option.(type) {
+		case *IntsOption:
+			arg += " " + valueCountText(opt.ValueCount, opt.VarName())
+		case *RealsOption:
+			arg += " " + valueCountText(opt.ValueCount, opt.VarName())
+		case *StrsOption:
+			arg += " " + valueCountText(opt.ValueCount, opt.VarName())
+		}
 		lenArg := utf8.RuneCountInString(arg)
 		if lenArg > maxLeft {
 			maxLeft = lenArg
 		}
-		pairs = append(pairs, pair{arg: arg, option: option})
+		data = append(data, datum{arg: arg, lenArg: lenArg,
+			help: option.Help()})
 
 	}
-	/*
-		for _, option := range subcommand.options {
-			// TODO
-			// use argumentText():
-			//		argWidth = maxLeft
-			//		width=me.width
-			//		isOption=true
-			//		desc=option.Help()
+	gapWidth := utf8.RuneCountInString(columnGap)
+	forceNewline := false
+	for _, datum := range data {
+		if datum.lenArg+gapWidth+utf8.RuneCountInString(datum.help) >
+			me.width {
+			forceNewline = true
 		}
-	*/
+	}
+	text := "\noptional arguments\n"
+	for _, datum := range data {
+		text += datum.arg
+		if datum.help != "" {
+			if datum.lenArg < maxLeft {
+				text += strings.Repeat(" ", maxLeft-datum.lenArg)
+			}
+			text += columnGap + argHelp(maxLeft, me.width, true,
+				datum.help, forceNewline)
+		}
+	}
 	return text
 }
 
@@ -683,38 +696,49 @@ func positionalCountText(count PositionalCount, varName string) string {
 	panic("BUG: missing PositionalCount case")
 }
 
-func argumentText(argWidth, width int, isOption bool, desc string) string {
+func valueCountText(count ValueCount, varName string) string {
+	switch count {
+	case OneOrMoreValues:
+		return fmt.Sprintf("<%s> [%s ...]", varName, varName)
+	case TwoValues:
+		return fmt.Sprintf("<%s> <%s>", varName, varName)
+	case ThreeValues:
+		return fmt.Sprintf("<%s> <%s> <%s>", varName, varName, varName)
+	case FourValues:
+		return fmt.Sprintf("<%s> <%s> <%s> <%s>", varName, varName, varName,
+			varName)
+	}
+	panic("BUG: missing ValueCount case")
+}
+
+func argHelp(argWidth, width int, isOption bool, desc string,
+	forceNewline bool) string {
 	text := ""
 	gapWidth := utf8.RuneCountInString(columnGap)
 	argWidth += gapWidth
 	descLen := utf8.RuneCountInString(desc)
-	if argWidth+gapWidth+descLen <= width { // desc fits
+	if argWidth+gapWidth+descLen <= width && !forceNewline { // desc fits
 		text += columnGap + desc
 	} else {
-		leftWidth := (width / 2) - gapWidth
-		if argWidth > leftWidth { // argWidth too wide to fit desc
-			gaps := 4
-			if !isOption {
-				gaps = 2
-			}
-			indent := strings.Repeat(columnGap, gaps)
-			theWidth := width - utf8.RuneCountInString(indent)
-			desc := gong.TextWrapIndent(desc, theWidth, indent)
-			text += "\n" + strings.Join(desc, "\n")
-
-		} else { // argWidth narrow enough to fit desc
-			leftWidth = argWidth + gapWidth
-			rightWidth := width - leftWidth
-			indent := columnGap
-			fullIndent := strings.Repeat(" ", leftWidth)
-			for _, line := range gong.TextWrap(desc, rightWidth) {
-				text += indent + line + "\n"
-				indent = fullIndent
-			}
+		gaps := 4
+		if !isOption {
+			gaps = 2
 		}
+		indent := strings.Repeat(columnGap, gaps)
+		theWidth := width - utf8.RuneCountInString(indent)
+		desc := gong.TextWrapIndent(desc, theWidth, indent)
+		text += "\n" + strings.Join(desc, "\n")
 	}
 	if text[len(text)-1] != '\n' {
 		text += "\n"
 	}
 	return text
+}
+
+func getWidth() int {
+	size, err := tsize.GetSize()
+	if err == nil && size.Width >= 38 {
+		return size.Width
+	}
+	return 80
 }

@@ -5,8 +5,11 @@ package garg
 
 import (
 	"fmt"
+	tsize "github.com/kopoli/go-terminal-size"
+	"github.com/mark-summerfield/gong"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 func namesForName(name string) (rune, string) {
@@ -109,4 +112,69 @@ func makeChoiceValidator(choices []string) func(string, string) (string,
 		return "", fmt.Sprintf("option %s's value of %q is not one of%s %s",
 			name, value, colon, end)
 	}
+}
+
+func positionalCountText(count PositionalCount, varName string) string {
+	switch count {
+	case ZeroPositionals:
+		return ""
+	case ZeroOrOnePositionals:
+		return fmt.Sprintf("[%s]", varName)
+	case ZeroOrMorePositionals: // any count is valid
+		return fmt.Sprintf("[%s [%s ...]]", varName, varName)
+	case OnePositional:
+		return fmt.Sprintf("<%s>", varName)
+	case OneOrMorePositionals:
+		return fmt.Sprintf("<%s> [%s [%s ...]]", varName, varName, varName)
+	case TwoPositionals:
+		return fmt.Sprintf("<%s> <%s>", varName, varName)
+	case ThreePositionals:
+		return fmt.Sprintf("<%s> <%s> <%s>", varName, varName, varName)
+	case FourPositionals:
+		return fmt.Sprintf("<%s> <%s> <%s> <%s>", varName, varName, varName,
+			varName)
+	}
+	panic("BUG: missing PositionalCount case")
+}
+
+func valueCountText(count ValueCount, varName string) string {
+	switch count {
+	case OneOrMoreValues:
+		return fmt.Sprintf("<%s> [%s ...]", varName, varName)
+	case TwoValues:
+		return fmt.Sprintf("<%s> <%s>", varName, varName)
+	case ThreeValues:
+		return fmt.Sprintf("<%s> <%s> <%s>", varName, varName, varName)
+	case FourValues:
+		return fmt.Sprintf("<%s> <%s> <%s> <%s>", varName, varName, varName,
+			varName)
+	}
+	panic("BUG: missing ValueCount case")
+}
+
+func argHelp(argWidth, width int, desc string) string {
+	text := ""
+	gapWidth := utf8.RuneCountInString(columnGap)
+	argWidth += gapWidth
+	descLen := utf8.RuneCountInString(desc)
+	if argWidth+gapWidth+descLen <= width { // desc fits
+		text += desc
+	} else {
+		indent := strings.Repeat(columnGap, 4)
+		theWidth := width - utf8.RuneCountInString(indent)
+		desc := gong.TextWrapIndent(desc, theWidth, indent)
+		text += "\n" + strings.Join(desc, "\n")
+	}
+	if text[len(text)-1] != '\n' {
+		text += "\n"
+	}
+	return text
+}
+
+func getWidth() int {
+	size, err := tsize.GetSize()
+	if err == nil && size.Width >= 38 {
+		return size.Width
+	}
+	return 80
 }

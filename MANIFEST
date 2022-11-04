@@ -11,6 +11,7 @@
 # TODO add bold/color support
 
 garg.go
+parser.go
 token.go
 option.go
 subcommand.go

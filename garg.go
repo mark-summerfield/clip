@@ -530,21 +530,41 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 			columnGap, posCountText)
 		if me.PositionalDescription != "" {
 			text += argumentText(utf8.RuneCountInString(posCountText),
-				me.width, me.PositionalDescription)
+				me.width, false, me.PositionalDescription)
 		}
 	}
 	return text
 }
 
 func (me *Parser) optionsHelp(text string, subcommand *SubCommand) string {
+	type pair struct {
+		arg    string
+		option optioner
+	}
+	maxLeft := 0
+	pairs := make([]pair, 0, len(subcommand.options))
+	for _, option := range subcommand.options {
+		// TODO
+		arg := ""
+		// TODO get the arg text:
+		// short (if present) & long (args depending on valuecount);
+		// use positionalCountText() as a basis for optionCountText()
+		// using valuecount
+		lenArg := utf8.RuneCountInString(arg)
+		if lenArg > maxLeft {
+			maxLeft = lenArg
+		}
+		pairs = append(pairs, pair{arg: arg, option: option})
+
+	}
 	/*
-		maxFirst := 0
-		maxSecond := 0
-		pairs := make([]pair, 0, len(subcommand.options))
 		for _, option := range subcommand.options {
-			// TODO first is short (if present) long (args depending on
-			// valuecount)
-			// second is desc
+			// TODO
+			// use argumentText():
+			//		argWidth = maxLeft
+			//		width=me.width
+			//		isOption=true
+			//		desc=option.Help()
 		}
 	*/
 	return text
@@ -663,7 +683,7 @@ func positionalCountText(count PositionalCount, varName string) string {
 	panic("BUG: missing PositionalCount case")
 }
 
-func argumentText(argWidth, width int, desc string) string {
+func argumentText(argWidth, width int, isOption bool, desc string) string {
 	text := ""
 	gapWidth := utf8.RuneCountInString(columnGap)
 	argWidth += gapWidth
@@ -673,7 +693,11 @@ func argumentText(argWidth, width int, desc string) string {
 	} else {
 		leftWidth := (width / 2) - gapWidth
 		if argWidth > leftWidth { // argWidth too wide to fit desc
-			indent := strings.Repeat(columnGap, 2)
+			gaps := 4
+			if !isOption {
+				gaps = 2
+			}
+			indent := strings.Repeat(columnGap, gaps)
 			theWidth := width - utf8.RuneCountInString(indent)
 			desc := gong.TextWrapIndent(desc, theWidth, indent)
 			text += "\n" + strings.Join(desc, "\n")

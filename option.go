@@ -13,6 +13,7 @@ type optioner interface {
 	ShortName() rune
 	SetShortName(rune)
 	SetVarName(string) error
+	Help() string
 	addValue(string) string
 	wantsValue() bool
 	setGiven()
@@ -37,6 +38,10 @@ func (me *commonOption) ShortName() rune {
 
 func (me *commonOption) SetShortName(c rune) {
 	me.shortName = c
+}
+
+func (me *commonOption) Help() string {
+	return me.help
 }
 
 func (me *commonOption) SetVarName(name string) error {

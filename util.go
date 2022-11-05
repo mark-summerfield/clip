@@ -152,7 +152,7 @@ func valueCountText(count ValueCount, varName string) string {
 	panic("BUG: missing ValueCount case")
 }
 
-func argHelp(argWidth, width int, desc string) string {
+func ArgHelp(argWidth, width int, desc string) string {
 	text := ""
 	gapWidth := utf8.RuneCountInString(columnGap)
 	argWidth += gapWidth
@@ -171,7 +171,7 @@ func argHelp(argWidth, width int, desc string) string {
 	return text
 }
 
-func getWidth() int {
+func GetWidth() int {
 	size, err := tsize.GetSize()
 	if err == nil && size.Width >= 38 {
 		return size.Width

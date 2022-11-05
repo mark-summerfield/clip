@@ -57,11 +57,17 @@ func NewParserUser(appname, version string) Parser {
 	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
 		options: make([]optioner, 0), PositionalCount: ZeroOrMorePositionals,
 		positionalVarName: "FILE", HelpName: "help", VersionName: "version",
-		useLowerhForHelp: true, width: getWidth()}
+		useLowerhForHelp: true, width: GetWidth()}
 }
 
 func (me *Parser) AppName() string {
 	return me.appName
+}
+
+func (me *Parser) SetAppName(appName string) {
+	if appName != "" {
+		me.appName = appName
+	}
 }
 
 func (me *Parser) Version() string {
@@ -401,6 +407,7 @@ func (me *Parser) onHelp() {
 	if me.EndNotes != "" {
 		text += strings.Join(gong.TextWrap(me.EndNotes, me.width), "\n")
 	}
+	text = strings.TrimSuffix(text, "\n")
 	exitFunc(0, text)
 }
 
@@ -424,7 +431,7 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 		text = fmt.Sprintf("%s\npositional arguments:\n%s%s", text,
 			columnGap, posCountText)
 		if me.PositionalDescription != "" {
-			text += argHelp(utf8.RuneCountInString(posCountText),
+			text += ArgHelp(utf8.RuneCountInString(posCountText),
 				me.width, me.PositionalDescription)
 		}
 	}
@@ -486,7 +493,7 @@ func (me *Parser) optionsHelp() string {
 					datum.help) > me.width && datum.lenArg < maxLeft {
 					text += strings.Repeat(" ", maxLeft-datum.lenArg)
 				}
-				text += columnGap + argHelp(maxLeft, me.width, datum.help)
+				text += columnGap + ArgHelp(maxLeft, me.width, datum.help)
 			}
 		}
 	}

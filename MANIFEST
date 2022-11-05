@@ -63,5 +63,7 @@ st.sh
 #   . appName
 #   . appName subcommand (eg2subcommand)
 #   . -s --long
+# ~underline (if tty=true)~
+#   . errors
 
 # vim: syn=yaml

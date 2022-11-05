@@ -152,7 +152,7 @@ func Test004(t *testing.T) {
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	verboseOpt := parser.Int("verbose", "verbosity -v or -vN", 1)
-	verboseOpt.SetShortName(0)
+	verboseOpt.SetShortName(NoShortName)
 	line := "-S --verbose 3 filename.txt"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -830,7 +830,7 @@ func Test037(t *testing.T) {
 
 func Test038(t *testing.T) {
 	parser, summaryOpt, verboseOpt, _ := createTestParser1(t)
-	verboseOpt.SetShortName(0)
+	verboseOpt.SetShortName(NoShortName)
 	line := "-S"
 	if err := parser.ParseLine(line); err != nil {
 		t.Error(err)
@@ -1221,9 +1221,9 @@ func Test060(t *testing.T) {
 This is Test060
 
 positional arguments:
-  [FILE [FILE ...]]Files to process
+  [FILE [FILE ...]]  Files to process
 
-optional arguments
+optional arguments:
   -S, --summary                                         summary help TODO
   -v, --verbose                                         verbosity -v or -vN
   -m, --maxwidth                                        max width help

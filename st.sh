@@ -1,5 +1,5 @@
 #!/bin/bash
-clc -s -e zOld clip_test.go bin doc.go
+clc -s -e eg clip_test.go bin doc.go
 go mod tidy
 go fmt .
 staticcheck .

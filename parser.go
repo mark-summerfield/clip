@@ -164,7 +164,7 @@ func (me *Parser) optionsForNames() (map[string]optioner,
 		if option.LongName() != "" {
 			optionForLongName[option.LongName()] = option
 		}
-		if option.ShortName() != noShortName {
+		if option.ShortName() != NoShortName {
 			optionForShortName[string(option.ShortName())] = option
 		}
 	}
@@ -276,7 +276,7 @@ func (me *Parser) addPositional(value string) bool {
 
 func (me *Parser) isVersion(option optioner) bool {
 	if option.LongName() == me.VersionName || (me.shortVersionName !=
-		noShortName && me.shortVersionName == option.ShortName()) {
+		NoShortName && me.shortVersionName == option.ShortName()) {
 		me.onVersion() // doesn't return
 		return true
 	}
@@ -431,8 +431,11 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 		text = fmt.Sprintf("%s\npositional arguments:\n%s%s", text,
 			columnGap, posCountText)
 		if me.PositionalDescription != "" {
-			text += ArgHelp(utf8.RuneCountInString(posCountText),
-				me.width, me.PositionalDescription)
+			text += columnGap + ArgHelp(
+				utf8.RuneCountInString(posCountText), me.width,
+				me.PositionalDescription)
+		} else {
+			text += "\n"
 		}
 	}
 	return text
@@ -445,15 +448,37 @@ func (me *Parser) optionsHelp() string {
 		lenArg int
 		help   string
 	}
+	shorts := 0
 	maxLeft := 0
 	data := make([]datum, 0, len(me.options))
 	for _, option := range me.options {
 		arg := "--" + option.LongName()
-		if option.ShortName() != noShortName {
+		if option.ShortName() != NoShortName {
 			arg = fmt.Sprintf("%s-%c, %s", columnGap, option.ShortName(),
 				arg)
+			shorts += 1
+		} else {
+			arg = columnGap + arg
 		}
 		switch opt := option.(type) {
+		case *IntOption:
+			if opt.AllowImplicit {
+				arg += " [" + opt.VarName() + "]"
+			} else {
+				arg += " " + opt.VarName()
+			}
+		case *RealOption:
+			if opt.AllowImplicit {
+				arg += " [" + opt.VarName() + "]"
+			} else {
+				arg += " " + opt.VarName()
+			}
+		case *StrOption:
+			if opt.AllowImplicit {
+				arg += " [" + opt.VarName() + "]"
+			} else {
+				arg += " " + opt.VarName()
+			}
 		case *IntsOption:
 			arg += " " + valueCountText(opt.ValueCount, opt.VarName())
 		case *RealsOption:
@@ -469,17 +494,28 @@ func (me *Parser) optionsHelp() string {
 			help: option.Help()})
 
 	}
-	help := columnGap + "-h, --help"
-	data = append(data, datum{arg: help,
-		lenArg: utf8.RuneCountInString(help), help: "Show help and quit"})
+	help := columnGap + "-h, --" + me.HelpName
+	lenArg := utf8.RuneCountInString(help)
+	if lenArg > maxLeft {
+		maxLeft = lenArg
+	}
+	data = append(data, datum{arg: help, lenArg: lenArg,
+		help: "Show help and quit"})
 	gapWidth := utf8.RuneCountInString(columnGap)
-	text := "\noptional arguments\n"
+	text := "\noptional arguments:\n"
+	padOnlyLong := false
+	if shorts != 0 && shorts != len(data) { // some longs without shorts
+		padOnlyLong = true
+	}
 	allFit := true
-	for _, datum := range data {
-		if datum.lenArg+gapWidth+utf8.RuneCountInString(datum.help) >
+	for i := 0; i < len(data); i++ {
+		datum := &data[i]
+		if maxLeft+gapWidth+utf8.RuneCountInString(datum.help) >
 			me.width {
 			allFit = false
-			break
+		}
+		if padOnlyLong && strings.HasPrefix(datum.arg, columnGap+"--") {
+			datum.arg = columnGap + strings.TrimSpace(datum.arg)
 		}
 	}
 	for _, datum := range data {
@@ -570,7 +606,7 @@ func (me *Parser) OnError(err error) {
 }
 
 func (me *Parser) OnMissing(option optioner) error {
-	if option.ShortName() != noShortName {
+	if option.ShortName() != NoShortName {
 		return me.handleError(eMissing,
 			fmt.Sprintf("option -%c (or --%s) is required",
 				option.ShortName(), option.LongName()))

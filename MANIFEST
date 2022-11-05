@@ -1,8 +1,11 @@
 # TODO eg/eg2/eg2subcmd.go
 # TODO
+#   optioner.SetHidden() e.g., for debug option & ignore in onHelp()
+#
 #   Add: ShortDesc (to precede usage line)
 #   Rename: Description LongDesc
 #   Rename: EndNotes EndDesc
+# TODO eg3 - copy of eg1 + ShortDesc & EndDesc 
 #   then: goupvar.py 0.4.0
 # TODO onHelp (if tty: use terminal width & bold etc;
 # otherwise for tests & redirected use 80 cols & no highlighting)
@@ -12,7 +15,7 @@
 # TODO add tests for every error code
 
 clip.go
-parser.go
+parser.go # TODO refactor
 token.go
 option.go
 util.go

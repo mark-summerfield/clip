@@ -8,8 +8,8 @@
 //
 // clip can handle flags, single argument options, multiple argument
 // options, and positional arguments. Although there's no direct support for
-// subcommands, they can easily be achieved (see `bin/test2/test2.go` for an
-// example).
+// subcommands, they can easily be achieved (see `eg/eg2/eg2subcmd.go` for
+// an example).
 //
 // # Flags
 //

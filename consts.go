@@ -3,7 +3,7 @@
 
 package clip
 
-const noShortName = 0
+const NoShortName = 0
 const columnGap = "  "
 
 // These take an option's name and the given string value and return a

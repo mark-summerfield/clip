@@ -55,6 +55,8 @@ func getConfig(version string) config {
 	maxWidthOpt := parser.IntInRange("maxwidth",
 		"Max line width to use (e.g., for redirected output)", 0, 10000,
 		width)
+	debugOpt := parser.Flag("debug", "Special debug flag")
+	debugOpt.SetShortName(clip.NoShortName)
 	sortByLinesOpt := parser.Flag("sortbylines",
 		"Sort by lines. Default: sort by names")
 	summaryOpt := parser.Flag("summary",

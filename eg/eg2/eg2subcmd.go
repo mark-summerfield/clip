@@ -53,6 +53,7 @@ func parseCompare(appName string, args []string, desc string) config {
 	parser.SetAppName(fmt.Sprintf("%s compare", appName))
 	parser.PositionalCount = clip.TwoPositionals
 	parser.Description = desc
+	parser.PositionalDescription = "The two files to compare"
 	equivOpt := parser.Flag("equivalent",
 		"Compare for equivalance rather than for equality")
 	if err := parser.ParseArgs(args); err != nil {
@@ -70,9 +71,60 @@ func parseCompare(appName string, args []string, desc string) config {
 func parseFormat(appName string, args []string, desc string) config {
 	parser := clip.NewParser()
 	parser.SetAppName(fmt.Sprintf("%s format", appName))
-	// TODO
+	parser.PositionalCount = clip.TwoPositionals
+	parser.Description = desc
+	parser.PositionalDescription = "The required infile and the required " +
+		"outfile; use - to write to stdout or = to overwrite infile"
+	lintOpt := parser.Flag("lint",
+		"Print lints to stderr. If only lints are wanted use the l or "+
+			"lint subcommand")
+	standaloneOpt := parser.Flag("standalone",
+		"Same as -d|--dropunused and -r|--replaceimports together")
+	dropUnusedOpt := parser.Flag("dropunused",
+		"Drop unused imports and ttype definitions (best to use "+
+			"-s|--standalone)")
+	replaceImportsOpt := parser.Flag("replaceimports",
+		"Replace imports with ttype definitions for ttypes that are "+
+			"actually used to make the outfile standalone (best to use "+
+			"-s|--standalone)")
+	indentOpt := parser.IntInRange("indent",
+		"Indent (0-8 spaces or 9 to use a tab; ignored if -c|--compact "+
+			"used) [default: 2]", 0, 9, 2)
+	wrapWidthOpt := parser.IntInRange("wrapwidth",
+		"Wrapwidth (40-240; ignored if -c|--compact used) [default: 96]",
+		40, 240, 96)
+	decimalsOpt := parser.IntInRange("decimals",
+		"Decimal digits (0-15; 0 means use at least one (even if .0) "+
+			"and as many as needed; 1-15 means used that fixed number of "+
+			"digits) [default: 0]", 0, 15, 0)
+	compactOpt := parser.Flag("compact",
+		"Use compact output format (not human friendly; ignores indent "+
+			"and wrapwidth)")
+	if err := parser.ParseArgs(args); err != nil {
+		fmt.Println(err)
+		os.Exit(2)
+	}
+	dropUnused := dropUnusedOpt.Value()
+	replaceImports := replaceImportsOpt.Value()
+	if standaloneOpt.Value() {
+		dropUnused = true
+		replaceImports = true
+	}
+	i := indentOpt.Value()
+	indent := "\t"
+	if i < 9 {
+		indent = strings.Repeat(" ", i)
+	}
 	config := config{
-		subcommand: "format",
+		subcommand:     "format",
+		lint:           lintOpt.Value(),
+		dropUnused:     dropUnused,
+		replaceImports: replaceImports,
+		indent:         indent,
+		wrapWidth:      wrapWidthOpt.Value(),
+		decimals:       decimalsOpt.Value(),
+		compact:        compactOpt.Value(),
+		files:          parser.Positionals,
 	}
 	return config
 }
@@ -80,11 +132,13 @@ func parseFormat(appName string, args []string, desc string) config {
 func parseLint(appName string, args []string, desc string) config {
 	parser := clip.NewParser()
 	parser.SetAppName(fmt.Sprintf("%s lint", appName))
-	// TODO
-	config := config{
-		subcommand: "lint",
+	parser.Description = desc
+	parser.PositionalDescription = "The file(s) to lint"
+	if err := parser.ParseArgs(args); err != nil {
+		fmt.Println(err)
+		os.Exit(2)
 	}
-	return config
+	return config{subcommand: "lint", files: parser.Positionals}
 }
 
 func (me config) String() string {
@@ -97,11 +151,11 @@ func (me config) String() string {
 		return fmt.Sprintf("compare equiv=%t files=[%s]\n", me.equivalent,
 			files)
 	case "format":
-		return fmt.Sprintf("format lint=%t dropunused=%t "+
-			"replaceimports=%t indent=%d wrapwidth=%d decimals=%d "+
-			"compact=%t files=[%s]\n", me.lint, me.dropUnused,
-			me.replaceImports, me.indent, me.wrapWidth, me.decimals,
-			me.compact, files)
+		return fmt.Sprintf("format\n\tlint=%t\n\tdropunused=%t\n\t"+
+			"replaceimports=%t\n\tindent=%q\n\twrapwidth=%d\n\t"+
+			"decimals=%d\n\tcompact=%t\n\tfiles=[%s]\n", me.lint,
+			me.dropUnused, me.replaceImports, me.indent, me.wrapWidth,
+			me.decimals, me.compact, files)
 	case "lint":
 		return fmt.Sprintf("lint files=[%s]\n", files)
 	}
@@ -109,7 +163,7 @@ func (me config) String() string {
 }
 
 func showHelp(descs []string) {
-	fmt.Printf("usage: %s <SUBCOMMAND> ...\n\nsubcommads:\n",
+	fmt.Printf("usage: %s [SUBCOMMAND|OPTION]\n\nsubcommands:\n",
 		path.Base(os.Args[0]))
 	subs := []string{"c, compare [-e] <FILE1> <FILE2>",
 		"f, format [OPTIONS] <INFILE> <OUTFILE>",
@@ -140,6 +194,9 @@ func showHelp(descs []string) {
 			fmt.Print(clip.ArgHelp(argWidth, width, descs[i]))
 		}
 	}
+	fmt.Println("\noptional arguments:\n" +
+		"  -v, --version  Show version and quit\n" +
+		"  -h, --help  Show help text and quit\n")
 	os.Exit(0)
 }
 
@@ -177,7 +234,7 @@ type config struct {
 	lint           bool
 	dropUnused     bool
 	replaceImports bool
-	indent         int
+	indent         string
 	wrapWidth      int
 	decimals       int
 	compact        bool

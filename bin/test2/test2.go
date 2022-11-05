@@ -22,7 +22,11 @@ func getConfig(appName, version string) config {
 	args := os.Args[1:]
 	if len(args) == 0 || args[0] == "-h" || args[0] == "--help" ||
 		args[0] == "help" {
-		showHelp(descs) // doesn't return
+		if len(args) == 2 { // Adds support for: -h subcommand
+			args[0], args[1] = args[1], args[0]
+		} else {
+			showHelp(descs) // doesn't return
+		}
 	}
 	subcmd := args[0]
 	args = args[1:]

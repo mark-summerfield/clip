@@ -3,9 +3,8 @@
 #   Add: ShortDesc (to precede usage line)
 #   Rename: Description LongDesc
 #   Rename: EndNotes EndDesc
-# TODO
-# optional arguments:
-# TODO output (if tty: use terminal width & bold etc;
+#   then: goupvar.py 0.4.0
+# TODO onHelp (if tty: use terminal width & bold etc;
 # otherwise for tests & redirected use 80 cols & no highlighting)
 #
 # TODO document all option forms & the corresponding code & make sure

@@ -111,7 +111,9 @@ func (me config) String() string {
 func showHelp(descs []string) {
 	fmt.Printf("usage: %s <SUBCOMMAND> ...\n\nsubcommads:\n",
 		path.Base(os.Args[0]))
-	subs := []string{"c, compare", "f, format", "l, lint"}
+	subs := []string{"c, compare [-e] <FILE1> <FILE2>",
+		"f, format [OPTIONS] <INFILE> <OUTFILE>",
+		"l, lint <FILE> [FILE ...]"}
 	leftWidths := make([]int, 0, len(subs))
 	descWidths := make([]int, 0, len(descs))
 	maxLeft := 0

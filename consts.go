@@ -98,6 +98,12 @@ func (me PositionalCount) String() string {
 	}
 }
 
+type datum struct {
+	arg    string
+	lenArg int
+	help   string
+}
+
 const (
 	eUser                   = iota + 100
 	eMissing                // 101

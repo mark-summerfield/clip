@@ -1212,9 +1212,10 @@ func Test059(t *testing.T) {
 
 func Test060(t *testing.T) {
 	exitFunc = handleTextExitFunc
-	parser, _, _, _, _, _, _, _, _ := createTestParser2(t)
+	parser, _, verboseOpt, _, _, _, _, _, _ := createTestParser2(t)
 	parser.Description = "This is Test060"
 	parser.PositionalDescription = "Files to process"
+	verboseOpt.AllowImplicit = true
 	line := "-h"
 	expected := `usage: clip.test [OPTIONS] [FILE [FILE ...]]
 
@@ -1225,8 +1226,8 @@ positional arguments:
 
 optional arguments:
   -S, --summary                                         summary help TODO
-  -v, --verbose                                         verbosity -v or -vN
-  -m, --maxwidth                                        max width help
+  -v, --verbose [VERBOSE]                               verbosity -v or -vN
+  -m, --maxwidth MAXWIDTH                               max width help
   -l, --language <LANGUAGE> [LANGUAGE ...]              lang help
   -L, --skiplanguage <SKIPLANGUAGE> [SKIPLANGUAGE ...]  skip lang help
   -e, --exclude <EXCLUDE> [EXCLUDE ...]                 exclude help

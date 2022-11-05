@@ -178,3 +178,86 @@ func GetWidth() int {
 	}
 	return 80
 }
+
+func initialArgText(option optioner) (int, string) {
+	short := 0
+	arg := "--" + option.LongName()
+	if option.ShortName() != NoShortName {
+		arg = fmt.Sprintf("%s-%c, %s", columnGap, option.ShortName(),
+			arg)
+		short = 1
+	} else {
+		arg = columnGap + arg
+	}
+	return short, arg
+}
+
+func optArgText(option optioner) string {
+	switch opt := option.(type) {
+	case *IntOption:
+		if opt.AllowImplicit {
+			return " [" + opt.VarName() + "]"
+		} else {
+			return " " + opt.VarName()
+		}
+	case *RealOption:
+		if opt.AllowImplicit {
+			return " [" + opt.VarName() + "]"
+		} else {
+			return " " + opt.VarName()
+		}
+	case *StrOption:
+		if opt.AllowImplicit {
+			return " [" + opt.VarName() + "]"
+		} else {
+			return " " + opt.VarName()
+		}
+	case *IntsOption:
+		return " " + valueCountText(opt.ValueCount, opt.VarName())
+	case *RealsOption:
+		return " " + valueCountText(opt.ValueCount, opt.VarName())
+	case *StrsOption:
+		return " " + valueCountText(opt.ValueCount, opt.VarName())
+	}
+	return ""
+}
+
+func prepareOptionsData(maxLeft, gapWidth, width, shorts int,
+	data []datum) bool {
+	padOnlyLong := false
+	if shorts != 0 && shorts != len(data) { // some longs without shorts
+		padOnlyLong = true
+	}
+	allFit := true
+	for i := 0; i < len(data); i++ {
+		datum := &data[i]
+		if maxLeft+gapWidth+utf8.RuneCountInString(datum.help) > width {
+			allFit = false
+		}
+		if padOnlyLong && strings.HasPrefix(datum.arg, columnGap+"--") {
+			datum.arg = columnGap + strings.TrimSpace(datum.arg)
+		}
+	}
+	return allFit
+}
+
+func optionsDataText(allFit bool, maxLeft, gapWidth, width int,
+	data []datum) string {
+	text := ""
+	for _, datum := range data {
+		text += datum.arg
+		if datum.help != "" {
+			if allFit {
+				text += strings.Repeat(" ", maxLeft-datum.lenArg) +
+					columnGap + datum.help + "\n"
+			} else {
+				if datum.lenArg+gapWidth+utf8.RuneCountInString(
+					datum.help) > width && datum.lenArg < maxLeft {
+					text += strings.Repeat(" ", maxLeft-datum.lenArg)
+				}
+				text += columnGap + ArgHelp(maxLeft, width, datum.help)
+			}
+		}
+	}
+	return text
+}

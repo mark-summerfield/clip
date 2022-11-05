@@ -1,4 +1,3 @@
-# TODO eg/eg2/eg2subcmd.go
 # TODO
 #   optioner.SetHidden() e.g., for debug option & ignore in onHelp()
 #
@@ -24,7 +23,7 @@ consts.go
 clip_test.go
 
 eg/eg1/eg1.go
-eg/eg2/eg2subcmd.go # TODO complete
+eg/eg2/eg2subcmd.go
 
 doc.go
 

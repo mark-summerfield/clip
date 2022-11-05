@@ -53,7 +53,8 @@ func parseCompare(appName string, args []string, desc string) config {
 	parser.SetAppName(fmt.Sprintf("%s compare", appName))
 	parser.PositionalCount = clip.TwoPositionals
 	parser.Description = desc
-	parser.PositionalDescription = "The two files to compare"
+	parser.PositionalDescription = "The two files to compare. Each may " +
+		"have any suffix and may be gzip-compressed if it ends with .gz"
 	equivOpt := parser.Flag("equivalent",
 		"Compare for equivalance rather than for equality")
 	if err := parser.ParseArgs(args); err != nil {
@@ -163,7 +164,7 @@ func (me config) String() string {
 }
 
 func showHelp(descs []string) {
-	fmt.Printf("usage: %s [SUBCOMMAND|OPTION]\n\nsubcommands:\n",
+	fmt.Printf("usage: %s [OPTION] [SUBCOMMAND] ...\n\nsubcommands:\n",
 		path.Base(os.Args[0]))
 	subs := []string{"c, compare [-e] <FILE1> <FILE2>",
 		"f, format [OPTIONS] <INFILE> <OUTFILE>",
@@ -196,7 +197,7 @@ func showHelp(descs []string) {
 	}
 	fmt.Println("\noptional arguments:\n" +
 		"  -v, --version  Show version and quit\n" +
-		"  -h, --help  Show help text and quit\n")
+		"  -h, --help  Show help text and quit")
 	os.Exit(0)
 }
 

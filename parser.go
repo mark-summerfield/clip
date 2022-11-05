@@ -441,51 +441,14 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 	return text
 }
 
-// TODO refactor
 func (me *Parser) optionsHelp() string {
-	type datum struct {
-		arg    string
-		lenArg int
-		help   string
-	}
 	shorts := 0
 	maxLeft := 0
 	data := make([]datum, 0, len(me.options))
 	for _, option := range me.options {
-		arg := "--" + option.LongName()
-		if option.ShortName() != NoShortName {
-			arg = fmt.Sprintf("%s-%c, %s", columnGap, option.ShortName(),
-				arg)
-			shorts += 1
-		} else {
-			arg = columnGap + arg
-		}
-		switch opt := option.(type) {
-		case *IntOption:
-			if opt.AllowImplicit {
-				arg += " [" + opt.VarName() + "]"
-			} else {
-				arg += " " + opt.VarName()
-			}
-		case *RealOption:
-			if opt.AllowImplicit {
-				arg += " [" + opt.VarName() + "]"
-			} else {
-				arg += " " + opt.VarName()
-			}
-		case *StrOption:
-			if opt.AllowImplicit {
-				arg += " [" + opt.VarName() + "]"
-			} else {
-				arg += " " + opt.VarName()
-			}
-		case *IntsOption:
-			arg += " " + valueCountText(opt.ValueCount, opt.VarName())
-		case *RealsOption:
-			arg += " " + valueCountText(opt.ValueCount, opt.VarName())
-		case *StrsOption:
-			arg += " " + valueCountText(opt.ValueCount, opt.VarName())
-		}
+		n, arg := initialArgText(option)
+		shorts += n
+		arg += optArgText(option)
 		lenArg := utf8.RuneCountInString(arg)
 		if lenArg > maxLeft {
 			maxLeft = lenArg
@@ -503,36 +466,8 @@ func (me *Parser) optionsHelp() string {
 		help: "Show help and quit"})
 	gapWidth := utf8.RuneCountInString(columnGap)
 	text := "\noptional arguments:\n"
-	padOnlyLong := false
-	if shorts != 0 && shorts != len(data) { // some longs without shorts
-		padOnlyLong = true
-	}
-	allFit := true
-	for i := 0; i < len(data); i++ {
-		datum := &data[i]
-		if maxLeft+gapWidth+utf8.RuneCountInString(datum.help) >
-			me.width {
-			allFit = false
-		}
-		if padOnlyLong && strings.HasPrefix(datum.arg, columnGap+"--") {
-			datum.arg = columnGap + strings.TrimSpace(datum.arg)
-		}
-	}
-	for _, datum := range data {
-		text += datum.arg
-		if datum.help != "" {
-			if allFit {
-				text += strings.Repeat(" ", maxLeft-datum.lenArg) +
-					columnGap + datum.help + "\n"
-			} else {
-				if datum.lenArg+gapWidth+utf8.RuneCountInString(
-					datum.help) > me.width && datum.lenArg < maxLeft {
-					text += strings.Repeat(" ", maxLeft-datum.lenArg)
-				}
-				text += columnGap + ArgHelp(maxLeft, me.width, datum.help)
-			}
-		}
-	}
+	allFit := prepareOptionsData(maxLeft, gapWidth, me.width, shorts, data)
+	text += optionsDataText(allFit, maxLeft, gapWidth, me.width, data)
 	return text
 }
 

@@ -1,0 +1,29 @@
+usage: subcommands [OPTION] [SUBCOMMAND] ...
+
+subcommands:
+  c, compare [-e] <FILE1> <FILE2>  
+        Compare two UXF files for equality ignoring insignificant
+        whitespace, or for equivalence (with -e or --equivalent) in
+        which case the comparison ignores insignificant whitespace,
+        comments, unused ttypes, and, in effect replaces any imports
+        with the ttypes they define—if they are used. If a diff is
+        required, format the two UXF files using the same formatting
+        options (and maybe use the -s --standalone option), then use a
+        standard diff tool.
+  f, format [OPTIONS] <INFILE> <OUTFILE>  
+        Copy the infile to the outfile using the canonical
+        human-readable format, or with the specified formatting options.
+        This will alphabetically order any ttype definitions and will
+        order map items by key (bytes < date < datetime < int <
+        case-insensitive str). However, the order of imports is
+        preserved (with any duplicates removed) to allow later imports
+        to override earlier ones. The conversion will also automatically
+        perform type repairs, e.g., converting strings to dates or ints
+        or reals if that is the target type, and similar.
+  l, lint <FILE> [FILE ...]  
+        Print the repairs that formatting would apply and lint warnings
+        (if any) to stderr for the given file(s).
+
+optional arguments:
+  -v, --version  Show version and quit
+  -h, --help  Show help text and quit

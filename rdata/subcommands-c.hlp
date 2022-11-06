@@ -1,0 +1,17 @@
+usage: subcommands compare [OPTIONS] <FILE1> <FILE2>
+
+Compare two UXF files for equality ignoring insignificant whitespace, or for
+equivalence (with -e or --equivalent) in which case the comparison ignores
+insignificant whitespace, comments, unused ttypes, and, in effect replaces any
+imports with the ttypes they define—if they are used. If a diff is required,
+format the two UXF files using the same formatting options (and maybe use the -s
+--standalone option), then use a standard diff tool.
+
+positional arguments:
+  <FILE1> <FILE2>  
+        The two files to compare. Each may have any suffix and may be
+        gzip-compressed if it ends with .gz
+
+optional arguments:
+  -e, --equivalent  Compare for equivalance rather than for equality
+  -h, --help        Show help and quit

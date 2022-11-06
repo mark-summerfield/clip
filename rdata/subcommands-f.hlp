@@ -1,0 +1,41 @@
+usage: subcommands format [OPTIONS] <FILE1> <FILE2>
+
+Copy the infile to the outfile using the canonical human-readable format, or
+with the specified formatting options. This will alphabetically order any ttype
+definitions and will order map items by key (bytes < date < datetime < int <
+case-insensitive str). However, the order of imports is preserved (with any
+duplicates removed) to allow later imports to override earlier ones. The
+conversion will also automatically perform type repairs, e.g., converting
+strings to dates or ints or reals if that is the target type, and similar.
+
+positional arguments:
+  <FILE1> <FILE2>  
+        The required infile and the required outfile; use - to write to
+        stdout or = to overwrite infile
+
+optional arguments:
+  -l, --lint                 
+        Print lints to stderr. If only lints are wanted use the l or
+        lint subcommand
+  -s, --standalone  
+        Same as -d|--dropunused and -r|--replaceimports together
+  -d, --dropunused           
+        Drop unused imports and ttype definitions (best to use
+        -s|--standalone)
+  -r, --replaceimports       
+        Replace imports with ttype definitions for ttypes that are
+        actually used to make the outfile standalone (best to use
+        -s|--standalone)
+  -i, --indent INDENT        
+        Indent (0-8 spaces or 9 to use a tab; ignored if -c|--compact
+        used) [default: 2]
+  -w, --wrapwidth WRAPWIDTH  
+        Wrapwidth (40-240; ignored if -c|--compact used) [default: 96]
+  -d, --decimals DECIMALS    
+        Decimal digits (0-15; 0 means use at least one (even if .0) and
+        as many as needed; 1-15 means used that fixed number of digits)
+        [default: 0]
+  -c, --compact              
+        Use compact output format (not human friendly; ignores indent
+        and wrapwidth)
+  -h, --help  Show help and quit

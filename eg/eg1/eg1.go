@@ -17,7 +17,6 @@ import (
 const lineCountWidth = 11
 
 func main() {
-	fmt.Printf("clip v%s", clip.Version)
 	config := getConfig("0.1.0")
 	fmt.Println(config)
 }

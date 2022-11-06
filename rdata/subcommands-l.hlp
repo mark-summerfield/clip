@@ -1,0 +1,10 @@
+usage: subcommands lint [OPTIONS] [FILE1 [FILE2 ...]]
+
+Print the repairs that formatting would apply and lint warnings (if any) to
+stderr for the given file(s).
+
+positional arguments:
+  [FILE1 [FILE2 ...]]  The file(s) to lint
+
+optional arguments:
+  -h, --help  Show help and quit

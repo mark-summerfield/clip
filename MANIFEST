@@ -23,6 +23,8 @@ doc.go
 
 go.mod
 
+regression.py
+
 st.sh
 
 # TODO HIGHLIGHT

@@ -53,7 +53,7 @@ func parseCompare(appName string, args []string, desc string) config {
 	parser.SetAppName(fmt.Sprintf("%s compare", appName))
 	parser.PositionalCount = clip.TwoPositionals
 	parser.Description = desc
-	parser.PositionalDescription = "The two files to compare. Each may " +
+	parser.PositionalHelp = "The two files to compare. Each may " +
 		"have any suffix and may be gzip-compressed if it ends with .gz"
 	equivOpt := parser.Flag("equivalent",
 		"Compare for equivalance rather than for equality")
@@ -74,7 +74,7 @@ func parseFormat(appName string, args []string, desc string) config {
 	parser.SetAppName(fmt.Sprintf("%s format", appName))
 	parser.PositionalCount = clip.TwoPositionals
 	parser.Description = desc
-	parser.PositionalDescription = "The required infile and the required " +
+	parser.PositionalHelp = "The required infile and the required " +
 		"outfile; use - to write to stdout or = to overwrite infile"
 	lintOpt := parser.Flag("lint",
 		"Print lints to stderr. If only lints are wanted use the l or "+
@@ -134,7 +134,7 @@ func parseLint(appName string, args []string, desc string) config {
 	parser := clip.NewParser()
 	parser.SetAppName(fmt.Sprintf("%s lint", appName))
 	parser.Description = desc
-	parser.PositionalDescription = "The file(s) to lint"
+	parser.PositionalHelp = "The file(s) to lint"
 	if err := parser.ParseArgs(args); err != nil {
 		fmt.Println(err)
 		os.Exit(2)

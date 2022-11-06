@@ -13,21 +13,21 @@ import (
 )
 
 type Parser struct {
-	Positionals           []string
-	HelpName              string
-	VersionName           string
-	Description           string
-	EndNotes              string
-	shortVersionName      rune
-	appName               string
-	appVersion            string
-	options               []optioner
-	firstDelayedError     string
-	PositionalCount       PositionalCount
-	PositionalDescription string
-	positionalVarName     string
-	useLowerhForHelp      bool
-	width                 int
+	HelpName          string
+	VersionName       string
+	Description       string
+	EndNotes          string
+	shortVersionName  rune
+	appName           string
+	appVersion        string
+	options           []optioner
+	firstDelayedError string
+	Positionals       []string
+	PositionalCount   PositionalCount
+	PositionalHelp    string
+	positionalVarName string
+	useLowerhForHelp  bool
+	width             int
 }
 
 // NewParser creates a new command line parser.
@@ -430,10 +430,10 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 			me.positionalVarName)
 		text = fmt.Sprintf("%s\npositional arguments:\n%s%s", text,
 			columnGap, posCountText)
-		if me.PositionalDescription != "" {
+		if me.PositionalHelp != "" {
 			text += columnGap + ArgHelp(
 				utf8.RuneCountInString(posCountText), me.width,
-				me.PositionalDescription)
+				me.PositionalHelp)
 		} else {
 			text += "\n"
 		}

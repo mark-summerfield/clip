@@ -1,6 +1,4 @@
 # TODO
-#   optioner.SetHidden() e.g., for debug option & ignore in onHelp()
-# TODO
 #   Add: ShortDesc (to precede usage line)
 #   Rename: Description LongDesc
 #   Rename: EndNotes EndDesc

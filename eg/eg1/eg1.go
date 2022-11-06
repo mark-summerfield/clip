@@ -34,7 +34,7 @@ func getConfig(version string) config {
 	parser.Description = fmt.Sprintf("Counts the lines in the code "+
 		"files for the languages processed (ignoring . folders). "+
 		"Supported language names: %s.", strings.Join(allLangs, " "))
-	parser.PositionalDescription = "The files to count or the folders " +
+	parser.PositionalHelp = "The files to count or the folders " +
 		"to recursively search [default: .]"
 	languageOpt := parser.Strs("language",
 		"The language(s) to count [default: all known]")

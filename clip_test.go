@@ -1214,7 +1214,7 @@ func Test060(t *testing.T) {
 	exitFunc = handleTextExitFunc
 	parser, _, verboseOpt, _, _, _, _, _, _ := createTestParser2(t)
 	parser.Description = "This is Test060"
-	parser.PositionalDescription = "Files to process"
+	parser.PositionalHelp = "Files to process"
 	verboseOpt.AllowImplicit = true
 	line := "-h"
 	expected := `usage: clip.test [OPTIONS] [FILE [FILE ...]]

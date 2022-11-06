@@ -1217,23 +1217,23 @@ func Test060(t *testing.T) {
 	parser.PositionalHelp = "Files to process"
 	verboseOpt.AllowImplicit = true
 	line := "-h"
-	expected := `usage: clip.test [OPTIONS] [FILE [FILE ...]]
+	expected := `usage: clip.test [OPTIONS] [FILE1 [FILE2 ...]]
 
 This is Test060
 
 positional arguments:
-  [FILE [FILE ...]]  Files to process
+  [FILE1 [FILE2 ...]]  Files to process
 
 optional arguments:
-  -S, --summary                                         summary help TODO
-  -v, --verbose [VERBOSE]                               verbosity -v or -vN
-  -m, --maxwidth MAXWIDTH                               max width help
-  -l, --language <LANGUAGE> [LANGUAGE ...]              lang help
-  -L, --skiplanguage <SKIPLANGUAGE> [SKIPLANGUAGE ...]  skip lang help
-  -e, --exclude <EXCLUDE> [EXCLUDE ...]                 exclude help
-  -i, --include <INCLUDE> [INCLUDE ...]                 include help
-  -s, --sortbylines                                     Sort by lines
-  -h, --help                                            Show help and quit
+  -S, --summary                                           summary help TODO
+  -v, --verbose [VERBOSE]                                 verbosity -v or -vN
+  -m, --maxwidth MAXWIDTH                                 max width help
+  -l, --language <LANGUAGE1> [LANGUAGE2 ...]              lang help
+  -L, --skiplanguage <SKIPLANGUAGE1> [SKIPLANGUAGE2 ...]  skip lang help
+  -e, --exclude <EXCLUDE1> [EXCLUDE2 ...]                 exclude help
+  -i, --include <INCLUDE1> [INCLUDE2 ...]                 include help
+  -s, --sortbylines                                       Sort by lines
+  -h, --help                                              Show help and quit
 `
 	defer handleTextAndQuit(expected, t)
 	if err := parser.ParseLine(line); err != nil {

@@ -1,9 +1,3 @@
-# TODO
-#   Add: ShortDesc (to precede usage line)
-#   Rename: Description LongDesc
-#   Rename: EndNotes EndDesc
-# TODO eg3 - copy of eg1 + ShortDesc & EndDesc 
-#   then: goupvar.py 0.4.0
 # TODO onHelp (if tty: use terminal width & bold etc;
 # otherwise for tests & redirected use 80 cols & no highlighting)
 # TODO HIGHLIGHT (see below)
@@ -22,10 +16,12 @@ consts.go
 clip_test.go
 
 eg/eg1/eg1.go
-eg/eg2/eg2subcmd.go
+eg/eg2/eg2.go
+eg/subcommands/subcommands.go
+
+doc.go
 
 go.mod
-doc.go
 
 st.sh
 

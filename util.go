@@ -121,18 +121,19 @@ func positionalCountText(count PositionalCount, varName string) string {
 	case ZeroOrOnePositionals:
 		return fmt.Sprintf("[%s]", varName)
 	case ZeroOrMorePositionals: // any count is valid
-		return fmt.Sprintf("[%s [%s ...]]", varName, varName)
+		return fmt.Sprintf("[%s1 [%s2 ...]]", varName, varName)
 	case OnePositional:
 		return fmt.Sprintf("<%s>", varName)
 	case OneOrMorePositionals:
-		return fmt.Sprintf("<%s> [%s [%s ...]]", varName, varName, varName)
-	case TwoPositionals:
-		return fmt.Sprintf("<%s> <%s>", varName, varName)
-	case ThreePositionals:
-		return fmt.Sprintf("<%s> <%s> <%s>", varName, varName, varName)
-	case FourPositionals:
-		return fmt.Sprintf("<%s> <%s> <%s> <%s>", varName, varName, varName,
+		return fmt.Sprintf("<%s1> [%s2 [%s3 ...]]", varName, varName,
 			varName)
+	case TwoPositionals:
+		return fmt.Sprintf("<%s1> <%s2>", varName, varName)
+	case ThreePositionals:
+		return fmt.Sprintf("<%s1> <%s2> <%s3>", varName, varName, varName)
+	case FourPositionals:
+		return fmt.Sprintf("<%s1> <%s2> <%s3> <%s4>", varName, varName,
+			varName, varName)
 	}
 	panic("BUG: missing PositionalCount case")
 }
@@ -140,14 +141,14 @@ func positionalCountText(count PositionalCount, varName string) string {
 func valueCountText(count ValueCount, varName string) string {
 	switch count {
 	case OneOrMoreValues:
-		return fmt.Sprintf("<%s> [%s ...]", varName, varName)
+		return fmt.Sprintf("<%s1> [%s2 ...]", varName, varName)
 	case TwoValues:
-		return fmt.Sprintf("<%s> <%s>", varName, varName)
+		return fmt.Sprintf("<%s1> <%s2>", varName, varName)
 	case ThreeValues:
-		return fmt.Sprintf("<%s> <%s> <%s>", varName, varName, varName)
+		return fmt.Sprintf("<%s1> <%s2> <%s3>", varName, varName, varName)
 	case FourValues:
-		return fmt.Sprintf("<%s> <%s> <%s> <%s>", varName, varName, varName,
-			varName)
+		return fmt.Sprintf("<%s1> <%s2> <%s3> <%s4>", varName, varName,
+			varName, varName)
 	}
 	panic("BUG: missing ValueCount case")
 }

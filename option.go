@@ -61,12 +61,12 @@ func (me *commonOption) SetVarName(name string) error {
 }
 
 func (me *commonOption) Given() bool {
-	return me.state != NotGiven
+	return me.state != notGiven
 }
 
 func (me *commonOption) setGiven() {
-	if me.state == NotGiven {
-		me.state = Given
+	if me.state == notGiven {
+		me.state = given
 	}
 }
 
@@ -80,7 +80,7 @@ func newFlagOption(name, help string) (*FlagOption, error) {
 	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &FlagOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven}}, err
+		shortName: shortName, help: help, state: notGiven}}, err
 }
 
 func (me FlagOption) Value() bool {
@@ -92,7 +92,7 @@ func (me FlagOption) wantsValue() bool {
 }
 
 func (me FlagOption) check() string {
-	if me.state == HadValue {
+	if me.state == hadValue {
 		return fmt.Sprintf("#%d:BUG: a flag with a value", eBug)
 	}
 	return ""
@@ -115,23 +115,23 @@ func newIntOption(name, help string, theDefault int) (*IntOption, error) {
 	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &IntOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven},
+		shortName: shortName, help: help, state: notGiven},
 		TheDefault: theDefault, Validator: makeDefaultIntValidator()}, err
 }
 
 func (me IntOption) Value() int {
-	if me.state == HadValue {
+	if me.state == hadValue {
 		return me.value
 	}
 	return me.TheDefault
 }
 
 func (me IntOption) wantsValue() bool {
-	return me.state == Given
+	return me.state == given
 }
 
 func (me IntOption) check() string {
-	if me.state == Given {
+	if me.state == given {
 		if me.AllowImplicit {
 			return ""
 		} else {
@@ -149,7 +149,7 @@ func (me *IntOption) addValue(value string) string {
 		return msg
 	}
 	me.value = i
-	me.state = HadValue
+	me.state = hadValue
 	return ""
 }
 
@@ -167,23 +167,23 @@ func newRealOption(name, help string, theDefault float64) (*RealOption,
 	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &RealOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven},
+		shortName: shortName, help: help, state: notGiven},
 		TheDefault: theDefault, Validator: makeDefaultRealValidator()}, err
 }
 
 func (me RealOption) Value() float64 {
-	if me.state == HadValue {
+	if me.state == hadValue {
 		return me.value
 	}
 	return me.TheDefault
 }
 
 func (me RealOption) wantsValue() bool {
-	return me.state == Given
+	return me.state == given
 }
 
 func (me RealOption) check() string {
-	if me.state == Given {
+	if me.state == given {
 		if me.AllowImplicit {
 			return ""
 		} else {
@@ -201,7 +201,7 @@ func (me *RealOption) addValue(value string) string {
 		return msg
 	}
 	me.value = r
-	me.state = HadValue
+	me.state = hadValue
 	return ""
 }
 
@@ -218,23 +218,23 @@ func newStrOption(name, help, theDefault string) (*StrOption, error) {
 	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &StrOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven},
+		shortName: shortName, help: help, state: notGiven},
 		TheDefault: theDefault, Validator: makeDefaultStrValidator()}, err
 }
 
 func (me StrOption) Value() string {
-	if me.state == HadValue {
+	if me.state == hadValue {
 		return me.value
 	}
 	return me.TheDefault
 }
 
 func (me StrOption) wantsValue() bool {
-	return me.state == Given
+	return me.state == given
 }
 
 func (me StrOption) check() string {
-	if me.state == Given {
+	if me.state == given {
 		if me.AllowImplicit {
 			return ""
 		} else {
@@ -252,7 +252,7 @@ func (me *StrOption) addValue(value string) string {
 		return msg
 	}
 	me.value = s
-	me.state = HadValue
+	me.state = hadValue
 	return ""
 }
 
@@ -268,7 +268,7 @@ func newStrsOption(name, help string) (*StrsOption, error) {
 	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &StrsOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven},
+		shortName: shortName, help: help, state: notGiven},
 		ValueCount: OneOrMoreValues,
 		Validator:  makeDefaultStrValidator()}, err
 }
@@ -278,7 +278,7 @@ func (me StrsOption) Value() []string {
 }
 
 func (me StrsOption) wantsValue() bool {
-	return me.state != NotGiven
+	return me.state != notGiven
 }
 
 func (me StrsOption) check() string {
@@ -294,7 +294,7 @@ func (me *StrsOption) addValue(value string) string {
 		me.value = make([]string, 0, 1)
 	}
 	me.value = append(me.value, s)
-	me.state = HadValue
+	me.state = hadValue
 	return ""
 }
 
@@ -310,7 +310,7 @@ func newIntsOption(name, help string) (*IntsOption, error) {
 	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &IntsOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven},
+		shortName: shortName, help: help, state: notGiven},
 		ValueCount: OneOrMoreValues,
 		Validator:  makeDefaultIntValidator()}, err
 }
@@ -320,7 +320,7 @@ func (me IntsOption) Value() []int {
 }
 
 func (me IntsOption) wantsValue() bool {
-	return me.state != NotGiven
+	return me.state != notGiven
 }
 
 func (me IntsOption) check() string {
@@ -336,7 +336,7 @@ func (me *IntsOption) addValue(value string) string {
 		me.value = make([]int, 0, 1)
 	}
 	me.value = append(me.value, s)
-	me.state = HadValue
+	me.state = hadValue
 	return ""
 }
 
@@ -352,7 +352,7 @@ func newRealsOption(name, help string) (*RealsOption, error) {
 	err := checkName(name, "option")
 	shortName, longName := namesForName(name)
 	return &RealsOption{commonOption: &commonOption{longName: longName,
-		shortName: shortName, help: help, state: NotGiven},
+		shortName: shortName, help: help, state: notGiven},
 		ValueCount: OneOrMoreValues,
 		Validator:  makeDefaultRealValidator()}, err
 }
@@ -362,7 +362,7 @@ func (me RealsOption) Value() []float64 {
 }
 
 func (me RealsOption) wantsValue() bool {
-	return me.state != NotGiven
+	return me.state != notGiven
 }
 
 func (me RealsOption) check() string {
@@ -378,7 +378,7 @@ func (me *RealsOption) addValue(value string) string {
 		me.value = make([]float64, 0, 1)
 	}
 	me.value = append(me.value, s)
-	me.state = HadValue
+	me.state = hadValue
 	return ""
 }
 
@@ -393,10 +393,10 @@ func checkName(name, what string) error {
 
 func checkMulti(name string, state optionState, valueCount ValueCount,
 	count int) string {
-	if state == Given {
+	if state == given {
 		return fmt.Sprintf(
 			"expected %s values for %s, got none", valueCount, name)
-	} else if state == HadValue {
+	} else if state == hadValue {
 		ok := true
 		switch valueCount {
 		case OneOrMoreValues:

@@ -1,15 +1,16 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-// Package clip “gee arg” provides yet another Go command line argument
-// parser.
+// Package clip “command line interface parser” provides yet another Go
+// command line argument parser.
 //
 // # Overview
 //
 // clip can handle flags, single argument options, multiple argument
-// options, and positional arguments. Although there's no direct support for
-// subcommands, they can easily be achieved (see `eg/eg2/eg2subcmd.go` for
-// an example).
+// options, and positional arguments.
+//
+// Although there's no direct support for subcommands, they can easily be
+// achieved (see `eg/subcommands/subcommands.go` for an example).
 //
 // # Flags
 //
@@ -119,6 +120,8 @@
 //	}
 //
 // Here, verbose == 2 (as given)
+//
+// TODO about hidden flags #########################
 //
 // TODO IntInRange eg + test
 // TODO Real eg + test + note RealInRange

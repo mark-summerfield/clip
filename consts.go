@@ -15,18 +15,18 @@ type StrValidator func(string, string) (string, string)
 type optionState uint8
 
 const (
-	NotGiven optionState = iota
-	Given
-	HadValue
+	notGiven optionState = iota
+	given
+	hadValue
 )
 
 func (me optionState) String() string {
 	switch me {
-	case NotGiven:
+	case notGiven:
 		return "not given"
-	case Given:
+	case given:
 		return "given"
-	case HadValue:
+	case hadValue:
 		return "had value"
 	default:
 		return "BUG: invalid optionState"

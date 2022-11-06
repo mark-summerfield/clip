@@ -17,8 +17,7 @@ import (
 const lineCountWidth = 11
 
 func main() {
-	fmt.Printf("clip v%s", clip.Version)
-	config := getConfig("0.1.0")
+	config := getConfig("0.2.0")
 	fmt.Println(config)
 }
 
@@ -31,9 +30,11 @@ func getConfig(version string) config {
 	allLangs := mapKeys(dataForLang)
 	sort.Strings(allLangs)
 	parser := clip.NewParserVersion(version)
-	parser.LongDesc = fmt.Sprintf("Counts the lines in the code "+
-		"files for the languages processed (ignoring . folders).\n\n"+
+	parser.ShortDesc = "Counts the lines in the code files for the " +
+		"languages processed"
+	parser.LongDesc = fmt.Sprintf("The counting ignores  . folders.\n\n"+
 		"Supported language names: %s.", strings.Join(allLangs, " "))
+	parser.EndDesc = "Some end notes just to show that EndDesc works."
 	parser.PositionalHelp = "The files to count or the folders " +
 		"to recursively search [default: .]"
 	languageOpt := parser.Strs("language",

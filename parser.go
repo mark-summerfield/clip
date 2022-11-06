@@ -12,21 +12,22 @@ import (
 	"unicode/utf8"
 )
 
+// For applications with fairly simple CLIs, only the LongDesc is used.
 type Parser struct {
-	HelpName          string
-	VersionName       string
-	ShortDesc         string
-	LongDesc          string
-	EndNotes          string
+	ShortDesc         string // Text that goes before the usage line
+	LongDesc          string // Text between the usage line and the arguments
+	EndDesc           string // Text at the end
+	VersionName       string // Default "version"
+	HelpName          string // Default "help"; recommend leaving as-is
 	shortVersionName  rune
 	appName           string
 	appVersion        string
 	options           []optioner
 	firstDelayedError string
-	Positionals       []string
-	PositionalCount   PositionalCount
-	PositionalHelp    string
-	positionalVarName string
+	Positionals       []string        // The positionals (after parsing)
+	PositionalCount   PositionalCount // How many positionals are wanted
+	PositionalHelp    string          // The positionals help text
+	positionalVarName string          // Default "FILE"
 	useLowerhForHelp  bool
 	width             int
 }
@@ -402,11 +403,17 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 }
 
 func (me *Parser) onHelp() {
-	text := me.usageLine()
-	text = me.maybeWithDescriptionAndPositionals(text)
+	text := ""
+	if me.ShortDesc != "" {
+		desc := gong.TextWrap(me.ShortDesc, me.width)
+		text += strings.Join(desc, "\n") + "\n\n"
+	}
+	text += me.usageLine()
+	text += me.maybeWithDescriptionAndPositionals()
 	text += me.optionsHelp()
-	if me.EndNotes != "" {
-		text += strings.Join(gong.TextWrap(me.EndNotes, me.width), "\n")
+	if me.EndDesc != "" {
+		text += "\n" + strings.Join(gong.TextWrap(me.EndDesc, me.width),
+			"\n")
 	}
 	text = strings.TrimSuffix(text, "\n")
 	exitFunc(0, text)
@@ -421,16 +428,17 @@ func (me *Parser) usageLine() string {
 	return text + "\n"
 }
 
-func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
+func (me *Parser) maybeWithDescriptionAndPositionals() string {
+	text := ""
 	if me.LongDesc != "" {
 		desc := gong.TextWrap(me.LongDesc, me.width)
-		text = fmt.Sprintf("%s\n%s\n", text, strings.Join(desc, "\n"))
+		text = strings.Join(desc, "\n") + "\n"
 	}
 	if me.PositionalCount != ZeroPositionals {
 		posCountText := positionalCountText(me.PositionalCount,
 			me.positionalVarName)
-		text = fmt.Sprintf("%s\npositional arguments:\n%s%s", text,
-			columnGap, posCountText)
+		text += fmt.Sprintf("\npositional arguments:\n%s%s", columnGap,
+			posCountText)
 		if me.PositionalHelp != "" {
 			text += columnGap + ArgHelp(
 				utf8.RuneCountInString(posCountText), me.width,
@@ -438,6 +446,9 @@ func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
 		} else {
 			text += "\n"
 		}
+	}
+	if text != "" {
+		return "\n" + text
 	}
 	return text
 }

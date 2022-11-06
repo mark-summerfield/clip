@@ -1,6 +1,16 @@
-# TODO onHelp (if tty: use terminal width & bold etc;
-# otherwise for tests & redirected use 80 cols & no highlighting)
-# TODO HIGHLIGHT (see below)
+# TODO highlighting
+# *bold*
+#   . appName
+#   . appName subcommand (eg2subcommand)
+#   . -s --long
+# ~underline~
+#   . usage:
+#   . subcommands: (eg2subcommand)
+#   . positional arguments:
+#   . optional arguments:
+# _italic_
+#   . errors
+#
 #
 # TODO document all option forms & the corresponding code & make sure
 #      all doc egs have corresponding tests
@@ -26,40 +36,5 @@ go.mod
 regression.py
 
 st.sh
-
-# TODO HIGHLIGHT
-#
-# create a goapp.py color
-# import go-colortext & gong (for IsTTY)
-# Win & Lin ∴ bold & italic on both (if it works with win7)
-# https://github.com/daviddengcn/go-colortext
-# try on linux & win
-# 
-# if successful:
-# 
-# Parser
-#    Highlight: bool // default to true in NewParserUser
-# 
-# func (me *Parser) bold(text string) string {
-#      if me.tty {
-#          return //bolded
-#      }
-#      return text // as-is
-# }
-# // ditto italic
-#
-# clip highlighting:
-# _italic (if tty==true)_
-#   . usage:
-#   . subcommands: (eg2subcommand)
-#   . positional arguments:
-#   . optional arguments:
-#
-# *bold (if tty==true)*
-#   . appName
-#   . appName subcommand (eg2subcommand)
-#   . -s --long
-# ~underline (if tty=true)~
-#   . errors
 
 # vim: syn=yaml

@@ -30,6 +30,7 @@ type Parser struct {
 	positionalVarName string          // Default "FILE"
 	useLowerhForHelp  bool
 	width             int
+	tty               bool
 }
 
 // NewParser creates a new command line parser.
@@ -57,9 +58,10 @@ func NewParserUser(appname, version string) Parser {
 		appname = appName()
 	}
 	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
-		options: make([]optioner, 0), PositionalCount: ZeroOrMorePositionals,
-		positionalVarName: "FILE", HelpName: "help", VersionName: "version",
-		useLowerhForHelp: true, width: GetWidth()}
+		options:         make([]optioner, 0),
+		PositionalCount: ZeroOrMorePositionals, positionalVarName: "FILE",
+		HelpName: "help", VersionName: "version", useLowerhForHelp: true,
+		width: GetWidth(), tty: gong.IsTTY()}
 }
 
 func (me *Parser) AppName() string {
@@ -560,4 +562,25 @@ func (me *Parser) OnMissing(option optioner) error {
 	}
 	return me.handleError(eMissing, fmt.Sprintf("option --%s is required",
 		option.LongName()))
+}
+
+func (me *Parser) bold(s string) string {
+	if me.tty {
+		return gong.Bold(s)
+	}
+	return s
+}
+
+func (me *Parser) italic(s string) string {
+	if me.tty {
+		return gong.Italic(s)
+	}
+	return s
+}
+
+func (me *Parser) underlined(s string) string {
+	if me.tty {
+		return gong.Underline(s)
+	}
+	return s
 }

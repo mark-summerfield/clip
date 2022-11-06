@@ -15,6 +15,7 @@
 # TODO document all option forms & the corresponding code & make sure
 #      all doc egs have corresponding tests
 # TODO add tests for every error code
+# TODO then goupvar.py 0.5.0
 
 clip.go
 parser.go

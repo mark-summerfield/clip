@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/mark-summerfield/gong"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -15,7 +16,7 @@ import (
 // For applications with fairly simple CLIs, only the LongDesc is used.
 type Parser struct {
 	ShortDesc         string // Text that goes before the usage line
-	LongDesc          string // Text between the usage line and the arguments
+	LongDesc          string // Text between the usage line and arguments
 	EndDesc           string // Text at the end
 	VersionName       string // Default "version"
 	HelpName          string // Default "help"; recommend leaving as-is
@@ -573,6 +574,9 @@ func (me *Parser) bold(s string) string {
 
 func (me *Parser) italic(s string) string {
 	if me.tty {
+		if runtime.GOOS == "windows" {
+			return gong.Underline(s)
+		}
 		return gong.Italic(s)
 	}
 	return s
@@ -580,6 +584,9 @@ func (me *Parser) italic(s string) string {
 
 func (me *Parser) underlined(s string) string {
 	if me.tty {
+		if runtime.GOOS == "windows" {
+			return gong.Italic(s)
+		}
 		return gong.Underline(s)
 	}
 	return s

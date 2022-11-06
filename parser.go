@@ -15,7 +15,8 @@ import (
 type Parser struct {
 	HelpName          string
 	VersionName       string
-	Description       string
+	ShortDesc         string
+	LongDesc          string
 	EndNotes          string
 	shortVersionName  rune
 	appName           string
@@ -421,8 +422,8 @@ func (me *Parser) usageLine() string {
 }
 
 func (me *Parser) maybeWithDescriptionAndPositionals(text string) string {
-	if me.Description != "" {
-		desc := gong.TextWrap(me.Description, me.width)
+	if me.LongDesc != "" {
+		desc := gong.TextWrap(me.LongDesc, me.width)
 		text = fmt.Sprintf("%s\n%s\n", text, strings.Join(desc, "\n"))
 	}
 	if me.PositionalCount != ZeroPositionals {

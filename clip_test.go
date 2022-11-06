@@ -1213,7 +1213,7 @@ func Test059(t *testing.T) {
 func Test060(t *testing.T) {
 	exitFunc = handleTextExitFunc
 	parser, _, verboseOpt, _, _, _, _, _, _ := createTestParser2(t)
-	parser.Description = "This is Test060"
+	parser.LongDesc = "This is Test060"
 	parser.PositionalHelp = "Files to process"
 	verboseOpt.AllowImplicit = true
 	line := "-h"

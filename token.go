@@ -33,9 +33,9 @@ func (me token) String() string {
 		return fmt.Sprintf("%q", me.text)
 	}
 	if len(me.text) == 1 {
-		return fmt.Sprintf("-%s", me.text)
+		return "-" + me.text
 	}
-	return fmt.Sprintf("--%s", me.text)
+	return "--" + me.text
 }
 
 func newNameToken(text string, option optioner) token {

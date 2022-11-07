@@ -36,8 +36,8 @@ func makeDefaultIntValidator() func(string, string) (int, string) {
 	return func(name, value string) (int, string) {
 		i, err := strconv.Atoi(value)
 		if err != nil {
-			return 0, fmt.Sprintf("option %s expected an int value, got %s",
-				name, value)
+			return 0, "option " + name + " expected an int value, got " +
+				value
 		}
 		return i, ""
 	}
@@ -68,8 +68,8 @@ func makeDefaultRealValidator() func(string, string) (float64, string) {
 	return func(name, value string) (float64, string) {
 		r, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return 0, fmt.Sprintf("option %s expected a real value, got %s",
-				name, value)
+			return 0, "option " + name + " expected a real value, got " +
+				value
 		}
 		return r, ""
 	}
@@ -99,8 +99,7 @@ func makeRealRangeValidator(minimum, maximum float64) func(string,
 func makeDefaultStrValidator() func(string, string) (string, string) {
 	return func(name, value string) (string, string) {
 		if value == "" {
-			return "", fmt.Sprintf("option %s expected a nonempty string",
-				name)
+			return "", "option " + name + " expected a nonempty string"
 		}
 		return value, ""
 	}
@@ -130,11 +129,11 @@ func positionalCountText(count PositionalCount, varName string) string {
 	case ZeroPositionals:
 		return ""
 	case ZeroOrOnePositionals:
-		return fmt.Sprintf("[%s]", varName)
+		return "[" + varName + "]"
 	case ZeroOrMorePositionals: // any count is valid
 		return fmt.Sprintf("[%s1 [%s2 ...]]", varName, varName)
 	case OnePositional:
-		return fmt.Sprintf("<%s>", varName)
+		return "<" + varName + ">"
 	case OneOrMorePositionals:
 		return fmt.Sprintf("<%s1> [%s2 [%s3 ...]]", varName, varName,
 			varName)
@@ -191,17 +190,21 @@ func GetWidth() int {
 	return 80
 }
 
-func initialArgText(option optioner) (int, string) {
+func initialArgText(option optioner) (int, string, string) {
 	short := 0
 	arg := "--" + option.LongName()
+	displayArg := Bold(arg)
 	if option.ShortName() != NoShortName {
 		arg = fmt.Sprintf("%s-%c, %s", columnGap, option.ShortName(),
 			arg)
+		displayArg = columnGap + Bold("-"+string(option.ShortName())) +
+			", " + displayArg
 		short = 1
 	} else {
 		arg = columnGap + arg
+		displayArg = columnGap + displayArg
 	}
-	return short, arg
+	return short, arg, displayArg
 }
 
 func optArgText(option optioner) string {
@@ -274,14 +277,14 @@ func optionsDataText(allFit bool, maxLeft, gapWidth, width int,
 	return text
 }
 
-func one(s string) string {
+func Bold(s string) string {
 	if tty {
 		return gong.Bold(s)
 	}
 	return s
 }
 
-func two(s string) string {
+func Emph(s string) string {
 	if tty {
 		if onWindows {
 			return gong.Underline(s)
@@ -291,7 +294,7 @@ func two(s string) string {
 	return s
 }
 
-func three(s string) string {
+func Hint(s string) string {
 	if tty {
 		if onWindows {
 			return gong.Italic(s)

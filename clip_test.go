@@ -1211,6 +1211,7 @@ func Test059(t *testing.T) {
 }
 
 func Test060(t *testing.T) {
+	tty = false
 	exitFunc = handleTextExitFunc
 	parser, _, verboseOpt, _, _, _, _, _, _ := createTestParser2(t)
 	parser.LongDesc = "This is Test060"

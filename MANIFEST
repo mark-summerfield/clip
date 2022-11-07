@@ -1,14 +1,14 @@
 # TODO highlighting
-# *bold*
+# *Bold*
 #   . appName
 #   . appName subcommand (eg2subcommand)
 #   . -s --long
-# ~underline~
+# ~Emph~
 #   . usage:
 #   . subcommands: (eg2subcommand)
 #   . positional arguments:
 #   . optional arguments:
-# _italic_
+# _Hint_
 #   . errors
 #
 #

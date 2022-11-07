@@ -110,7 +110,7 @@ func (me FlagOption) check() string {
 }
 
 func (me *FlagOption) addValue(value string) string {
-	return fmt.Sprintf("flag %s can't accept a value", me.LongName())
+	return "flag " + me.LongName() + " can't accept a value"
 }
 
 type IntOption struct {
@@ -146,9 +146,8 @@ func (me IntOption) check() string {
 		if me.AllowImplicit {
 			return ""
 		} else {
-			return fmt.Sprintf(
-				"expected exactly one value for %s, got none",
-				me.LongName())
+			return "expected exactly one value for " + me.LongName() +
+				", got none"
 		}
 	}
 	return ""
@@ -198,9 +197,8 @@ func (me RealOption) check() string {
 		if me.AllowImplicit {
 			return ""
 		} else {
-			return fmt.Sprintf(
-				"expected exactly one value for %s, got none",
-				me.LongName())
+			return "expected exactly one value for " + me.LongName() +
+				", got none"
 		}
 	}
 	return ""
@@ -249,9 +247,8 @@ func (me StrOption) check() string {
 		if me.AllowImplicit {
 			return ""
 		} else {
-			return fmt.Sprintf(
-				"expected exactly one value for %s, got none",
-				me.LongName())
+			return "expected exactly one value for " + me.LongName() +
+				", got none"
 		}
 	}
 	return ""

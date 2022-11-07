@@ -264,7 +264,7 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 
 func (me *Parser) checkForDelayedError() error {
 	if me.firstDelayedError != "" {
-		exitFunc(2, fmt.Sprintf("error %s", me.firstDelayedError))
+		exitFunc(2, Hint("error "+me.firstDelayedError))
 	}
 	return nil
 }
@@ -288,7 +288,7 @@ func (me *Parser) isVersion(option optioner) bool {
 
 func (me *Parser) tokenize(args []string) ([]token, error) {
 	var err error
-	helpName := fmt.Sprintf("--%s", me.HelpName)
+	helpName := "--" + me.HelpName
 	state := me.initializeTokenState()
 	tokens := make([]token, 0, len(args))
 	for i, arg := range args {
@@ -349,7 +349,7 @@ func (me *Parser) handleLongOption(arg string, tokens []token,
 			tokens = append(tokens, newValueToken(parts[1]))
 		} else {
 			return tokens, me.handleError(eUnrecognizedOption,
-				fmt.Sprintf("unrecognized option --%s", name))
+				"unrecognized option --"+name)
 		}
 	} else { // --option
 		option, ok := state.optionForLongName[name]
@@ -357,7 +357,7 @@ func (me *Parser) handleLongOption(arg string, tokens []token,
 			tokens = append(tokens, newNameToken(name, option))
 		} else {
 			return tokens, me.handleError(eUnrecognizedOption,
-				fmt.Sprintf("unrecognized option --%s", name))
+				"unrecognized option --"+name)
 		}
 	}
 	return tokens, nil
@@ -388,13 +388,13 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 			last := len(tokens) - 1
 			rest := text[i:]
 			if last >= 0 && rest != tokens[last].text {
-				return tokens, me.handleError(eUnexpectedValue, fmt.Sprintf(
-					"unexpected value %s", rest))
+				return tokens, me.handleError(eUnexpectedValue,
+					"unexpected value "+rest)
 			}
 			break
 		} else {
 			return tokens, me.handleError(eUnrecognizedOption,
-				fmt.Sprintf("unrecognized option -%s", name))
+				"unrecognized option -"+name)
 		}
 	}
 	if pendingValue != "" {
@@ -432,10 +432,10 @@ func (me *Parser) dropHidden() {
 }
 
 func (me *Parser) usageLine() string {
-	text := fmt.Sprintf("usage: %s [OPTIONS]", me.appName)
+	text := Emph("usage:") + " " + Bold(me.appName) + " [OPTIONS]"
 	if me.PositionalCount != ZeroPositionals {
-		text = fmt.Sprintf("%s %s", text,
-			positionalCountText(me.PositionalCount, me.positionalVarName))
+		text = text + " " + positionalCountText(me.PositionalCount,
+			me.positionalVarName)
 	}
 	return text + "\n"
 }
@@ -449,8 +449,8 @@ func (me *Parser) maybeWithDescriptionAndPositionals() string {
 	if me.PositionalCount != ZeroPositionals {
 		posCountText := positionalCountText(me.PositionalCount,
 			me.positionalVarName)
-		text += fmt.Sprintf("\npositional arguments:\n%s%s", columnGap,
-			posCountText)
+		text += "\n" + Emph("positional arguments:") + "\n" + columnGap +
+			posCountText
 		if me.PositionalHelp != "" {
 			text += columnGap + ArgHelp(
 				utf8.RuneCountInString(posCountText), me.width,
@@ -470,14 +470,16 @@ func (me *Parser) optionsHelp() string {
 	maxLeft := 0
 	data := make([]datum, 0, len(me.options))
 	for _, option := range me.options {
-		n, arg := initialArgText(option)
+		n, arg, displayArg := initialArgText(option)
 		shorts += n
-		arg += optArgText(option)
+		optArg := optArgText(option)
+		arg += optArg
+		displayArg += optArg
 		lenArg := utf8.RuneCountInString(arg)
 		if lenArg > maxLeft {
 			maxLeft = lenArg
 		}
-		data = append(data, datum{arg: arg, lenArg: lenArg,
+		data = append(data, datum{arg: displayArg, lenArg: lenArg,
 			help: option.Help()})
 
 	}
@@ -486,22 +488,22 @@ func (me *Parser) optionsHelp() string {
 	if lenArg > maxLeft {
 		maxLeft = lenArg
 	}
-	data = append(data, datum{arg: help, lenArg: lenArg,
-		help: "Show help and quit"})
+	data = append(data, datum{arg: columnGap + Bold("-h") + ", " +
+		Bold("--"+me.HelpName), lenArg: lenArg, help: "Show help and quit"})
 	gapWidth := utf8.RuneCountInString(columnGap)
-	text := "\noptional arguments:\n"
+	text := "\n" + Emph("optional arguments:") + "\n"
 	allFit := prepareOptionsData(maxLeft, gapWidth, me.width, shorts, data)
 	text += optionsDataText(allFit, maxLeft, gapWidth, me.width, data)
 	return text
 }
 
 func (me *Parser) onVersion() {
-	exitFunc(0, fmt.Sprintf("%s v%s", me.appName, me.appVersion))
+	exitFunc(0, me.VersionText())
 }
 
 // VersionText is public only to aid testing
 func (me *Parser) VersionText() string {
-	return fmt.Sprintf("%s v%s", me.appName, me.appVersion)
+	return me.appName + " v" + me.appVersion
 }
 
 func (me *Parser) checkPositionals() error {
@@ -556,7 +558,7 @@ func (me *Parser) checkValues() error {
 }
 
 func (me *Parser) handleError(code int, msg string) error {
-	exitFunc(2, fmt.Sprintf("error #%d: %s", code, msg))
+	exitFunc(2, Hint(fmt.Sprintf("error #%d: %s", code, msg)))
 	return nil // never returns
 }
 
@@ -570,6 +572,6 @@ func (me *Parser) OnMissing(option optioner) error {
 			fmt.Sprintf("option -%c (or --%s) is required",
 				option.ShortName(), option.LongName()))
 	}
-	return me.handleError(eMissing, fmt.Sprintf("option --%s is required",
-		option.LongName()))
+	return me.handleError(eMissing, "option --"+option.LongName()+
+		" is required")
 }

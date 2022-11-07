@@ -15,6 +15,8 @@ type optioner interface {
 	SetShortName(rune)
 	SetVarName(string) error
 	Help() string
+	Hide()
+	isHidden() bool
 	addValue(string) string
 	wantsValue() bool
 	setGiven()
@@ -26,6 +28,7 @@ type commonOption struct {
 	shortName rune
 	help      string
 	varName   string // e.g., -o|--outfile FILENAME
+	hidden    bool
 	state     optionState
 }
 
@@ -43,6 +46,14 @@ func (me *commonOption) SetShortName(c rune) {
 
 func (me *commonOption) Help() string {
 	return me.help
+}
+
+func (me *commonOption) Hide() {
+	me.hidden = true
+}
+
+func (me *commonOption) isHidden() bool {
+	return me.hidden
 }
 
 func (me *commonOption) VarName() string {

@@ -28,6 +28,7 @@ clip_test.go
 
 eg/eg1/eg1.go
 eg/eg2/eg2.go
+eg/eg3/eg3.go
 eg/subcommands/subcommands.go
 
 doc.go

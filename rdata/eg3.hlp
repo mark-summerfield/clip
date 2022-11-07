@@ -1,0 +1,35 @@
+Counts the lines in the code files for the languages processed
+
+usage: eg3 [OPTIONS] [FILE1 [FILE2 ...]]
+
+The counting ignores . folders.
+
+Supported language names: c cpp d go java jl nim pl py rb red rs tcl vala.
+
+positional arguments:
+  [FILE1 [FILE2 ...]]  
+        The files to count or the folders to recursively search
+        [default: .]
+
+optional arguments:
+  -l, --language <LANG1> [LANG2 ...]      
+        The language(s) to count [default: all known]
+  -L, --skiplanguage <LANG1> [LANG2 ...]  
+        The languages not to count, e.g., '-L d cpp' with no '-l' means
+        count all languages except D and C++. Default: none
+  -e, --exclude <EXCL1> [EXCL2 ...]       
+        The files and folders to exclude [default: .hidden and CVS
+        __pycache__ build build.rs dist setup.py target]
+  -i, --include <INCL1> [INCL2 ...]       
+        The files to include (e.g., those without suffixes)
+  -m, --maxwidth MAXWIDTH  
+        Max line width to use (e.g., for redirected output)
+  -s, --sortbylines  
+        Sort by lines. Default: sort by names
+  -S, --summary                           
+        Output per-language totals and total time if > 0.1 sec. Default:
+        output per-language and per-file totals
+  -v, --version  Show version and quit
+  -h, --help  Show help and quit
+
+Some end notes just to show that EndDesc works.

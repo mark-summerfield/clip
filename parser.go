@@ -404,6 +404,7 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 }
 
 func (me *Parser) onHelp() {
+	me.dropHidden()
 	text := ""
 	if me.ShortDesc != "" {
 		desc := gong.TextWrap(me.ShortDesc, me.width)
@@ -418,6 +419,16 @@ func (me *Parser) onHelp() {
 	}
 	text = strings.TrimSuffix(text, "\n")
 	exitFunc(0, text)
+}
+
+func (me *Parser) dropHidden() {
+	options := make([]optioner, 0, len(me.options))
+	for _, option := range me.options {
+		if !option.isHidden() {
+			options = append(options, option)
+		}
+	}
+	me.options = options
 }
 
 func (me *Parser) usageLine() string {

@@ -17,7 +17,7 @@ import (
 const lineCountWidth = 11
 
 func main() {
-	config := getConfig("0.2.0")
+	config := getConfig("0.3.0")
 	fmt.Println(config)
 }
 
@@ -57,7 +57,8 @@ func getConfig(version string) config {
 		"Max line width to use (e.g., for redirected output)", 0, 10000,
 		width)
 	debugOpt := parser.Flag("debug", "Special debug flag")
-	debugOpt.SetShortName(clip.NoShortName)
+	debugOpt.SetShortName('D')
+	debugOpt.Hide()
 	sortByLinesOpt := parser.Flag("sortbylines",
 		"Sort by lines. Default: sort by names")
 	summaryOpt := parser.Flag("summary",

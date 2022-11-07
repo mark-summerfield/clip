@@ -7,10 +7,21 @@ import (
 	"fmt"
 	tsize "github.com/kopoli/go-terminal-size"
 	"github.com/mark-summerfield/gong"
+	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 )
+
+var (
+	tty       bool
+	onWindows bool
+)
+
+func init() {
+	tty = gong.IsTTY()
+	onWindows = runtime.GOOS == "windows"
+}
 
 func namesForName(name string) (rune, string) {
 	var shortName rune
@@ -261,4 +272,31 @@ func optionsDataText(allFit bool, maxLeft, gapWidth, width int,
 		}
 	}
 	return text
+}
+
+func one(s string) string {
+	if tty {
+		return gong.Bold(s)
+	}
+	return s
+}
+
+func two(s string) string {
+	if tty {
+		if onWindows {
+			return gong.Underline(s)
+		}
+		return gong.Italic(s)
+	}
+	return s
+}
+
+func three(s string) string {
+	if tty {
+		if onWindows {
+			return gong.Italic(s)
+		}
+		return gong.Underline(s)
+	}
+	return s
 }

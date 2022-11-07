@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"strings"
 )
 
 //go:embed Version.dat
@@ -15,7 +16,7 @@ var Version string // This module's version
 
 func appName() string {
 	if len(os.Args) > 0 {
-		return path.Base(os.Args[0])
+		return strings.TrimSuffix(path.Base(os.Args[0]), ".exe")
 	}
 	return "<app>"
 }

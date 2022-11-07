@@ -13,7 +13,8 @@ import (
 )
 
 func main() {
-	config := getConfig(path.Base(os.Args[0]), "0.2.0")
+	config := getConfig(strings.TrimSuffix(path.Base(os.Args[0]), ".exe"),
+		"0.2.0")
 	fmt.Println(config)
 }
 
@@ -165,7 +166,8 @@ func (me config) String() string {
 
 func showHelp(descs []string) {
 	fmt.Printf("usage: %s [OPTION] [SUBCOMMAND] ...\n\n%s\n",
-		clip.Bold(path.Base(os.Args[0])), clip.Emph("subcommands:"))
+		clip.Bold(strings.TrimSuffix(path.Base(os.Args[0]), ".exe")),
+		clip.Emph("subcommands:"))
 	subs := []string{
 		clip.Bold("c") + ", " + clip.Bold("compare") +
 			" [-e] <FILE1> <FILE2>",

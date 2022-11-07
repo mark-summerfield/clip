@@ -69,7 +69,7 @@ func (me *Parser) AppName() string {
 }
 
 // SetAppName can be used to override the default application name;
-// the default is path.Base(os.Args[0]).
+// the default is strings.TrimSuffix(path.Base(os.Args[0]), ".exe").
 func (me *Parser) SetAppName(appName string) {
 	if appName != "" {
 		me.appName = appName

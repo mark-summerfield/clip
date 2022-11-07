@@ -36,8 +36,8 @@ func makeDefaultIntValidator() func(string, string) (int, string) {
 	return func(name, value string) (int, string) {
 		i, err := strconv.Atoi(value)
 		if err != nil {
-			return 0, "option " + name + " expected an int value, got " +
-				value
+			return 0, fmt.Sprintf("option %s's value of %q isn't an int",
+				name, value)
 		}
 		return i, ""
 	}
@@ -48,9 +48,8 @@ func makeIntRangeValidator(minimum, maximum int) func(string, string) (int,
 	return func(name, value string) (int, string) {
 		i, err := strconv.Atoi(value)
 		if err != nil {
-			return 0, fmt.Sprintf(
-				"option %s's value of %s isn't an int: %s",
-				name, value, err)
+			return 0, fmt.Sprintf("option %s's value of %q isn't an int",
+				name, value)
 		}
 		if minimum <= i && i <= maximum {
 			return i, ""
@@ -68,8 +67,8 @@ func makeDefaultRealValidator() func(string, string) (float64, string) {
 	return func(name, value string) (float64, string) {
 		r, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return 0, "option " + name + " expected a real value, got " +
-				value
+			return 0, fmt.Sprintf("option %s's value of %q isn't a real",
+				name, value)
 		}
 		return r, ""
 	}
@@ -80,9 +79,8 @@ func makeRealRangeValidator(minimum, maximum float64) func(string,
 	return func(name, value string) (float64, string) {
 		r, err := strconv.ParseFloat(value, 64)
 		if err != nil {
-			return 0, fmt.Sprintf(
-				"option %s's value of %s isn't a real: %s",
-				name, value, err)
+			return 0, fmt.Sprintf("option %s's value of %q isn't a real",
+				name, value)
 		}
 		if minimum <= r && r <= maximum {
 			return r, ""
@@ -163,6 +161,9 @@ func valueCountText(count ValueCount, varName string) string {
 	panic("BUG: missing ValueCount case")
 }
 
+// ArgHelp is used internally by clip, but made public because it can be
+// useful for implementing subcommands (see
+// `eg/subcommands/subcommands.go`).
 func ArgHelp(argWidth, width int, desc string) string {
 	text := ""
 	gapWidth := utf8.RuneCountInString(columnGap)
@@ -182,6 +183,9 @@ func ArgHelp(argWidth, width int, desc string) string {
 	return text
 }
 
+// GetWidth returns the terminal width; it is used internally by clip, but
+// made public because it can be useful for implementing subcommands (see
+// `eg/subcommands/subcommands.go`).
 func GetWidth() int {
 	size, err := tsize.GetSize()
 	if err == nil && size.Width >= 38 {
@@ -277,6 +281,8 @@ func optionsDataText(allFit bool, maxLeft, gapWidth, width int,
 	return text
 }
 
+// Bold returns the given string contained within terminal escape codes to
+// make it bold on linux and windows (providing os.Stdout is a TTY).
 func Bold(s string) string {
 	if tty {
 		return gong.Bold(s)
@@ -284,6 +290,9 @@ func Bold(s string) string {
 	return s
 }
 
+// Empth returns the given string contained within terminal escape codes to
+// make it italic on linux and underlined on windows (providing os.Stdout is
+// a TTY).
 func Emph(s string) string {
 	if tty {
 		if onWindows {
@@ -294,6 +303,10 @@ func Emph(s string) string {
 	return s
 }
 
+// Hint returns the given string contained within terminal escape codes to
+// make it underlined on linux and italic on windows (although I've never
+// known italics to actually work on windows) (providing os.Stdout is a
+// TTY).
 func Hint(s string) string {
 	if tty {
 		if onWindows {

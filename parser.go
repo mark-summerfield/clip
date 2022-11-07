@@ -14,20 +14,20 @@ import (
 
 // For applications with fairly simple CLIs, only the LongDesc is used.
 type Parser struct {
-	ShortDesc         string // Text that goes before the usage line
-	LongDesc          string // Text between the usage line and arguments
-	EndDesc           string // Text at the end
-	VersionName       string // Default "version"
-	HelpName          string // Default "help"; recommend leaving as-is
+	ShortDesc         string // Text that goes before the usage line.
+	LongDesc          string // Text between the usage line and arguments.
+	EndDesc           string // Text at the end.
+	VersionName       string // Default "version".
+	HelpName          string // Default "help"; recommend leaving as-is.
 	shortVersionName  rune
 	appName           string
 	appVersion        string
 	options           []optioner
 	firstDelayedError string
-	Positionals       []string        // The positionals (after parsing)
-	PositionalCount   PositionalCount // How many positionals are wanted
-	PositionalHelp    string          // The positionals help text
-	positionalVarName string          // Default "FILE"
+	Positionals       []string        // The positionals (after parsing).
+	PositionalCount   PositionalCount // How many positionals are wanted.
+	PositionalHelp    string          // The positionals help text.
+	positionalVarName string          // Default "FILE".
 	useLowerhForHelp  bool
 	width             int
 }
@@ -35,7 +35,7 @@ type Parser struct {
 // NewParser creates a new command line parser.
 // It uses the executable's basename for the AppName and has no version
 // option.
-// See also NewParserVersion and NewParserUser.
+// See also [NewParserVersion] and [NewParserUser].
 func NewParser() Parser {
 	return NewParserUser(appName(), "")
 }
@@ -43,7 +43,7 @@ func NewParser() Parser {
 // NewParserVersion creates a new command line parser.
 // It uses the executable's basename for the AppName and a version
 // option with the given version.
-// See also NewParser and NewParserUser.
+// See also [NewParser] and [NewParserUser].
 func NewParserVersion(version string) Parser {
 	return NewParserUser(appName(), version)
 }
@@ -51,7 +51,7 @@ func NewParserVersion(version string) Parser {
 // NewParserUser creates a new command line parser.
 // If appname == "" the executable's basename will be used.
 // If version == "" no version option will be available.
-// See also NewParser and NewParserVersion.
+// See also [NewParser] and [NewParserVersion].
 func NewParserUser(appname, version string) Parser {
 	if appname == "" {
 		appname = appName()
@@ -63,20 +63,25 @@ func NewParserUser(appname, version string) Parser {
 		width: GetWidth()}
 }
 
+// AppName returns the name used for the application when displaying help.
 func (me *Parser) AppName() string {
 	return me.appName
 }
 
+// SetAppName can be used to override the default application name;
+// the default is path.Base(os.Args[0]).
 func (me *Parser) SetAppName(appName string) {
 	if appName != "" {
 		me.appName = appName
 	}
 }
 
+// Returns the version string (which could be empty).
 func (me *Parser) Version() string {
 	return me.appVersion
 }
 
+// Sets the variable name for positional arguments; the default is FILE.
 func (me *Parser) SetPositionalVarName(name string) error {
 	if err := checkName(name, "positional var"); err != nil {
 		return err
@@ -85,18 +90,26 @@ func (me *Parser) SetPositionalVarName(name string) error {
 	return nil
 }
 
+// Create and return new [FlagOption], --name or -n (where n is the first
+// rune in name) and help is the option's help text.
 func (me *Parser) Flag(name, help string) *FlagOption {
 	option, err := newFlagOption(name, help)
 	me.registerNewOption(option, err)
 	return option
 }
 
+// Create and return new [IntOption], --name or -n (where n is the first
+// rune in name), help is the option's help text, and theDefault is the
+// option's default.
 func (me *Parser) Int(name, help string, theDefault int) *IntOption {
 	option, err := newIntOption(name, help, theDefault)
 	me.registerNewOption(option, err)
 	return option
 }
 
+// Create and return new [IntOption], --name or -n (where n is the first
+// rune in name), help is the option's help text, the minimum and maximum
+// are inclusive limits, and theDefault is the option's default.
 func (me *Parser) IntInRange(name, help string, minimum, maximum,
 	theDefault int) *IntOption {
 	option, err := newIntOption(name, help, theDefault)
@@ -105,6 +118,9 @@ func (me *Parser) IntInRange(name, help string, minimum, maximum,
 	return option
 }
 
+// Create and return new [RealOption], --name or -n (where n is the first
+// rune in name), help is the option's help text, and theDefault is the
+// option's default.
 func (me *Parser) Real(name, help string,
 	theDefault float64) *RealOption {
 	option, err := newRealOption(name, help, theDefault)
@@ -112,6 +128,9 @@ func (me *Parser) Real(name, help string,
 	return option
 }
 
+// Create and return new [RealOption], --name or -n (where n is the first
+// rune in name), help is the option's help text, the minimum and maximum
+// are inclusive limits, and theDefault is the option's default.
 func (me *Parser) RealInRange(name, help string, minimum, maximum,
 	theDefault float64) *RealOption {
 	option, err := newRealOption(name, help, theDefault)
@@ -120,12 +139,19 @@ func (me *Parser) RealInRange(name, help string, minimum, maximum,
 	return option
 }
 
+// Create and return new [StrOption], --name or -n (where n is the first
+// rune in name), help is the option's help text, and theDefault is the
+// option's default.
 func (me *Parser) Str(name, help, theDefault string) *StrOption {
 	option, err := newStrOption(name, help, theDefault)
 	me.registerNewOption(option, err)
 	return option
 }
 
+// Create and return new [StrOption], --name or -n (where n is the first
+// rune in name), help is the option's help text, choices are the valid
+// choices from which the option's value must be chosen, and theDefault is
+// the option's default.
 func (me *Parser) Choice(name, help string, choices []string,
 	theDefault string) *StrOption {
 	option, err := newStrOption(name, help, theDefault)
@@ -134,18 +160,27 @@ func (me *Parser) Choice(name, help string, choices []string,
 	return option
 }
 
+// Create and return new [StrsOption], --name or -n (where n is the first
+// rune in name) and help is the option's help text. By default this option
+// accepts [OneOrMoreValues] (see [ValueCount]).
 func (me *Parser) Strs(name, help string) *StrsOption {
 	option, err := newStrsOption(name, help)
 	me.registerNewOption(option, err)
 	return option
 }
 
+// Create and return new [IntsOption], --name or -n (where n is the first
+// rune in name) and help is the option's help text. By default this option
+// accepts [OneOrMoreValues] (see [ValueCount]).
 func (me *Parser) Ints(name, help string) *IntsOption {
 	option, err := newIntsOption(name, help)
 	me.registerNewOption(option, err)
 	return option
 }
 
+// Create and return new [RealsOption], --name or -n (where n is the first
+// rune in name) and help is the option's help text. By default this option
+// accepts [OneOrMoreValues] (see [ValueCount]).
 func (me *Parser) Reals(name, help string) *RealsOption {
 	option, err := newRealsOption(name, help)
 	me.registerNewOption(option, err)
@@ -174,14 +209,29 @@ func (me *Parser) optionsForNames() (map[string]optioner,
 	return optionForLongName, optionForShortName
 }
 
+// Parses the arguments in os.Args[1:].
+// Each option is assigned the given value or its default (if any), and the
+// Parser.Positionals is filled with the remaining arguments (depending on
+// the Parser.PositionalCount (see [PositionalCount].
+// See also [Parser.ParseLine] and [Parser.ParseArgs].
 func (me *Parser) Parse() error {
 	return me.ParseArgs(os.Args[1:])
 }
 
+// Parses the arguments in the given line.
+// Each option is assigned the given value or its default (if any), and the
+// Parser.Positionals is filled with the remaining arguments (depending on
+// the Parser.PositionalCount (see [PositionalCount].
+// See also [Parser.Parse] and [Parser.ParseArgs].
 func (me *Parser) ParseLine(line string) error {
 	return me.ParseArgs(strings.Fields(line))
 }
 
+// Parses the arguments in the given slice of strings.
+// Each option is assigned the given value or its default (if any), and the
+// Parser.Positionals is filled with the remaining arguments (depending on
+// the Parser.PositionalCount (see [PositionalCount].
+// See also [Parser.Parse] and [Parser.ParseLine].
 func (me *Parser) ParseArgs(args []string) error {
 	if err := me.checkForDelayedError(); err != nil {
 		return err
@@ -498,12 +548,7 @@ func (me *Parser) optionsHelp() string {
 }
 
 func (me *Parser) onVersion() {
-	exitFunc(0, me.VersionText())
-}
-
-// VersionText is public only to aid testing
-func (me *Parser) VersionText() string {
-	return me.appName + " v" + me.appVersion
+	exitFunc(0, me.appName+" v"+me.appVersion)
 }
 
 func (me *Parser) checkPositionals() error {
@@ -562,10 +607,23 @@ func (me *Parser) handleError(code int, msg string) error {
 	return nil // never returns
 }
 
+// OnError is useful for post parsing validation: use it to display an error
+// in clip's style and quit with exit code 2.
 func (me *Parser) OnError(err error) {
 	exitFunc(2, err.Error())
 }
 
+// OnMissing is for use with options that—contradictoraly—are required.
+//
+// For example, if the user _must_ use the "count" option:
+//
+//	parser := NewParser() // below: name, help, minimum, maximum, default
+//	countOpt := parser.IntInRange("count", "how many are wanted", 0, 100, 0)
+//	parser.ParseLine("")
+//	if !countOpt.Given() { // countOpt is required
+//		parser.OnMissing(countOpt) // won't return (calls os.Exit)
+//	}
+//	count := countOpt.Value() // if we got here the user set it
 func (me *Parser) OnMissing(option optioner) error {
 	if option.ShortName() != NoShortName {
 		return me.handleError(eMissing,

@@ -3,11 +3,11 @@
 
 package clip
 
-const NoShortName = 0
+const NoShortName = 0 // Use this for options that don't have short names
 const columnGap = "  "
 
 // These take an option's name and the given string value and return a
-// valid value and "" or the type's zero value and an error message
+// valid value and "" or the type's zero value and an error message.
 type IntValidator func(string, string) (int, string)
 type RealValidator func(string, string) (float64, string)
 type StrValidator func(string, string) (string, string)
@@ -61,7 +61,7 @@ func (me ValueCount) String() string {
 	}
 }
 
-// This specifies how many positionals *must* be present
+// This specifies how many positionals *must* be present.
 type PositionalCount uint8
 
 const (

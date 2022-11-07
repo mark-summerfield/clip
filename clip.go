@@ -11,7 +11,7 @@ import (
 )
 
 //go:embed Version.dat
-var Version string
+var Version string // This module's version
 
 func appName() string {
 	if len(os.Args) > 0 {

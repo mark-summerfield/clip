@@ -164,11 +164,14 @@ func (me config) String() string {
 }
 
 func showHelp(descs []string) {
-	fmt.Printf("usage: %s [OPTION] [SUBCOMMAND] ...\n\nsubcommands:\n",
-		path.Base(os.Args[0]))
-	subs := []string{"c, compare [-e] <FILE1> <FILE2>",
-		"f, format [OPTIONS] <INFILE> <OUTFILE>",
-		"l, lint <FILE> [FILE ...]"}
+	fmt.Printf("usage: %s [OPTION] [SUBCOMMAND] ...\n\n%s\n",
+		clip.Bold(path.Base(os.Args[0])), clip.Emph("subcommands:"))
+	subs := []string{
+		clip.Bold("c") + ", " + clip.Bold("compare") +
+			" [-e] <FILE1> <FILE2>",
+		clip.Bold("f") + ", " + clip.Bold("format") +
+			" [OPTIONS] <INFILE> <OUTFILE>",
+		clip.Bold("l") + ", " + clip.Bold("lint") + " <FILE> [FILE ...]"}
 	leftWidths := make([]int, 0, len(subs))
 	descWidths := make([]int, 0, len(descs))
 	maxLeft := 0
@@ -195,9 +198,11 @@ func showHelp(descs []string) {
 			fmt.Print(clip.ArgHelp(argWidth, width, descs[i]))
 		}
 	}
-	fmt.Println("\noptional arguments:\n" +
-		"  -v, --version  Show version and quit\n" +
-		"  -h, --help  Show help text and quit")
+	fmt.Println("\n" + clip.Emph("optional arguments:") + "\n" +
+		"  " + clip.Bold("-v") + ", " + clip.Bold("--version") +
+		"  Show version and quit\n" +
+		"  " + clip.Bold("-h") + ", " + clip.Bold("--help") +
+		"  Show help text and quit")
 	os.Exit(0)
 }
 

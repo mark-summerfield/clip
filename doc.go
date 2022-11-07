@@ -121,28 +121,34 @@
 //
 // Here, verbose == 2 (as given)
 //
-// TODO about hidden flags #########################
+// # Hidden Options
 //
-// TODO IntInRange eg + test
-// TODO Real eg + test + note RealInRange
-// TODO Choice eg + test
-// TODO Str eg + test
+// An option can be hidden by calling Hide on it. Such options work normally
+// but don't show up in -h or --help texts.
 //
-// # Multi-Value Options TODO text + tests
+// # Validators
 //
-// TODO Strs eg + test
-// TODO Ints eg + test
-// TODO Reals eg + test
+// To create an [IntOption] or [RealOption] whose values must be within a
+// given (inclusive) range, use [Parser.IntInRange] or [Parser.RealInRange].
 //
-// # Setting a Validator # TODO
+// To create a [StrOption] that only accepts one of a specific set of
+// choices, use [Parser.Choice].
 //
-// # Post-Parsing Validation TODO test
+// Alternatively, create a plain option and set a custom [Validator].
+//
+// # Mutli-Value Options
+//
+// For ints, reals, and strings it is possible to set multi-value options,
+// that is options that accept one or more. See [Parser.Ints],
+// [Parser.Reals], and [Parser.Strs].
+//
+// # Post-Parsing Validation
 //
 // If some post-parsing validation finds invalid data it is possible to
 // treat it as a parser error by calling [Parser.OnError] with a message
 // string.
 //
-// # Required Options TODO tests
+// # Required Options
 //
 // This is a contradiction in terms, but if we really want to require an
 // option then handle it like this:
@@ -154,4 +160,8 @@
 //		parser.OnMissing(countOpt) // won't return (calls os.Exit)
 //	}
 //	count := countOpt.Value() // if we got here the user set it
+//
+// # Examples
+//
+// See the `eg` folder for examples of use.
 package clip

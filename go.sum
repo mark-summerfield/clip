@@ -1,9 +1,9 @@
 github.com/kopoli/go-terminal-size v0.0.0-20170219200355-5c97524c8b54 h1:0SMHxjkLKNawqUjjnMlCtEdj6uWZjv0+qDZ3F6GOADI=
 github.com/kopoli/go-terminal-size v0.0.0-20170219200355-5c97524c8b54/go.mod h1:bm7MVZZvHQBfqHG5X59jrRE/3ak6HvK+/Zb6aZhLR2s=
-github.com/mark-summerfield/gong v0.2.0 h1:SvRM4tkNQRCdc9qZ6IZ0zACX5f1xBqAFNgjTKxwpmjo=
-github.com/mark-summerfield/gong v0.2.0/go.mod h1:F+hSIP39FQSKkHUnyO6WDOK84VGaD2Y3wLaGIDU6fl8=
-github.com/mark-summerfield/gset v0.6.0 h1:K2NQ3MTv8ntBIpT/p+YbGpE0TT9DBMUifu2mm6XoUng=
-github.com/mark-summerfield/gset v0.6.0/go.mod h1:tKC/xw9eYm52cH40BZMRTQNJRLeyio4s16djhVvP2o0=
+github.com/mark-summerfield/gong v0.2.1 h1:4jnNUsq9udrzpA1lbSxQ9Xz6dkd87RQi66AK65QjRlU=
+github.com/mark-summerfield/gong v0.2.1/go.mod h1:F+hSIP39FQSKkHUnyO6WDOK84VGaD2Y3wLaGIDU6fl8=
+github.com/mark-summerfield/gset v0.7.0 h1:x/o9OirV6PKUBb/67aOWYdQMGpZ7iQyZ5rGSs0eTzcA=
+github.com/mark-summerfield/gset v0.7.0/go.mod h1:tKC/xw9eYm52cH40BZMRTQNJRLeyio4s16djhVvP2o0=
 github.com/mattn/go-isatty v0.0.16 h1:bq3VjFmv/sOjHtdEhmkEV4x1AJtvUvOJ2PFAZ5+peKQ=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 golang.org/x/sys v0.0.0-20220811171246-fbc7d0a398ab/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

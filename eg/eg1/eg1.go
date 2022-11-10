@@ -47,7 +47,7 @@ func getConfig(version string) config {
 	_ = skipLanguageOpt.SetVarName("LANG")
 	excludeOpt := parser.Strs("exclude",
 		fmt.Sprintf("The files and folders to exclude [default: .hidden "+
-			"and %s]", strings.Join(excludes.ToSlice(), " ")))
+			"and %s]", strings.Join(excludes.ToSortedSlice(), " ")))
 	_ = excludeOpt.SetVarName("EXCL")
 	includeOpt := parser.Strs("include",
 		"The files to include (e.g., those without suffixes)")
@@ -193,11 +193,11 @@ type config struct {
 func (me config) String() string {
 	return fmt.Sprintf("Language=[%s]\nExclude=[%s]\nInclude=[%s]\n"+
 		"MaxWidth=%d\nSortByLines=%t\nSummary=%t\nFile=[%s]",
-		strings.Join(me.Language.ToSlice(), " "),
-		strings.Join(me.Exclude.ToSlice(), " "),
-		strings.Join(me.Include.ToSlice(), " "),
+		strings.Join(me.Language.ToSortedSlice(), " "),
+		strings.Join(me.Exclude.ToSortedSlice(), " "),
+		strings.Join(me.Include.ToSortedSlice(), " "),
 		me.MaxWidth, me.SortByLines, me.Summary,
-		strings.Join(me.File.ToSlice(), " "))
+		strings.Join(me.File.ToSortedSlice(), " "))
 }
 
 type dataForLangMap map[string]langData

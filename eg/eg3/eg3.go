@@ -7,8 +7,8 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/mark-summerfield/clip"
-	"github.com/mark-summerfield/gong"
 	"github.com/mark-summerfield/gset"
+	"golang.org/x/exp/maps"
 	"os"
 	"path"
 	"path/filepath"
@@ -29,7 +29,7 @@ func getConfig(version string) config {
 	dataForLang := make(dataForLangMap)
 	initializeDataForLang(dataForLang)
 	readConfigFiles(dataForLang)
-	allLangs := gong.MapKeys(dataForLang)
+	allLangs := maps.Keys(dataForLang)
 	sort.Strings(allLangs)
 	parser := clip.NewParserVersion(version)
 	parser.ShortDesc = "Counts the lines in the code files for the " +

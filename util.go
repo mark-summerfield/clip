@@ -174,8 +174,7 @@ func ArgHelp(argWidth, width int, desc string) string {
 	} else {
 		indent := strings.Repeat(columnGap, 4)
 		theWidth := width - utf8.RuneCountInString(indent)
-		desc := gong.TextWrapIndent(desc, theWidth, indent)
-		text += "\n" + strings.Join(desc, "\n")
+		text += "\n" + wrappedIndent(desc, theWidth, indent)
 	}
 	if text[len(text)-1] != '\n' {
 		text += "\n"

@@ -457,15 +457,13 @@ func (me *Parser) onHelp() {
 	me.dropHidden()
 	text := ""
 	if me.ShortDesc != "" {
-		desc := gong.TextWrap(me.ShortDesc, me.width)
-		text += strings.Join(desc, "\n") + "\n\n"
+		text += wrapped(me.ShortDesc, me.width) + "\n\n"
 	}
 	text += me.usageLine()
 	text += me.maybeWithDescriptionAndPositionals()
 	text += me.optionsHelp()
 	if me.EndDesc != "" {
-		text += "\n" + strings.Join(gong.TextWrap(me.EndDesc, me.width),
-			"\n")
+		text += "\n" + wrapped(me.EndDesc, me.width) + "\n"
 	}
 	text = strings.TrimSuffix(text, "\n")
 	exitFunc(0, text)
@@ -493,8 +491,7 @@ func (me *Parser) usageLine() string {
 func (me *Parser) maybeWithDescriptionAndPositionals() string {
 	text := ""
 	if me.LongDesc != "" {
-		desc := gong.TextWrap(me.LongDesc, me.width)
-		text = strings.Join(desc, "\n") + "\n"
+		text = wrapped(me.LongDesc, me.width) + "\n"
 	}
 	if me.PositionalCount != ZeroPositionals {
 		posCountText := positionalCountText(me.PositionalCount,
@@ -632,4 +629,12 @@ func (me *Parser) OnMissing(option optioner) error {
 	}
 	return me.handleError(eMissing, "option --"+option.LongName()+
 		" is required")
+}
+
+func wrappedIndent(text string, width int, indent string) string {
+	return strings.Join(gong.TextWrapIndent(text, width, indent), "\n")
+}
+
+func wrapped(text string, width int) string {
+	return strings.Join(gong.TextWrap(text, width), "\n")
 }

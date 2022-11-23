@@ -17,6 +17,8 @@ def main():
             (['eg/eg3/eg3.go'], 'eg3.txt'),
             (['eg/eg3/eg3.go', '-D'], 'eg3d.txt'),
             (['eg/eg3/eg3.go', '-h'], 'eg3.hlp'),
+            (['eg/eg4/eg4.go', '-d5', 'one', 'two'], 'eg4d.txt'),
+            (['eg/eg4/eg4.go', '-h'], 'eg4.hlp'),
             (['eg/subcommands/subcommands.go', '-h'], 'subcommands.hlp'),
             (['eg/subcommands/subcommands.go', '-h', 'c'],
              'subcommands-c.hlp'),

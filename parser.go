@@ -346,7 +346,14 @@ func (me *Parser) tokenize(args []string) ([]token, error) {
 			tokens = append(tokens, newHelpToken())
 			continue
 		}
-		if arg == "--" { // --
+		if arg == "-" { // - e.g., for stdin or stdout
+			tokens = append(tokens, newPositionalsFollowToken())
+			tokens = append(tokens, newValueToken(arg))
+			for _, v := range args[i+1:] {
+				tokens = append(tokens, newValueToken(v))
+			}
+			break
+		} else if arg == "--" { // --
 			tokens = append(tokens, newPositionalsFollowToken())
 			for _, v := range args[i+1:] {
 				tokens = append(tokens, newValueToken(v))
@@ -457,13 +464,13 @@ func (me *Parser) onHelp() {
 	me.dropHidden()
 	text := ""
 	if me.ShortDesc != "" {
-		text += wrapped(me.ShortDesc, me.width) + "\n\n"
+		text += gong.Wrapped(me.ShortDesc, me.width) + "\n\n"
 	}
 	text += me.usageLine()
 	text += me.maybeWithDescriptionAndPositionals()
 	text += me.optionsHelp()
 	if me.EndDesc != "" {
-		text += "\n" + wrapped(me.EndDesc, me.width) + "\n"
+		text += "\n" + gong.Wrapped(me.EndDesc, me.width) + "\n"
 	}
 	text = strings.TrimSuffix(text, "\n")
 	exitFunc(0, text)
@@ -491,7 +498,7 @@ func (me *Parser) usageLine() string {
 func (me *Parser) maybeWithDescriptionAndPositionals() string {
 	text := ""
 	if me.LongDesc != "" {
-		text = wrapped(me.LongDesc, me.width) + "\n"
+		text = gong.Wrapped(me.LongDesc, me.width) + "\n"
 	}
 	if me.PositionalCount != ZeroPositionals {
 		posCountText := positionalCountText(me.PositionalCount,
@@ -629,12 +636,4 @@ func (me *Parser) OnMissing(option optioner) error {
 	}
 	return me.handleError(eMissing, "option --"+option.LongName()+
 		" is required")
-}
-
-func wrappedIndent(text string, width int, indent string) string {
-	return strings.Join(gong.TextWrapIndent(text, width, indent), "\n")
-}
-
-func wrapped(text string, width int) string {
-	return strings.Join(gong.TextWrap(text, width), "\n")
 }

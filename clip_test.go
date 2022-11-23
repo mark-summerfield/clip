@@ -1273,6 +1273,44 @@ func Test062(t *testing.T) {
 	}
 }
 
+func Test063(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	decimalsOpt := parser.IntInRange("decimals", "1-19; -1", 1, 19, -1)
+	parser.PositionalCount = TwoPositionals
+	line := "-d 5 one -"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	decimals := decimalsOpt.Value()
+	if decimals != 5 {
+		t.Errorf("expected decimals=5, got %d", decimals)
+	}
+	if len(parser.Positionals) != 2 {
+		t.Errorf("expected two positionals, got %d",
+			len(parser.Positionals))
+	}
+}
+
+func Test064(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	decimalsOpt := parser.IntInRange("decimals", "1-19; -1", 1, 19, -1)
+	parser.PositionalCount = TwoPositionals
+	line := "one -"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	decimals := decimalsOpt.Value()
+	if decimals != -1 {
+		t.Errorf("expected decimals=-1, got %d", decimals)
+	}
+	if len(parser.Positionals) != 2 {
+		t.Errorf("expected two positionals, got %d",
+			len(parser.Positionals))
+	}
+}
+
 func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt := parser.Flag("verbose", "whether to show more output")

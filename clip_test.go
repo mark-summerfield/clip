@@ -1258,6 +1258,21 @@ func Test061(t *testing.T) {
 	}
 }
 
+func Test062(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	decimalsOpt := parser.IntInRange("decimals", "1-19; -1", 1, 19, -1)
+	parser.PositionalCount = TwoPositionals
+	line := "one two"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	decimals := decimalsOpt.Value()
+	if decimals != -1 {
+		t.Errorf("expected decimals=-1, got %d", decimals)
+	}
+}
+
 func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt := parser.Flag("verbose", "whether to show more output")

@@ -26,6 +26,7 @@ func defaultExitFunc(exitCode int, msg string) {
 		fmt.Println(msg)
 	} else {
 		fmt.Fprintln(os.Stderr, msg)
+		fmt.Fprintf(os.Stderr, "for help run: %s --help\n", appName())
 	}
 	os.Exit(exitCode)
 }

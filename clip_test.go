@@ -1234,7 +1234,7 @@ optional arguments:
   -e, --exclude <EXCLUDE1> [EXCLUDE2 ...]                 exclude help
   -i, --include <INCLUDE1> [INCLUDE2 ...]                 include help
   -s, --sortbylines                                       Sort by lines
-  -h, --help                                              Show help and quit
+  -h, --help                                              Show help and quit.
 `
 	defer handleTextAndQuit(expected, t)
 	if err := parser.ParseLine(line); err != nil {

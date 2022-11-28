@@ -301,7 +301,7 @@ func (me *Parser) prepareHelpAndVersionOptions() error {
 		useVForVersion = true
 	}
 	if me.VersionName != "" && me.appVersion != "" {
-		versionOpt := me.Flag(me.VersionName, "Show version and quit")
+		versionOpt := me.Flag(me.VersionName, "Show version and quit.")
 		if usevForVersion {
 			versionOpt.SetShortName('v')
 		} else if useVForVersion {
@@ -543,7 +543,8 @@ func (me *Parser) optionsHelp() string {
 		maxLeft = lenArg
 	}
 	data = append(data, datum{arg: columnGap + Bold("-h") + ", " +
-		Bold("--"+me.HelpName), lenArg: lenArg, help: "Show help and quit"})
+		Bold("--"+me.HelpName), lenArg: lenArg,
+		help: "Show help and quit."})
 	gapWidth := utf8.RuneCountInString(columnGap)
 	text := "\n" + Emph("optional arguments:") + "\n"
 	allFit := prepareOptionsData(maxLeft, gapWidth, me.width, shorts, data)

@@ -38,4 +38,4 @@ optional arguments:
   -c, --compact              
         Use compact output format (not human friendly; ignores indent
         and wrapwidth)
-  -h, --help  Show help and quit
+  -h, --help  Show help and quit.

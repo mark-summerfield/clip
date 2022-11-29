@@ -29,5 +29,5 @@ optional arguments:
   -S, --summary                           
         Output per-language totals and total time if > 0.1 sec. Default:
         output per-language and per-file totals
-  -v, --version  Show version and quit
-  -h, --help  Show help and quit
+  -v, --version  Show version and quit.
+  -h, --help  Show help and quit.

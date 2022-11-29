@@ -14,4 +14,4 @@ positional arguments:
 
 optional arguments:
   -e, --equivalent  Compare for equivalance rather than for equality
-  -h, --help        Show help and quit
+  -h, --help        Show help and quit.

@@ -615,7 +615,7 @@ func (me *Parser) handleError(code int, msg string) error {
 // OnError is useful for post parsing validation: use it to display an error
 // in clip's style and quit with exit code 2.
 func (me *Parser) OnError(err error) {
-	exitFunc(2, err.Error())
+	exitFunc(2, Hint(err.Error()))
 }
 
 // OnMissing is for use with options that—contradictoraly—are required.

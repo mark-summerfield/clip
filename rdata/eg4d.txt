@@ -1,1 +1,1 @@
-{5 one two}
+{decimals: 5, infile: "one", outfile: "two"}

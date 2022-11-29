@@ -202,9 +202,9 @@ func showHelp(descs []string) {
 	}
 	fmt.Println("\n" + clip.Emph("optional arguments:") + "\n" +
 		"  " + clip.Bold("-v") + ", " + clip.Bold("--version") +
-		"  Show version and quit\n" +
+		"  Show version and quit.\n" +
 		"  " + clip.Bold("-h") + ", " + clip.Bold("--help") +
-		"  Show help text and quit")
+		"  Show help text and quit.")
 	os.Exit(0)
 }
 

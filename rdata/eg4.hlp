@@ -2,8 +2,6 @@ usage: eg4 [OPTIONS] <FILE1> <FILE2>
 
 Converts Tdb or CSV input to CSV, JSON, SQLite Tdb, UXF, or XML.
 
-Use -- before the positionals if either is -.
-
 positional arguments:
   <FILE1> <FILE2>  
         FILE1 is - for stdin or a .csv, .tdb, or .tdb.gz file.
@@ -15,4 +13,4 @@ optional arguments:
   -d, --decimals DECIMALS  
         How many decimal digits to use. Range 1-19 or 0 (few as
         possible; the default).
-  -h, --help  Show help and quit
+  -h, --help  Show help and quit.

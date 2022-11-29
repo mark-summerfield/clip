@@ -7,4 +7,4 @@ positional arguments:
   [FILE1 [FILE2 ...]]  The file(s) to lint
 
 optional arguments:
-  -h, --help  Show help and quit
+  -h, --help  Show help and quit.

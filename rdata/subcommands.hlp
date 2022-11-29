@@ -25,5 +25,5 @@ subcommands:
         (if any) to stderr for the given file(s).
 
 optional arguments:
-  -v, --version  Show version and quit
-  -h, --help  Show help text and quit
+  -v, --version  Show version and quit.
+  -h, --help  Show help text and quit.

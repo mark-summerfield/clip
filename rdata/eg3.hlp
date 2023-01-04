@@ -4,7 +4,7 @@ usage: eg3 [OPTIONS] [FILE1 [FILE2 ...]]
 
 The counting ignores . folders.
 
-Supported language names: c cpp d go java jl nim pl py rb red rs tcl vala.
+Supported language names: c cpp d go java jl nim pl py rb rs tcl vala.
 
 positional arguments:
   [FILE1 [FILE2 ...]]  

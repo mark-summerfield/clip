@@ -7,7 +7,6 @@ import (
 	_ "embed"
 	"fmt"
 	"os"
-	"path"
 	"strings"
 )
 
@@ -16,7 +15,12 @@ var Version string // This module's version
 
 func appName() string {
 	if len(os.Args) > 0 {
-		return strings.TrimSuffix(path.Base(os.Args[0]), ".exe")
+		name := strings.TrimSuffix(os.Args[0], ".exe")
+		i := strings.LastIndexAny(name, "\\/:")
+		if i > -1 {
+			name = name[i+1:]
+		}
+		return name
 	}
 	return "<app>"
 }

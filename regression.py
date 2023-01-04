@@ -25,8 +25,7 @@ def main():
             (['eg/subcommands/subcommands.go', '-h', 'l'],
              'subcommands-l.hlp'),
             (['eg/subcommands/subcommands.go', '-h', 'f'],
-             'subcommands-f.hlp'),
-            ):
+             'subcommands-f.hlp')):
         total += 1
         ok += test(cmd, expected)
     if total != ok:
@@ -52,6 +51,8 @@ def test(cmd, expected):
             text = file.read().strip()
         if reply.stdout.strip() != text:
             print(f'FAIL stdout != {filename}')
+            with open(f'/tmp/{expected}', 'w') as file:
+                file.write(reply.stdout)
             return 0
         return 1
     except FileNotFoundError:

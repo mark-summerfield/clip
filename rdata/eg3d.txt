@@ -1,4 +1,4 @@
-Language=[c cpp d go java jl nim pl py rb red rs tcl vala]
+Language=[c cpp d go java jl nim pl py rb rs tcl vala]
 Exclude=[CVS __pycache__ build build.rs dist setup.py target]
 Include=[]
 MaxWidth=67

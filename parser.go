@@ -5,11 +5,12 @@ package clip
 
 import (
 	"fmt"
-	"github.com/mark-summerfield/gong"
 	"os"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	"github.com/mark-summerfield/gong"
 )
 
 // For applications with fairly simple CLIs, only the LongDesc is used.
@@ -81,13 +82,22 @@ func (me *Parser) Version() string {
 	return me.appVersion
 }
 
-// Sets the variable name for positional arguments; the default is FILE.
+// Sets the variable name for positional arguments; the default is FILE. See
+// also [MustSetPositionalVarName].
 func (me *Parser) SetPositionalVarName(name string) error {
 	if err := checkName(name, "positional var"); err != nil {
 		return err
 	}
 	me.positionalVarName = name
 	return nil
+}
+
+// Sets the variable name for positional arguments; the default is FILE.
+// Panics on error. See also [SetPositionalVarName].
+func (me *Parser) MustSetPositionalVarName(name string) {
+	if err := me.SetPositionalVarName(name); err != nil {
+		panic(err)
+	}
 }
 
 // Create and return new [FlagOption], --name or -n (where n is the first

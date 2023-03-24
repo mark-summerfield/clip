@@ -14,6 +14,7 @@ type optioner interface {
 	ShortName() rune
 	SetShortName(rune)
 	SetVarName(string) error
+	MustSetVarName(string)
 	Help() string
 	Hide()
 	isHidden() bool
@@ -73,13 +74,22 @@ func (me *commonOption) VarName() string {
 	return me.varName
 }
 
-// SetVarName is used to set the option's variable name.
+// SetVarName is used to set the option's variable name. [See also
+// MustSetVarName].
 func (me *commonOption) SetVarName(name string) error {
 	if err := checkName(name, "option var"); err != nil {
 		return err
 	}
 	me.varName = name
 	return nil
+}
+
+// MustSetVarName is used to set the option's variable name. Panics on
+// error. See also [SetVarName]
+func (me *commonOption) MustSetVarName(name string) {
+	if err := me.SetVarName(name); err != nil {
+		panic(err)
+	}
 }
 
 // Given returns true if (after the parse) the option was given; otherwise

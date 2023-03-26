@@ -198,11 +198,11 @@ func GetWidth() int {
 func initialArgText(option optioner) (int, string, string) {
 	short := 0
 	arg := "--" + option.LongName()
-	displayArg := Bold(arg)
+	displayArg := Strong(arg)
 	if option.ShortName() != NoShortName {
 		arg = fmt.Sprintf("%s-%c, %s", columnGap, option.ShortName(),
 			arg)
-		displayArg = columnGap + Bold("-"+string(option.ShortName())) +
+		displayArg = columnGap + Strong("-"+string(option.ShortName())) +
 			", " + displayArg
 		short = 1
 	} else {
@@ -282,13 +282,20 @@ func optionsDataText(allFit bool, maxLeft, gapWidth, width int,
 	return text
 }
 
-// Bold returns the given string contained within terminal escape codes to
-// make it bold on linux and windows (providing os.Stdout is a TTY).
-func Bold(s string) string {
+// Strong returns the given string contained within terminal escape codes to
+// make it bold on linux and bold or colored on windows (providing os.Stdout
+// is a TTY).
+func Strong(s string) string {
 	if tty {
 		return gong.Bold(s)
 	}
 	return s
+}
+
+// Bold returns bold text.
+// Deprecated: Use [Strong] instead.
+func Bold(s string) string {
+	return Strong(s)
 }
 
 // Empth returns the given string contained within terminal escape codes to

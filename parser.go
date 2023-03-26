@@ -497,7 +497,7 @@ func (me *Parser) dropHidden() {
 }
 
 func (me *Parser) usageLine() string {
-	text := Emph("usage:") + " " + Bold(me.appName) + " [OPTIONS]"
+	text := Emph("usage:") + " " + Strong(me.appName) + " [OPTIONS]"
 	if me.PositionalCount != ZeroPositionals {
 		text = text + " " + positionalCountText(me.PositionalCount,
 			me.positionalVarName)
@@ -552,8 +552,8 @@ func (me *Parser) optionsHelp() string {
 	if lenArg > maxLeft {
 		maxLeft = lenArg
 	}
-	data = append(data, datum{arg: columnGap + Bold("-h") + ", " +
-		Bold("--"+me.HelpName), lenArg: lenArg,
+	data = append(data, datum{arg: columnGap + Strong("-h") + ", " +
+		Strong("--"+me.HelpName), lenArg: lenArg,
 		help: "Show help and quit."})
 	gapWidth := utf8.RuneCountInString(columnGap)
 	text := "\n" + Emph("optional arguments:") + "\n"

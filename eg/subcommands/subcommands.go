@@ -166,14 +166,15 @@ func (me config) String() string {
 
 func showHelp(descs []string) {
 	fmt.Printf("usage: %s [OPTION] [SUBCOMMAND] ...\n\n%s\n",
-		clip.Bold(strings.TrimSuffix(path.Base(os.Args[0]), ".exe")),
+		clip.Strong(strings.TrimSuffix(path.Base(os.Args[0]), ".exe")),
 		clip.Emph("subcommands:"))
 	subs := []string{
-		clip.Bold("c") + ", " + clip.Bold("compare") +
+		clip.Strong("c") + ", " + clip.Strong("compare") +
 			" [-e] <FILE1> <FILE2>",
-		clip.Bold("f") + ", " + clip.Bold("format") +
+		clip.Strong("f") + ", " + clip.Strong("format") +
 			" [OPTIONS] <INFILE> <OUTFILE>",
-		clip.Bold("l") + ", " + clip.Bold("lint") + " <FILE> [FILE ...]"}
+		clip.Strong("l") + ", " + clip.Strong("lint") +
+		" <FILE> [FILE ...]"}
 	leftWidths := make([]int, 0, len(subs))
 	descWidths := make([]int, 0, len(descs))
 	maxLeft := 0
@@ -201,9 +202,9 @@ func showHelp(descs []string) {
 		}
 	}
 	fmt.Println("\n" + clip.Emph("optional arguments:") + "\n" +
-		"  " + clip.Bold("-v") + ", " + clip.Bold("--version") +
+		"  " + clip.Strong("-v") + ", " + clip.Strong("--version") +
 		"  Show version and quit.\n" +
-		"  " + clip.Bold("-h") + ", " + clip.Bold("--help") +
+		"  " + clip.Strong("-h") + ", " + clip.Strong("--help") +
 		"  Show help text and quit.")
 	os.Exit(0)
 }

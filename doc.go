@@ -140,6 +140,18 @@
 // value, and must return two strings, either a valid value and an empty
 // string, or an empty string and an error message string.
 //
+//	parser := NewParser()
+//	formatsOpt := parser.Strs("format", "The format(s) to output")
+//	formatsOpt.Validator = func(name, value string) (string, string) {
+//		value = strings.ToLower(value)
+//		for _, valid := range []string{"csv", "jsn", "json", "xml"} {
+//			if value == valid {
+//				return value, ""
+//			}
+//		}
+//		return "", fmt.Sprintf("invalid format: %q", value)
+//	}
+//
 // # Mutli-Value Options
 //
 // For ints, reals, and strings it is possible to set multi-value options,

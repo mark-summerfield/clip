@@ -136,6 +136,10 @@
 //
 // Alternatively, create a plain option and set a custom [Validator].
 //
+// A validator function takes two string arguments: the option name and
+// value, and must return two strings, either a valid value and an empty
+// string, or an empty string and an error message string.
+//
 // # Mutli-Value Options
 //
 // For ints, reals, and strings it is possible to set multi-value options,

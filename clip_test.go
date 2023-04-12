@@ -1311,6 +1311,23 @@ func Test064(t *testing.T) {
 	}
 }
 
+/*
+func Test065(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	outfilesOpt := parser.Str("outfile", "Outfile", "")
+	parser.PositionalCount = OnePositional
+	line := "-o a.html -o b.pdf infile.txt"
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	first := outfilesOpt.Value()
+	if first != "a.html" {
+		t.Errorf("expected a.html, got %s", first)
+	}
+}
+*/
+
 func TestPkgDoc001(t *testing.T) {
 	parser := NewParserUser("myapp", "1.0.0")
 	verboseOpt := parser.Flag("verbose", "whether to show more output")

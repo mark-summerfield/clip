@@ -158,6 +158,12 @@
 // that is options that accept one or more. See [Parser.Ints],
 // [Parser.Reals], and [Parser.Strs].
 //
+// It is often more convenient to use a single-value option with multiple
+// values comma separated. For example:
+//
+//	--pages 21,36,42,43
+//	-f csv,json,xml
+//
 // # Post-Parsing Validation
 //
 // If some post-parsing validation finds invalid data it is possible to

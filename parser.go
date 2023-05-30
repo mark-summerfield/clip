@@ -407,16 +407,15 @@ func (me *Parser) isHelp(arg, helpName string) bool {
 func (me *Parser) handleLongOption(arg string, tokens []token,
 	state *tokenState) ([]token, error) {
 	name := strings.TrimPrefix(arg, "--")
-	parts := strings.SplitN(name, "=", 2)
-	if len(parts) == 2 { // --option=value
-		name := parts[0]
-		option, ok := state.optionForLongName[name]
+	left, right, found := strings.Cut(name, "=")
+	if found { // --option=value
+		option, ok := state.optionForLongName[left]
 		if ok {
-			tokens = append(tokens, newNameToken(name, option))
-			tokens = append(tokens, newValueToken(parts[1]))
+			tokens = append(tokens, newNameToken(left, option))
+			tokens = append(tokens, newValueToken(right))
 		} else {
 			return tokens, me.handleError(eUnrecognizedOption,
-				"unrecognized option --"+name)
+				"unrecognized option --"+left)
 		}
 	} else { // --option
 		option, ok := state.optionForLongName[name]

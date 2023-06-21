@@ -58,7 +58,7 @@ func NewParserUser(appname, version string) Parser {
 		appname = appName()
 	}
 	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
-		options:         make([]optioner, 0),
+		options:         []optioner{},
 		PositionalCount: ZeroOrMorePositionals, positionalVarName: "FILE",
 		HelpName: "help", VersionName: "version", useLowerhForHelp: true,
 		width: GetWidth()}

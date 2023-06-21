@@ -6,14 +6,15 @@ package main
 import (
 	"bufio"
 	"fmt"
-	"github.com/mark-summerfield/clip"
-	"github.com/mark-summerfield/gset"
-	"golang.org/x/exp/maps"
 	"os"
 	"path"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/mark-summerfield/clip"
+	"github.com/mark-summerfield/gset"
+	"golang.org/x/exp/maps"
 )
 
 const lineCountWidth = 11
@@ -26,7 +27,7 @@ func main() {
 func getConfig(version string) config {
 	excludes := gset.New("__pycache__", "build", "build.rs", "CVS", "dist",
 		"setup.py", "target")
-	dataForLang := make(dataForLangMap)
+	dataForLang := dataForLangMap{}
 	initializeDataForLang(dataForLang)
 	readConfigFiles(dataForLang)
 	allLangs := maps.Keys(dataForLang)

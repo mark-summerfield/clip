@@ -284,6 +284,7 @@ func Strong(s string) string {
 }
 
 // Bold returns bold text.
+//
 // Deprecated: Use [Strong] instead.
 func Bold(s string) string {
 	return Strong(s)

@@ -5,12 +5,13 @@ package clip
 
 import (
 	"fmt"
-	tsize "github.com/kopoli/go-terminal-size"
-	"github.com/mark-summerfield/gong"
 	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
+
+	tsize "github.com/kopoli/go-terminal-size"
+	"github.com/mark-summerfield/gong"
 )
 
 var (
@@ -195,8 +196,7 @@ func GetWidth() int {
 	return 80
 }
 
-func initialArgText(option optioner) (int, string, string) {
-	short := 0
+func initialArgText(option optioner) (string, string) {
 	arg := "--" + option.LongName()
 	displayArg := Strong(arg)
 	if option.ShortName() != NoShortName {
@@ -204,12 +204,11 @@ func initialArgText(option optioner) (int, string, string) {
 			arg)
 		displayArg = columnGap + Strong("-"+string(option.ShortName())) +
 			", " + displayArg
-		short = 1
 	} else {
-		arg = columnGap + arg
-		displayArg = columnGap + displayArg
+		arg = fmt.Sprintf("%s    %s", columnGap, arg)
+		displayArg = columnGap + "    " + displayArg
 	}
-	return short, arg, displayArg
+	return arg, displayArg
 }
 
 func optArgText(option optioner) string {
@@ -242,20 +241,12 @@ func optArgText(option optioner) string {
 	return ""
 }
 
-func prepareOptionsData(maxLeft, gapWidth, width, shorts int,
-	data []datum) bool {
-	padOnlyLong := false
-	if shorts != 0 && shorts != len(data) { // some longs without shorts
-		padOnlyLong = true
-	}
+func prepareOptionsData(maxLeft, gapWidth, width int, data []datum) bool {
 	allFit := true
 	for i := 0; i < len(data); i++ {
 		datum := &data[i]
 		if maxLeft+gapWidth+utf8.RuneCountInString(datum.help) > width {
 			allFit = false
-		}
-		if padOnlyLong && strings.HasPrefix(datum.arg, columnGap+"--") {
-			datum.arg = columnGap + strings.TrimSpace(datum.arg)
 		}
 	}
 	return allFit

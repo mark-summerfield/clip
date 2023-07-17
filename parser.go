@@ -529,12 +529,10 @@ func (me *Parser) maybeWithDescriptionAndPositionals() string {
 }
 
 func (me *Parser) optionsHelp() string {
-	shorts := 0
 	maxLeft := 0
 	data := make([]datum, 0, len(me.options))
 	for _, option := range me.options {
-		n, arg, displayArg := initialArgText(option)
-		shorts += n
+		arg, displayArg := initialArgText(option)
 		optArg := optArgText(option)
 		arg += optArg
 		displayArg += optArg
@@ -556,7 +554,7 @@ func (me *Parser) optionsHelp() string {
 		help: "Show help and quit."})
 	gapWidth := utf8.RuneCountInString(columnGap)
 	text := "\n" + Emph("optional arguments:") + "\n"
-	allFit := prepareOptionsData(maxLeft, gapWidth, me.width, shorts, data)
+	allFit := prepareOptionsData(maxLeft, gapWidth, me.width, data)
 	text += optionsDataText(allFit, maxLeft, gapWidth, me.width, data)
 	return text
 }

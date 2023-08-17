@@ -588,6 +588,10 @@ func (me *Parser) checkPositionals() error {
 		if count == 0 || count > 2 {
 			ok = false
 		}
+	case OneToThreePositionals:
+		if count == 0 || count > 3 {
+			ok = false
+		}
 	case OneOrMorePositionals:
 		if count == 0 {
 			ok = false

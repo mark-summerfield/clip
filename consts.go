@@ -74,6 +74,7 @@ const (
 	ThreePositionals
 	FourPositionals
 	OneOrTwoPositionals
+	OneToThreePositionals
 	OneOrMorePositionals
 )
 
@@ -97,6 +98,8 @@ func (me PositionalCount) String() string {
 		return "four"
 	case OneOrTwoPositionals:
 		return "one or two"
+	case OneToThreePositionals:
+		return "one or two or three"
 	case OneOrMorePositionals:
 		return "one or more"
 	default:

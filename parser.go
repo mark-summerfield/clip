@@ -600,6 +600,10 @@ func (me *Parser) checkPositionals() error {
 		if count != 2 {
 			ok = false
 		}
+	case TwoOrThreePositionals:
+		if count < 2 || count > 3 {
+			ok = false
+		}
 	case ThreePositionals:
 		if count != 3 {
 			ok = false

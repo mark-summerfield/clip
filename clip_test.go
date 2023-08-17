@@ -1427,6 +1427,50 @@ func Test073(t *testing.T) {
 	}
 }
 
+func Test074(t *testing.T) {
+	parser := NewParser()
+	parser.PositionalCount = TwoOrThreePositionals
+	if err := parser.ParseLine("one two"); err != nil {
+		t.Error(err)
+	}
+	if len(parser.Positionals) != 2 {
+		t.Errorf("expected 2 positionals, got %d", len(parser.Positionals))
+	}
+}
+
+func Test075(t *testing.T) {
+	parser := NewParser()
+	parser.PositionalCount = TwoOrThreePositionals
+	if err := parser.ParseLine("one two three"); err != nil {
+		t.Error(err)
+	}
+	if len(parser.Positionals) != 3 {
+		t.Errorf("expected 3 positionals, got %d", len(parser.Positionals))
+	}
+}
+
+func Test076(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	parser.PositionalCount = TwoOrThreePositionals
+	e := eWrongPositionalCount
+	defer expectPanic(e, t)
+	if err := parser.ParseLine(""); err != nil {
+		t.Error(err)
+	}
+}
+
+func Test077(t *testing.T) {
+	exitFunc = testingExitFunc
+	parser := NewParser()
+	parser.PositionalCount = TwoOrThreePositionals
+	e := eWrongPositionalCount
+	defer expectPanic(e, t)
+	if err := parser.ParseLine("one two three four"); err != nil {
+		t.Error(err)
+	}
+}
+
 /*
 func Test099(t *testing.T) {
 	exitFunc = testingExitFunc

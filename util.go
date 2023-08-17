@@ -144,6 +144,8 @@ func positionalCountText(count PositionalCount, varName string) string {
 			varName)
 	case TwoPositionals:
 		return fmt.Sprintf("<%s1> <%s2>", varName, varName)
+	case TwoOrThreePositionals:
+		return fmt.Sprintf("<%s1> <%s2> [%s3]", varName, varName, varName)
 	case ThreePositionals:
 		return fmt.Sprintf("<%s1> <%s2> <%s3>", varName, varName, varName)
 	case FourPositionals:

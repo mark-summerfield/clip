@@ -575,6 +575,10 @@ func (me *Parser) checkPositionals() error {
 		if count > 1 {
 			ok = false
 		}
+	case ZeroToTwoPositionals:
+		if count > 2 {
+			ok = false
+		}
 	case ZeroOrMorePositionals: // any count is valid
 	case OnePositional:
 		if count != 1 {

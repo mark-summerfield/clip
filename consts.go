@@ -67,6 +67,7 @@ type PositionalCount uint8
 const (
 	ZeroPositionals PositionalCount = iota
 	ZeroOrOnePositionals
+	ZeroToTwoPositionals
 	ZeroOrMorePositionals
 	OnePositional
 	TwoPositionals
@@ -82,6 +83,8 @@ func (me PositionalCount) String() string {
 		return "no"
 	case ZeroOrOnePositionals:
 		return "zero or one"
+	case ZeroToTwoPositionals:
+		return "zero or one or two"
 	case ZeroOrMorePositionals:
 		return "zero or more"
 	case OnePositional:

@@ -1,6 +1,6 @@
 module github.com/mark-summerfield/clip
 
-go 1.19
+go 1.21
 
 require (
 	github.com/kopoli/go-terminal-size v0.0.0-20170219200355-5c97524c8b54

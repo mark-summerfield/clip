@@ -276,7 +276,8 @@ func (me *Parser) ParseArgs(args []string) error {
 					return me.handleError(eInvalidValue, msg)
 				}
 			} else {
-				inPositionals = me.addPositional(token.text)
+				inPositionals = true
+				me.addPositional(token.text)
 			}
 		}
 	}
@@ -329,12 +330,11 @@ func (me *Parser) checkForDelayedError() error {
 	return nil
 }
 
-func (me *Parser) addPositional(value string) bool {
+func (me *Parser) addPositional(value string) {
 	if me.Positionals == nil {
 		me.Positionals = make([]string, 0, 1)
 	}
 	me.Positionals = append(me.Positionals, value)
-	return true
 }
 
 func (me *Parser) isVersion(option optioner) bool {
@@ -449,6 +449,7 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 			if !isFlag && i+1 < len(text) {
 				value := text[i+1:] // -aValue -abcValue
 				tokens = append(tokens, newValueToken(value))
+				break
 			}
 		} else if pendingValue == "" && !isFlag {
 			last := len(tokens) - 1

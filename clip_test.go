@@ -2158,3 +2158,102 @@ func TestE028(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestDebSearch1(t *testing.T) {
+	parser := NewParser()
+	parser.LongDesc = "A tool for searching debian packages."
+	infoOpt := parser.Flag("info",
+		"Print names of sections, tags, and basic stats")
+	uiOpt := parser.Str("ui", "Constrain to the given UI "+
+		"(cli, tui, or gui) [default: any].", "")
+	uiOpt.Validator = func(name, value string) (string, string) {
+		value = strings.ToLower(value)
+		for _, valid := range []string{"cli", "tui", "gui"} {
+			if value == valid {
+				return value, ""
+			}
+		}
+		return "", fmt.Sprintf("invalid format: %q", value)
+	}
+	sectionsOpt := parser.Str("sections", "A comma-separated list "+
+		"of sections (these are or-ed) [no default].", "")
+	tagsOpt := parser.Str("tags", "A comma-separated list "+
+		"of tags (these are and-ed) [no default].", "")
+	parser.PositionalCount = ZeroOrMorePositionals
+	parser.PositionalHelp = "Words to search for (these are and-ed) " +
+		"[no default]."
+	parser.MustSetPositionalVarName("WORD")
+	ui := "tui"
+	tags := "then,and,now"
+	words := "cyan magenta yellow"
+	line := fmt.Sprintf("-u%s -t%s %s", ui, tags, words)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if infoOpt.Value() {
+		t.Error("expected info=false, got true")
+	}
+	if uiOpt.Value() != ui {
+		t.Errorf("expected -u%s, got %q", ui, uiOpt.Value())
+	}
+	if tagsOpt.Value() != tags {
+		t.Errorf("expected -t%s, got %q", tags, tagsOpt.Value())
+	}
+	if sectionsOpt.Value() != "" {
+		t.Errorf("expected no sections, got %q", sectionsOpt.Value())
+	}
+	positionals := strings.Join(parser.Positionals, " ")
+	if positionals != words {
+		t.Errorf("expected words: %s, got %q", words, parser.Positionals)
+	}
+}
+
+func TestDebSearch2(t *testing.T) {
+	parser := NewParser()
+	parser.LongDesc = "A tool for searching debian packages."
+	infoOpt := parser.Flag("info",
+		"Print names of sections, tags, and basic stats")
+	uiOpt := parser.Str("ui", "Constrain to the given UI "+
+		"(cli, tui, or gui) [default: any].", "")
+	uiOpt.Validator = func(name, value string) (string, string) {
+		value = strings.ToLower(value)
+		for _, valid := range []string{"cli", "tui", "gui"} {
+			if value == valid {
+				return value, ""
+			}
+		}
+		return "", fmt.Sprintf("invalid format: %q", value)
+	}
+	sectionsOpt := parser.Str("sections", "A comma-separated list "+
+		"of sections (these are or-ed) [no default].", "")
+	tagsOpt := parser.Str("tags", "A comma-separated list "+
+		"of tags (these are and-ed) [no default].", "")
+	parser.PositionalCount = ZeroOrMorePositionals
+	parser.PositionalHelp = "Words to search for (these are and-ed) " +
+		"[no default]."
+	parser.MustSetPositionalVarName("WORD")
+	ui := "gui"
+	tags := "this,and,that"
+	sections := "a,bc,def"
+	words := "red green blue"
+	line := fmt.Sprintf("-u%s -t%s -s%s %s", ui, tags, sections, words)
+	if err := parser.ParseLine(line); err != nil {
+		t.Error(err)
+	}
+	if infoOpt.Value() {
+		t.Error("expected info=false, got true")
+	}
+	if uiOpt.Value() != ui {
+		t.Errorf("expected -u%s, got %q", ui, uiOpt.Value())
+	}
+	if tagsOpt.Value() != tags {
+		t.Errorf("expected -t%s, got %q", tags, tagsOpt.Value())
+	}
+	if sectionsOpt.Value() != sections {
+		t.Errorf("expected -s%s, got %q", tags, sectionsOpt.Value())
+	}
+	positionals := strings.Join(parser.Positionals, " ")
+	if positionals != words {
+		t.Errorf("expected words: %s, got %q", words, parser.Positionals)
+	}
+}

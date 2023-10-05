@@ -432,7 +432,7 @@ func (me *RealsOption) addValue(value string) string {
 }
 
 func checkName(name, what string) error {
-	rx := regexp.MustCompile(`^\pL[\pL\pNd_]*$`)
+	rx := regexp.MustCompile(`^\pL[-\pL\pNd_]*$`)
 	if rx.MatchString(name) {
 		return nil
 	}

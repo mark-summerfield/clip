@@ -62,7 +62,7 @@ func getConfig(version string) config {
 	debugOpt := parser.Flag("debug", "Special debug flag")
 	debugOpt.SetShortName('D')
 	debugOpt.Hide()
-	sortByLinesOpt := parser.Flag("sortbylines",
+	sortByLinesOpt := parser.Flag("sort-by-lines",
 		"Sort by lines. Default: sort by names")
 	summaryOpt := parser.Flag("summary",
 		"Output per-language totals and total time if > 0.1 sec. "+

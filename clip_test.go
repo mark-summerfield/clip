@@ -172,7 +172,7 @@ func Test004(t *testing.T) {
 
 func Test005(t *testing.T) {
 	parser := NewParserUser("", "0.1.0")
-	sortByLinesOpt := parser.Flag("sortbylines", "Sort by lines")
+	sortByLinesOpt := parser.Flag("sort-by-lines", "Sort by lines")
 	summaryOpt := parser.Flag("summary", "summary help TODO")
 	summaryOpt.SetShortName('S')
 	line := "-sS"
@@ -183,7 +183,7 @@ func Test005(t *testing.T) {
 		t.Error("expected summary=true, got false")
 	}
 	if !sortByLinesOpt.Value() {
-		t.Error("expected sortbylines=true, got false")
+		t.Error("expected sort-by-lines=true, got false")
 	}
 	if parser.AppName() != "clip.test" {
 		t.Errorf("expected appname=myapp, got %s", parser.AppName())
@@ -2228,6 +2228,10 @@ func TestDebSearch2(t *testing.T) {
 		"of sections (these are or-ed) [no default].", "")
 	tagsOpt := parser.Str("tags", "A comma-separated list "+
 		"of tags (these are and-ed) [no default].", "")
+	listTagsOpt := parser.Flag("list-tags", "Print tag names.")
+	listTagsOpt.SetShortName(NoShortName)
+	listSectionsOpt := parser.Flag("list-sections", "Print section names.")
+	listSectionsOpt.SetShortName(NoShortName)
 	parser.PositionalCount = ZeroOrMorePositionals
 	parser.PositionalHelp = "Words to search for (these are and-ed) " +
 		"[no default]."

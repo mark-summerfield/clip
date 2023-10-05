@@ -261,7 +261,7 @@ func (me *Parser) ParseArgs(args []string) error {
 		} else if inPositionals {
 			me.addPositional(token.text)
 		} else if token.kind == helpTokenKind {
-			me.onHelp() // doesn't return
+			me.OnHelp() // doesn't return
 		} else if token.kind == nameTokenKind { // Option
 			currentOption = token.option
 			if me.isVersion(currentOption) { // may not return
@@ -470,7 +470,8 @@ func (me *Parser) handleShortOption(arg string, tokens []token,
 	return tokens, nil
 }
 
-func (me *Parser) onHelp() {
+// OnHelp shows the help text and quits.
+func (me *Parser) OnHelp() {
 	me.dropHidden()
 	text := ""
 	if me.ShortDesc != "" {

@@ -69,7 +69,7 @@ func (me *commonOption) isHidden() bool {
 // option's long name uppercased. (This is never used by FlagOptions.)
 func (me *commonOption) VarName() string {
 	if me.varName == "" {
-		return strings.ToUpper(me.longName)
+		return strings.ReplaceAll(strings.ToUpper(me.longName), "-", "_")
 	}
 	return me.varName
 }

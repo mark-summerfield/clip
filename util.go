@@ -125,8 +125,11 @@ func makeChoiceValidator(choices []string) func(string, string) (string,
 
 func positionalCountText(count PositionalCount, varName1,
 	varNameN string) string {
+	n := 1
 	if varNameN == "" {
 		varNameN = varName1
+		varName1 += "1"
+		n = 2
 	}
 	switch count {
 	case ZeroPositionals:
@@ -134,30 +137,30 @@ func positionalCountText(count PositionalCount, varName1,
 	case ZeroOrOnePositionals:
 		return "[" + varName1 + "]"
 	case ZeroToTwoPositionals:
-		return fmt.Sprintf("[%s1 [%s2]]", varName1, varNameN)
+		return fmt.Sprintf("[%s [%s%d]]", varName1, varNameN, n)
 	case ZeroOrMorePositionals: // any count is valid
-		return fmt.Sprintf("[%s1 [%s2 ...]]", varName1, varNameN)
+		return fmt.Sprintf("[%s [%s%d ...]]", varName1, varNameN, n)
 	case OnePositional:
 		return "<" + varName1 + ">"
 	case OneOrTwoPositionals:
-		return fmt.Sprintf("<%s1> [%s2]", varName1, varNameN)
+		return fmt.Sprintf("<%s> [%s%d]", varName1, varNameN, n)
 	case OneToThreePositionals:
-		return fmt.Sprintf("<%s1> [%s2 [%s3]]", varName1, varNameN,
-			varNameN)
+		return fmt.Sprintf("<%s> [%s%d [%s%d]]", varName1, varNameN, n,
+			varNameN, n+1)
 	case OneOrMorePositionals:
-		return fmt.Sprintf("<%s1> [%s2 [%s3 ...]]", varName1, varNameN,
-			varNameN)
+		return fmt.Sprintf("<%s> [%s%d [%s%d ...]]", varName1, varNameN, n,
+			varNameN, n+1)
 	case TwoPositionals:
-		return fmt.Sprintf("<%s1> <%s2>", varName1, varNameN)
+		return fmt.Sprintf("<%s> <%s%d>", varName1, varNameN, n)
 	case TwoOrThreePositionals:
-		return fmt.Sprintf("<%s1> <%s2> [%s3]", varName1, varNameN,
-			varNameN)
+		return fmt.Sprintf("<%s> <%s%d> [%s%d]", varName1, varNameN, n,
+			varNameN, n+1)
 	case ThreePositionals:
-		return fmt.Sprintf("<%s1> <%s2> <%s3>", varName1, varNameN,
-			varNameN)
+		return fmt.Sprintf("<%s> <%s%d> <%s%d>", varName1, varNameN, n,
+			varNameN, n+1)
 	case FourPositionals:
-		return fmt.Sprintf("<%s1> <%s2> <%s3> <%s4>", varName1, varNameN,
-			varNameN, varNameN)
+		return fmt.Sprintf("<%s> <%s%d> <%s%d> <%s%d>", varName1, varNameN,
+			n, varNameN, n+1, varNameN, n+2)
 	}
 	panic("BUG: missing PositionalCount case")
 }

@@ -28,9 +28,11 @@ type Parser struct {
 	Positionals       []string        // The positionals (after parsing).
 	PositionalCount   PositionalCount // How many positionals are wanted.
 	PositionalHelp    string          // The positionals help text.
-	positionalVarName string          // Default "FILE".
-	useLowerhForHelp  bool
-	width             int
+
+	positionalVarName1 string // Name of first positional. Default "FILE".
+	positionalVarNameN string // Name of subsequent positionals. Same default.
+	useLowerhForHelp   bool
+	width              int
 }
 
 // NewParser creates a new command line parser.
@@ -59,7 +61,7 @@ func NewParserUser(appname, version string) Parser {
 	}
 	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
 		options:         []optioner{},
-		PositionalCount: ZeroOrMorePositionals, positionalVarName: "FILE",
+		PositionalCount: ZeroOrMorePositionals, positionalVarName1: "FILE",
 		HelpName: "help", VersionName: "version", useLowerhForHelp: true,
 		width: GetWidth()}
 }
@@ -84,18 +86,26 @@ func (me *Parser) Version() string {
 
 // Sets the variable name for positional arguments; the default is FILE. See
 // also [MustSetPositionalVarName].
-func (me *Parser) SetPositionalVarName(name string) error {
-	if err := checkName(name, "positional var"); err != nil {
-		return err
+func (me *Parser) SetPositionalVarName(names ...string) error {
+	if len(names) == 0 || len(names) > 2 {
+		return fmt.Errorf("only one or two positional varnames allowed")
 	}
-	me.positionalVarName = name
+	for _, name := range names {
+		if err := checkName(name, "positional var"); err != nil {
+			return err
+		}
+	}
+	me.positionalVarName1 = names[0]
+	if len(names) > 1 {
+		me.positionalVarNameN = names[1]
+	}
 	return nil
 }
 
 // Sets the variable name for positional arguments; the default is FILE.
 // Panics on error. See also [SetPositionalVarName].
-func (me *Parser) MustSetPositionalVarName(name string) {
-	if err := me.SetPositionalVarName(name); err != nil {
+func (me *Parser) MustSetPositionalVarName(names ...string) {
+	if err := me.SetPositionalVarName(names...); err != nil {
 		panic(err)
 	}
 }
@@ -501,7 +511,7 @@ func (me *Parser) usageLine() string {
 	text := Emph("usage:") + " " + Strong(me.appName) + " [OPTIONS]"
 	if me.PositionalCount != ZeroPositionals {
 		text = text + " " + positionalCountText(me.PositionalCount,
-			me.positionalVarName)
+			me.positionalVarName1, me.positionalVarNameN)
 	}
 	return text + "\n"
 }
@@ -513,7 +523,7 @@ func (me *Parser) maybeWithDescriptionAndPositionals() string {
 	}
 	if me.PositionalCount != ZeroPositionals {
 		posCountText := positionalCountText(me.PositionalCount,
-			me.positionalVarName)
+			me.positionalVarName1, me.positionalVarNameN)
 		text += "\n" + Emph("positional arguments:") + "\n" + columnGap +
 			posCountText
 		if me.PositionalHelp != "" {

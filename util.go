@@ -123,34 +123,41 @@ func makeChoiceValidator(choices []string) func(string, string) (string,
 	}
 }
 
-func positionalCountText(count PositionalCount, varName string) string {
+func positionalCountText(count PositionalCount, varName1,
+	varNameN string) string {
+	if varNameN == "" {
+		varNameN = varName1
+	}
 	switch count {
 	case ZeroPositionals:
 		return ""
 	case ZeroOrOnePositionals:
-		return "[" + varName + "]"
+		return "[" + varName1 + "]"
 	case ZeroToTwoPositionals:
-		return fmt.Sprintf("[%s1 [%s2]]", varName, varName)
+		return fmt.Sprintf("[%s1 [%s2]]", varName1, varNameN)
 	case ZeroOrMorePositionals: // any count is valid
-		return fmt.Sprintf("[%s1 [%s2 ...]]", varName, varName)
+		return fmt.Sprintf("[%s1 [%s2 ...]]", varName1, varNameN)
 	case OnePositional:
-		return "<" + varName + ">"
+		return "<" + varName1 + ">"
 	case OneOrTwoPositionals:
-		return fmt.Sprintf("<%s1> [%s2]", varName, varName)
+		return fmt.Sprintf("<%s1> [%s2]", varName1, varNameN)
 	case OneToThreePositionals:
-		return fmt.Sprintf("<%s1> [%s2 [%s3]]", varName, varName, varName)
+		return fmt.Sprintf("<%s1> [%s2 [%s3]]", varName1, varNameN,
+			varNameN)
 	case OneOrMorePositionals:
-		return fmt.Sprintf("<%s1> [%s2 [%s3 ...]]", varName, varName,
-			varName)
+		return fmt.Sprintf("<%s1> [%s2 [%s3 ...]]", varName1, varNameN,
+			varNameN)
 	case TwoPositionals:
-		return fmt.Sprintf("<%s1> <%s2>", varName, varName)
+		return fmt.Sprintf("<%s1> <%s2>", varName1, varNameN)
 	case TwoOrThreePositionals:
-		return fmt.Sprintf("<%s1> <%s2> [%s3]", varName, varName, varName)
+		return fmt.Sprintf("<%s1> <%s2> [%s3]", varName1, varNameN,
+			varNameN)
 	case ThreePositionals:
-		return fmt.Sprintf("<%s1> <%s2> <%s3>", varName, varName, varName)
+		return fmt.Sprintf("<%s1> <%s2> <%s3>", varName1, varNameN,
+			varNameN)
 	case FourPositionals:
-		return fmt.Sprintf("<%s1> <%s2> <%s3> <%s4>", varName, varName,
-			varName, varName)
+		return fmt.Sprintf("<%s1> <%s2> <%s3> <%s4>", varName1, varNameN,
+			varNameN, varNameN)
 	}
 	panic("BUG: missing PositionalCount case")
 }

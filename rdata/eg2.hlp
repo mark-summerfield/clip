@@ -24,7 +24,7 @@ optional arguments:
         The files to include (e.g., those without suffixes)
   -m, --maxwidth MAXWIDTH  
         Max line width to use (e.g., for redirected output)
-  --debug  Special debug flag
+      --debug  Special debug flag
   -s, --sortbylines  
         Sort by lines. Default: sort by names
   -S, --summary                           

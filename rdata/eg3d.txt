@@ -4,5 +4,5 @@ Include=[]
 MaxWidth=67
 SortByLines=false
 Summary=false
-File=[/home/mark/app/go/clip]
+File=[/home/mark/app/golib/clip]
 Debug=true

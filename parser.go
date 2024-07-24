@@ -10,7 +10,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/mark-summerfield/gong"
+	"github.com/mark-summerfield/uterm"
 )
 
 // For applications with fairly simple CLIs, only the LongDesc is used.
@@ -485,13 +485,13 @@ func (me *Parser) OnHelp() {
 	me.dropHidden()
 	text := ""
 	if me.ShortDesc != "" {
-		text += gong.Wrapped(me.ShortDesc, me.width) + "\n\n"
+		text += uterm.Wrapped(me.ShortDesc, me.width) + "\n\n"
 	}
 	text += me.usageLine()
 	text += me.maybeWithDescriptionAndPositionals()
 	text += me.optionsHelp()
 	if me.EndDesc != "" {
-		text += "\n" + gong.Wrapped(me.EndDesc, me.width) + "\n"
+		text += "\n" + uterm.Wrapped(me.EndDesc, me.width) + "\n"
 	}
 	text = strings.TrimSuffix(text, "\n")
 	exitFunc(0, text)
@@ -519,7 +519,7 @@ func (me *Parser) usageLine() string {
 func (me *Parser) maybeWithDescriptionAndPositionals() string {
 	text := ""
 	if me.LongDesc != "" {
-		text = gong.Wrapped(me.LongDesc, me.width) + "\n"
+		text = uterm.Wrapped(me.LongDesc, me.width) + "\n"
 	}
 	if me.PositionalCount != ZeroPositionals {
 		posCountText := positionalCountText(me.PositionalCount,

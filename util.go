@@ -5,13 +5,14 @@ package clip
 
 import (
 	"fmt"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf8"
 
 	tsize "github.com/kopoli/go-terminal-size"
-	"github.com/mark-summerfield/gong"
+	"github.com/mark-summerfield/uterm"
 )
 
 var (
@@ -20,7 +21,9 @@ var (
 )
 
 func init() {
-	tty = gong.IsTTY()
+	if info, _ := os.Stdout.Stat(); (info.Mode() & os.ModeCharDevice) != 0 {
+		tty = true
+	}
 	onWindows = runtime.GOOS == "windows"
 }
 
@@ -193,7 +196,7 @@ func ArgHelp(argWidth, width int, desc string) string {
 	} else {
 		indent := strings.Repeat(columnGap, 4)
 		theWidth := width - utf8.RuneCountInString(indent)
-		text += "\n" + gong.WrappedIndent(desc, theWidth, indent)
+		text += "\n" + uterm.WrappedIndent(desc, theWidth, indent)
 	}
 	if text[len(text)-1] != '\n' {
 		text += "\n"
@@ -294,7 +297,7 @@ func optionsDataText(allFit bool, maxLeft, gapWidth, width int,
 // is a TTY).
 func Strong(s string) string {
 	if tty {
-		return gong.Bold(s)
+		return uterm.Bold(s)
 	}
 	return s
 }
@@ -312,9 +315,9 @@ func Bold(s string) string {
 func Emph(s string) string {
 	if tty {
 		if onWindows {
-			return gong.Underline(s)
+			return uterm.Underline(s)
 		}
-		return gong.Italic(s)
+		return uterm.Italic(s)
 	}
 	return s
 }
@@ -326,9 +329,9 @@ func Emph(s string) string {
 func Hint(s string) string {
 	if tty {
 		if onWindows {
-			return gong.Italic(s)
+			return uterm.Italic(s)
 		}
-		return gong.Underline(s)
+		return uterm.Underline(s)
 	}
 	return s
 }

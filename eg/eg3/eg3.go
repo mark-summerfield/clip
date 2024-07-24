@@ -13,7 +13,7 @@ import (
 	"strings"
 
 	"github.com/mark-summerfield/clip"
-	"github.com/mark-summerfield/gset"
+	"github.com/mark-summerfield/set"
 	"golang.org/x/exp/maps"
 )
 
@@ -25,7 +25,7 @@ func main() {
 }
 
 func getConfig(version string) config {
-	excludes := gset.New("__pycache__", "build", "build.rs", "CVS", "dist",
+	excludes := set.New("__pycache__", "build", "build.rs", "CVS", "dist",
 		"setup.py", "target")
 	dataForLang := dataForLangMap{}
 	initializeDataForLang(dataForLang)
@@ -50,7 +50,7 @@ func getConfig(version string) config {
 	_ = skipLanguageOpt.SetVarName("LANG")
 	excludeOpt := parser.Strs("exclude",
 		fmt.Sprintf("The files and folders to exclude [default: .hidden "+
-			"and %s]", strings.Join(excludes.ToSortedSlice(), " ")))
+			"and %s]", strings.Join(excludes.ToSlice(), " ")))
 	_ = excludeOpt.SetVarName("EXCL")
 	includeOpt := parser.Strs("include",
 		"The files to include (e.g., those without suffixes)")
@@ -71,7 +71,7 @@ func getConfig(version string) config {
 	if err := parser.Parse(); err != nil {
 		parser.OnError(err)
 	}
-	langs := gset.New[string]()
+	langs := set.New[string]()
 	if languageOpt.Given() {
 		langs.Add(languageOpt.Value()...)
 	} else {
@@ -83,7 +83,7 @@ func getConfig(version string) config {
 	if excludeOpt.Given() {
 		excludes.Add(excludeOpt.Value()...)
 	}
-	includes := gset.New[string]()
+	includes := set.New[string]()
 	if includeOpt.Given() {
 		includes.Add(includeOpt.Value()...)
 	}
@@ -101,8 +101,8 @@ func getConfig(version string) config {
 	return config
 }
 
-func getPaths(positionals []string) gset.Set[string] {
-	files := gset.New[string]()
+func getPaths(positionals []string) set.Set[string] {
+	files := set.New[string]()
 	if len(positionals) == 0 {
 		addPath(".", files)
 	} else {
@@ -113,7 +113,7 @@ func getPaths(positionals []string) gset.Set[string] {
 	return files
 }
 
-func addPath(filename string, files gset.Set[string]) {
+func addPath(filename string, files set.Set[string]) {
 	path, err := filepath.Abs(filename)
 	if err == nil {
 		files.Add(path)
@@ -185,13 +185,13 @@ func readConfigFile(dataForLang dataForLangMap, filename string) {
 }
 
 type config struct {
-	Language    gset.Set[string]
-	Exclude     gset.Set[string]
-	Include     gset.Set[string]
+	Language    set.Set[string]
+	Exclude     set.Set[string]
+	Include     set.Set[string]
 	MaxWidth    int
 	SortByLines bool
 	Summary     bool
-	File        gset.Set[string]
+	File        set.Set[string]
 	DataForLang dataForLangMap
 	Debug       bool
 }
@@ -199,20 +199,20 @@ type config struct {
 func (me config) String() string {
 	return fmt.Sprintf("Language=[%s]\nExclude=[%s]\nInclude=[%s]\n"+
 		"MaxWidth=%d\nSortByLines=%t\nSummary=%t\nFile=[%s]\nDebug=%t",
-		strings.Join(me.Language.ToSortedSlice(), " "),
-		strings.Join(me.Exclude.ToSortedSlice(), " "),
-		strings.Join(me.Include.ToSortedSlice(), " "),
+		strings.Join(me.Language.ToSlice(), " "),
+		strings.Join(me.Exclude.ToSlice(), " "),
+		strings.Join(me.Include.ToSlice(), " "),
 		me.MaxWidth, me.SortByLines, me.Summary,
-		strings.Join(me.File.ToSortedSlice(), " "), me.Debug)
+		strings.Join(me.File.ToSlice(), " "), me.Debug)
 }
 
 type dataForLangMap map[string]langData
 
 type langData struct {
 	Name string
-	Exts gset.Set[string]
+	Exts set.Set[string]
 }
 
 func newLangData(name string, exts ...string) langData {
-	return langData{Name: name, Exts: gset.New(exts...)}
+	return langData{Name: name, Exts: set.New(exts...)}
 }

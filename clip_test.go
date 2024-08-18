@@ -4,6 +4,7 @@
 package clip
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"reflect"
@@ -59,7 +60,7 @@ func expectPanic(code int, t *testing.T) {
 }
 
 func handleTextExitFunc(_ int, msg string) {
-	panic(fmt.Errorf(msg))
+	panic(errors.New(msg))
 }
 
 func handleTextAndQuit(expected string, t *testing.T) {

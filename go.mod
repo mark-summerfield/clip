@@ -1,6 +1,6 @@
 module github.com/mark-summerfield/clip
 
-go 1.22.5
+go 1.23
 
 replace github.com/mark-summerfield/uterm => /home/mark/app/golib/uterm
 

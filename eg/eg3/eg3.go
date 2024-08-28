@@ -6,15 +6,15 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/mark-summerfield/clip"
 	"github.com/mark-summerfield/set"
-	"golang.org/x/exp/maps"
 )
 
 const lineCountWidth = 11
@@ -30,8 +30,7 @@ func getConfig(version string) config {
 	dataForLang := dataForLangMap{}
 	initializeDataForLang(dataForLang)
 	readConfigFiles(dataForLang)
-	allLangs := maps.Keys(dataForLang)
-	sort.Strings(allLangs)
+	allLangs := slices.Sorted(maps.Keys(dataForLang))
 	parser := clip.NewParserVersion(version)
 	parser.ShortDesc = "Counts the lines in the code files for the " +
 		"languages processed"
@@ -50,7 +49,7 @@ func getConfig(version string) config {
 	_ = skipLanguageOpt.SetVarName("LANG")
 	excludeOpt := parser.Strs("exclude",
 		fmt.Sprintf("The files and folders to exclude [default: .hidden "+
-			"and %s]", strings.Join(excludes.ToSlice(), " ")))
+			"and %s]", strings.Join(slices.Sorted(excludes.All()), " ")))
 	_ = excludeOpt.SetVarName("EXCL")
 	includeOpt := parser.Strs("include",
 		"The files to include (e.g., those without suffixes)")
@@ -199,11 +198,11 @@ type config struct {
 func (me config) String() string {
 	return fmt.Sprintf("Language=[%s]\nExclude=[%s]\nInclude=[%s]\n"+
 		"MaxWidth=%d\nSortByLines=%t\nSummary=%t\nFile=[%s]\nDebug=%t",
-		strings.Join(me.Language.ToSlice(), " "),
-		strings.Join(me.Exclude.ToSlice(), " "),
-		strings.Join(me.Include.ToSlice(), " "),
+		strings.Join(slices.Sorted(me.Language.All()), " "),
+		strings.Join(slices.Sorted(me.Exclude.All()), " "),
+		strings.Join(slices.Sorted(me.Include.All()), " "),
 		me.MaxWidth, me.SortByLines, me.Summary,
-		strings.Join(me.File.ToSlice(), " "), me.Debug)
+		strings.Join(slices.Sorted(me.File.All()), " "), me.Debug)
 }
 
 type dataForLangMap map[string]langData

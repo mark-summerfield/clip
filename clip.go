@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/mark-summerfield/uterm"
 )
 
 //go:embed Version.dat
@@ -27,10 +29,11 @@ func appName() string {
 
 func defaultExitFunc(exitCode int, msg string) {
 	if exitCode == 0 {
-		fmt.Println(msg)
+		fmt.Printf(uterm.Red(msg))
 	} else {
-		fmt.Fprintln(os.Stderr, msg)
-		fmt.Fprintf(os.Stderr, "for help run: %s --help\n", appName())
+		fmt.Fprintln(os.Stderr, uterm.Red(msg))
+		fmt.Fprintln(os.Stderr, uterm.Red(fmt.Sprintf(
+			"for help run: %s --help", appName())))
 	}
 	os.Exit(exitCode)
 }

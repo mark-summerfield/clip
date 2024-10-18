@@ -2,7 +2,9 @@
 // License: Apache-2.0
 
 // Package clip “command line interface parser” provides yet another Go
-// command line argument parser.
+// command line argument parser. ([TOC])
+//
+// [TOC]: file:///home/mark/app/golib/doc/index.html
 //
 // # Overview
 //

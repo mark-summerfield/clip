@@ -29,7 +29,7 @@ func appName() string {
 
 func defaultExitFunc(exitCode int, msg string) {
 	if exitCode == 0 {
-		fmt.Printf(uterm.Red(msg))
+		fmt.Println(msg)
 	} else {
 		fmt.Fprintln(os.Stderr, uterm.Red(msg))
 		fmt.Fprintln(os.Stderr, uterm.Red(fmt.Sprintf(

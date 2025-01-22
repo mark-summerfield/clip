@@ -4,8 +4,6 @@
 // ([TOC]) Package clip “command line interface parser” provides yet another
 // Go command line argument parser.
 //
-// [TOC]: file:///home/mark/app/golib/doc/index.html
-//
 // # Overview
 //
 // clip can handle flags, single argument options, multiple argument
@@ -188,4 +186,6 @@
 // # Examples
 //
 // See the `eg` folder for examples of use.
+//
+// [TOC]: file:///home/mark/app/golib/doc/index.html
 package clip

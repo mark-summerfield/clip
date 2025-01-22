@@ -1,8 +1,8 @@
 // Copyright © 2022 Mark Summerfield. All rights reserved.
 // License: Apache-2.0
 
-// Package clip “command line interface parser” provides yet another Go
-// command line argument parser. ([TOC])
+// ([TOC]) Package clip “command line interface parser” provides yet another
+// Go command line argument parser.
 //
 // [TOC]: file:///home/mark/app/golib/doc/index.html
 //

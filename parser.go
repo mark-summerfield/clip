@@ -59,11 +59,13 @@ func NewParserUser(appname, version string) Parser {
 	if appname == "" {
 		appname = appName()
 	}
-	return Parser{appName: appname, appVersion: strings.TrimSpace(version),
+	return Parser{
+		appName: appname, appVersion: strings.TrimSpace(version),
 		options:         []optioner{},
 		PositionalCount: ZeroOrMorePositionals, positionalVarName1: "FILE",
 		HelpName: "help", VersionName: "version", useLowerhForHelp: true,
-		width: GetWidth()}
+		width: GetWidth(),
+	}
 }
 
 // AppName returns the name used for the application when displaying help.
@@ -79,13 +81,13 @@ func (me *Parser) SetAppName(appName string) {
 	}
 }
 
-// Returns the version string (which could be empty).
+// Version eturns the version string (which could be empty).
 func (me *Parser) Version() string {
 	return me.appVersion
 }
 
-// Sets the variable name for positional arguments; the default is FILE. See
-// also [MustSetPositionalVarName].
+// SetPositionalVarName sets the variable name for positional arguments; the
+// default is FILE. See also [MustSetPositionalVarName].
 func (me *Parser) SetPositionalVarName(names ...string) error {
 	if len(names) == 0 || len(names) > 2 {
 		return fmt.Errorf("only one or two positional varnames allowed")
@@ -102,105 +104,109 @@ func (me *Parser) SetPositionalVarName(names ...string) error {
 	return nil
 }
 
-// Sets the variable name for positional arguments; the default is FILE.
-// Panics on error. See also [SetPositionalVarName].
+// MustSetPositionalVarName sets the variable name for positional arguments;
+// the default is FILE. Panics on error. See also [SetPositionalVarName].
 func (me *Parser) MustSetPositionalVarName(names ...string) {
 	if err := me.SetPositionalVarName(names...); err != nil {
 		panic(err)
 	}
 }
 
-// Create and return new [FlagOption], --name or -n (where n is the first
-// rune in name) and help is the option's help text.
+// Flag creates and returns a new [FlagOption], --name or -n (where n is the
+// first rune in name) and help is the option's help text.
 func (me *Parser) Flag(name, help string) *FlagOption {
 	option, err := newFlagOption(name, help)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [IntOption], --name or -n (where n is the first
-// rune in name), help is the option's help text, and theDefault is the
-// option's default.
+// Int creates and returns a new [IntOption], --name or -n (where n is the
+// first rune in name), help is the option's help text, and theDefault is
+// the option's default.
 func (me *Parser) Int(name, help string, theDefault int) *IntOption {
 	option, err := newIntOption(name, help, theDefault)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [IntOption], --name or -n (where n is the first
-// rune in name), help is the option's help text, the minimum and maximum
-// are inclusive limits, and theDefault is the option's default.
+// IntInRange creates and returns a new [IntOption], --name or -n (where n
+// is the first rune in name), help is the option's help text, the minimum
+// and maximum are inclusive limits, and theDefault is the option's default.
 func (me *Parser) IntInRange(name, help string, minimum, maximum,
-	theDefault int) *IntOption {
+	theDefault int,
+) *IntOption {
 	option, err := newIntOption(name, help, theDefault)
 	option.Validator = makeIntRangeValidator(minimum, maximum)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [RealOption], --name or -n (where n is the first
-// rune in name), help is the option's help text, and theDefault is the
-// option's default.
+// Real creates and returns a new [RealOption], --name or -n (where n is the
+// first rune in name), help is the option's help text, and theDefault is
+// the option's default.
 func (me *Parser) Real(name, help string,
-	theDefault float64) *RealOption {
+	theDefault float64,
+) *RealOption {
 	option, err := newRealOption(name, help, theDefault)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [RealOption], --name or -n (where n is the first
-// rune in name), help is the option's help text, the minimum and maximum
-// are inclusive limits, and theDefault is the option's default.
+// RealInRange creates and returns a new [RealOption], --name or -n (where n
+// is the first rune in name), help is the option's help text, the minimum
+// and maximum are inclusive limits, and theDefault is the option's default.
 func (me *Parser) RealInRange(name, help string, minimum, maximum,
-	theDefault float64) *RealOption {
+	theDefault float64,
+) *RealOption {
 	option, err := newRealOption(name, help, theDefault)
 	option.Validator = makeRealRangeValidator(minimum, maximum)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [StrOption], --name or -n (where n is the first
-// rune in name), help is the option's help text, and theDefault is the
-// option's default.
+// Str creates and returns a new [StrOption], --name or -n (where n is the
+// first rune in name), help is the option's help text, and theDefault is
+// the option's default.
 func (me *Parser) Str(name, help, theDefault string) *StrOption {
 	option, err := newStrOption(name, help, theDefault)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [StrOption], --name or -n (where n is the first
-// rune in name), help is the option's help text, choices are the valid
-// choices from which the option's value must be chosen, and theDefault is
-// the option's default.
+// Choice creates and returns a new [StrOption], --name or -n (where n is
+// the first rune in name), help is the option's help text, choices are the
+// valid choices from which the option's value must be chosen, and
+// theDefault is the option's default.
 func (me *Parser) Choice(name, help string, choices []string,
-	theDefault string) *StrOption {
+	theDefault string,
+) *StrOption {
 	option, err := newStrOption(name, help, theDefault)
 	option.Validator = makeChoiceValidator(choices)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [StrsOption], --name or -n (where n is the first
-// rune in name) and help is the option's help text. By default this option
-// accepts [OneOrMoreValues] (see [ValueCount]).
+// Strs creates and returns a new [StrsOption], --name or -n (where n is the
+// first rune in name) and help is the option's help text. By default this
+// option accepts [OneOrMoreValues] (see [ValueCount]).
 func (me *Parser) Strs(name, help string) *StrsOption {
 	option, err := newStrsOption(name, help)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [IntsOption], --name or -n (where n is the first
-// rune in name) and help is the option's help text. By default this option
-// accepts [OneOrMoreValues] (see [ValueCount]).
+// Ints creates and returns a new [IntsOption], --name or -n (where n is the
+// first rune in name) and help is the option's help text. By default this
+// option accepts [OneOrMoreValues] (see [ValueCount]).
 func (me *Parser) Ints(name, help string) *IntsOption {
 	option, err := newIntsOption(name, help)
 	me.registerNewOption(option, err)
 	return option
 }
 
-// Create and return new [RealsOption], --name or -n (where n is the first
-// rune in name) and help is the option's help text. By default this option
-// accepts [OneOrMoreValues] (see [ValueCount]).
+// Reals creates and returns a new [RealsOption], --name or -n (where n is
+// the first rune in name) and help is the option's help text. By default
+// this option accepts [OneOrMoreValues] (see [ValueCount]).
 func (me *Parser) Reals(name, help string) *RealsOption {
 	option, err := newRealsOption(name, help)
 	me.registerNewOption(option, err)
@@ -215,7 +221,8 @@ func (me *Parser) registerNewOption(option optioner, err error) {
 }
 
 func (me *Parser) optionsForNames() (map[string]optioner,
-	map[string]optioner) {
+	map[string]optioner,
+) {
 	optionForLongName := make(map[string]optioner, len(me.options))
 	optionForShortName := make(map[string]optioner, len(me.options))
 	for _, option := range me.options {
@@ -229,7 +236,7 @@ func (me *Parser) optionsForNames() (map[string]optioner,
 	return optionForLongName, optionForShortName
 }
 
-// Parses the arguments in os.Args[1:].
+// Parse parses the arguments in os.Args[1:].
 // Each option is assigned the given value or its default (if any), and the
 // Parser.Positionals is filled with the remaining arguments (depending on
 // the Parser.PositionalCount (see [PositionalCount].
@@ -238,7 +245,7 @@ func (me *Parser) Parse() error {
 	return me.ParseArgs(os.Args[1:])
 }
 
-// Parses the arguments in the given line.
+// ParseLine parses the arguments in the given line.
 // Each option is assigned the given value or its default (if any), and the
 // Parser.Positionals is filled with the remaining arguments (depending on
 // the Parser.PositionalCount (see [PositionalCount].
@@ -247,7 +254,7 @@ func (me *Parser) ParseLine(line string) error {
 	return me.ParseArgs(strings.Fields(line))
 }
 
-// Parses the arguments in the given slice of strings.
+// ParseArgs parsess the arguments in the given slice of strings.
 // Each option is assigned the given value or its default (if any), and the
 // Parser.Positionals is filled with the remaining arguments (depending on
 // the Parser.PositionalCount (see [PositionalCount].
@@ -415,7 +422,8 @@ func (me *Parser) isHelp(arg, helpName string) bool {
 }
 
 func (me *Parser) handleLongOption(arg string, tokens []token,
-	state *tokenState) ([]token, error) {
+	state *tokenState,
+) ([]token, error) {
 	name := strings.TrimPrefix(arg, "--")
 	left, right, found := strings.Cut(name, "=")
 	if found { // --option=value
@@ -440,7 +448,8 @@ func (me *Parser) handleLongOption(arg string, tokens []token,
 }
 
 func (me *Parser) handleShortOption(arg string, tokens []token,
-	state *tokenState) ([]token, error) {
+	state *tokenState,
+) ([]token, error) {
 	// -a -ab -abcValue -c=value -abc=value
 	text := strings.TrimPrefix(arg, "-")
 	parts := strings.SplitN(text, "=", 2)
@@ -552,8 +561,10 @@ func (me *Parser) optionsHelp() string {
 		if lenArg > maxLeft {
 			maxLeft = lenArg
 		}
-		data = append(data, datum{arg: displayArg, lenArg: lenArg,
-			help: option.Help()})
+		data = append(data, datum{
+			arg: displayArg, lenArg: lenArg,
+			help: option.Help(),
+		})
 
 	}
 	help := columnGap + "-h, --" + me.HelpName
@@ -561,9 +572,11 @@ func (me *Parser) optionsHelp() string {
 	if lenArg > maxLeft {
 		maxLeft = lenArg
 	}
-	data = append(data, datum{arg: columnGap + Strong("-h") + ", " +
-		Strong("--"+me.HelpName), lenArg: lenArg,
-		help: "Show help and quit."})
+	data = append(data, datum{
+		arg: columnGap + Strong("-h") + ", " +
+			Strong("--"+me.HelpName), lenArg: lenArg,
+		help: "Show help and quit.",
+	})
 	gapWidth := utf8.RuneCountInString(columnGap)
 	text := "\n" + Emph("optional arguments:") + "\n"
 	allFit := prepareOptionsData(maxLeft, gapWidth, me.width, data)

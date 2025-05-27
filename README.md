@@ -2,7 +2,7 @@
 
 Yet another Go “Command Line Interface Parser”.
 
-Docs: https://pkg.go.dev/github.com/mark-summerfield/clip
+[Documentation](https://pkg.go.dev/github.com/mark-summerfield/clip).
 
 ## License
 

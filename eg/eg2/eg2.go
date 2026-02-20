@@ -169,7 +169,7 @@ func readConfigFile(dataForLang dataForLangMap, filename string) {
 			lang := strings.TrimSpace(parts[0])
 			name := strings.TrimSpace(parts[1])
 			exts := strings.Split(parts[2], " ")
-			for i := 0; i < len(exts); i++ {
+			for i := range exts {
 				if exts[i] != "" && exts[i][0] != '.' {
 					exts[i] = "." + exts[i]
 				}

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode/utf8"
@@ -110,10 +111,8 @@ func makeDefaultStrValidator() func(string, string) (string, string) {
 func makeChoiceValidator(choices []string) func(string, string) (string,
 	string) {
 	return func(name, value string) (string, string) {
-		for _, choice := range choices {
-			if value == choice {
-				return value, ""
-			}
+		if slices.Contains(choices, value) {
+			return value, ""
 		}
 		colon := ""
 		end := fmt.Sprintf("the %d valid choices", len(choices))
@@ -262,7 +261,7 @@ func optArgText(option optioner) string {
 
 func prepareOptionsData(maxLeft, gapWidth, width int, data []datum) bool {
 	allFit := true
-	for i := 0; i < len(data); i++ {
+	for i := range data {
 		datum := &data[i]
 		if maxLeft+gapWidth+utf8.RuneCountInString(datum.help) > width {
 			allFit = false
@@ -273,23 +272,23 @@ func prepareOptionsData(maxLeft, gapWidth, width int, data []datum) bool {
 
 func optionsDataText(allFit bool, maxLeft, gapWidth, width int,
 	data []datum) string {
-	text := ""
+	var text strings.Builder
 	for _, datum := range data {
-		text += datum.arg
+		text.WriteString(datum.arg)
 		if datum.help != "" {
 			if allFit {
-				text += strings.Repeat(" ", maxLeft-datum.lenArg) +
-					columnGap + datum.help + "\n"
+				text.WriteString(strings.Repeat(" ", maxLeft-datum.lenArg) +
+					columnGap + datum.help + "\n")
 			} else {
 				if datum.lenArg+gapWidth+utf8.RuneCountInString(
 					datum.help) > width && datum.lenArg < maxLeft {
-					text += strings.Repeat(" ", maxLeft-datum.lenArg)
+					text.WriteString(strings.Repeat(" ", maxLeft-datum.lenArg))
 				}
-				text += columnGap + ArgHelp(maxLeft, width, datum.help)
+				text.WriteString(columnGap + ArgHelp(maxLeft, width, datum.help))
 			}
 		}
 	}
-	return text
+	return text.String()
 }
 
 // Strong returns the given string contained within terminal escape codes to

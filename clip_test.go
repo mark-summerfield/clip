@@ -9,6 +9,7 @@ import (
 	"math"
 	"reflect"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -2169,10 +2170,8 @@ func TestDebSearch1(t *testing.T) {
 		"(cli, tui, or gui) [default: any].", "")
 	uiOpt.Validator = func(name, value string) (string, string) {
 		value = strings.ToLower(value)
-		for _, valid := range []string{"cli", "tui", "gui"} {
-			if value == valid {
-				return value, ""
-			}
+		if slices.Contains([]string{"cli", "tui", "gui"}, value) {
+			return value, ""
 		}
 		return "", fmt.Sprintf("invalid format: %q", value)
 	}
@@ -2218,10 +2217,8 @@ func TestDebSearch2(t *testing.T) {
 		"(cli, tui, or gui) [default: any].", "")
 	uiOpt.Validator = func(name, value string) (string, string) {
 		value = strings.ToLower(value)
-		for _, valid := range []string{"cli", "tui", "gui"} {
-			if value == valid {
-				return value, ""
-			}
+		if slices.Contains([]string{"cli", "tui", "gui"}, value) {
+			return value, ""
 		}
 		return "", fmt.Sprintf("invalid format: %q", value)
 	}

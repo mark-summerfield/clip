@@ -174,7 +174,7 @@ func showHelp(descs []string) {
 		clip.Strong("f") + ", " + clip.Strong("format") +
 			" [OPTIONS] <INFILE> <OUTFILE>",
 		clip.Strong("l") + ", " + clip.Strong("lint") +
-		" <FILE> [FILE ...]"}
+			" <FILE> [FILE ...]"}
 	leftWidths := make([]int, 0, len(subs))
 	descWidths := make([]int, 0, len(descs))
 	maxLeft := 0
@@ -193,7 +193,7 @@ func showHelp(descs []string) {
 	}
 	argWidth := maxLeft
 	width := clip.GetWidth()
-	for i := 0; i < len(subs); i++ {
+	for i := range subs {
 		if leftWidths[i]+descWidths[i]+4 <= width {
 			fmt.Printf("  %s  %s\n", subs[i], descs[i])
 		} else {
